@@ -1,0 +1,4 @@
+[package]
+name = "latlong_bng"
+version = "0.1.0"
+authors = ["Stephan Hügel <urschrei@gmail.com>"]
