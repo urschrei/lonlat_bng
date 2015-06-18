@@ -1,4 +1,5 @@
 [package]
-name = "latlong_bng"
+name = "lonlat_bng"
+description = "Convert longitude and latitude coordinates to BNG coordinates"
 version = "0.1.0"
 authors = ["Stephan Hügel <urschrei@gmail.com>"]
