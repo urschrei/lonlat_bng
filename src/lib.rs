@@ -1,7 +1,7 @@
 //! The `lonlat_bng` crate provides a function that converts decimal longitude
 //! and latitude coordinates into British National Grid Coordinates
 //!
-//! # Examples
+//! Examples
 //!
 //!```
 //! assert_eq!((516276, 173141), lonlat_bng::convert(-0.32824866, 51.44533267));
@@ -22,9 +22,9 @@ fn round(x: f32) -> f32 {
     }
 }
 
-/// This function performs lon, lat t0 BNG conversion
+/// This function performs lon, lat to BNG conversion
 ///
-/// # Examples
+/// Examples
 ///
 /// ```
 /// use lonlat_bng::convert;
