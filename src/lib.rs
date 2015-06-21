@@ -29,7 +29,8 @@ fn round(x: f32) -> f32 {
 /// ```
 /// use lonlat_bng::convert;
 /// assert_eq!((516276, 173141), convert(-0.32824866, 51.44533267));
-pub fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
+#[no_mangle]
+pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
     let pi: f32 = consts::PI;
     //Convert input to degrees
     let lat_1: f32 = input_lat * pi / 180.;
