@@ -21,11 +21,11 @@ An IPython (sorry, *Jupyter*) notebook with some benchmarks is [here](rust_BNG.i
 
 # Simple Test
 Python: 10000 loops, best of 10: **31 µs** per loop  
-Rust: 100000 loops, best of 10: **2.04 µs** per loop*  
-Pyproj: 100000 loops, best of 10: **11.8** µs per loop*  
+Rust: 100000 loops, best of 10: **2.04 µs** per loop* 💅  
+Pyproj: 100000 loops, best of 10: **11.8** µs per loop<sup>†</sup>  
 <sup>*</sup>Test warns that intermediate results may have been cached  
 
-An approximately 15x improvement on the simple test, a 5x improvement on Pyproj, and around a 2x improvement on the "real-world" test.
+An approximately 15x improvement on the simple test, a 5x improvement over Pyproj, and around a 2x improvement on the "real-world" test.
 
 ## Benchmark machine spec:
 
@@ -42,3 +42,8 @@ An approximately 15x improvement on the simple test, a 5x improvement on Pyproj,
 
 - Write a better real-world test
 
+## License
+MIT
+
+† Really, pyproj?  
+[![mediocre](mediocre.png)]( "MEDIOCRE")
