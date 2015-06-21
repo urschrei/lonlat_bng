@@ -4,11 +4,22 @@
 //! # Examples
 //!
 //!```
-//! assert_eq!((516275.96875, 173141.125), lonlat_bng::convert(-0.32824866, 51.44533267));
+//! assert_eq!((516276, 173141), lonlat_bng::convert(-0.32824866, 51.44533267));
 //!```
 use std::f32::consts;
 use std::mem;
 #[allow(non_snake_case)]
+
+// http://stackoverflow.com/a/28124775/155423
+fn round(x: f32) -> f32 {
+    let y = x.floor();
+    if x == y {
+        x
+    } else {
+        let z = (2.0*x-y).floor();
+        z * x.signum() // Should use copysign, but not stably-available
+    }
+}
 
 /// This function performs lon, lat t0 BNG conversion
 ///
@@ -16,8 +27,8 @@ use std::mem;
 ///
 /// ```
 /// use lonlat_bng::convert;
-/// assert_eq!((516275.96875, 173141.125), convert(-0.32824866, 51.44533267));
-pub fn convert(input_lon: f32, input_lat: f32) -> (f32, f32) {
+/// assert_eq!((516276, 173141), convert(-0.32824866, 51.44533267));
+pub fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
     let pi: f32 = consts::PI;
     //Convert input to degrees
     let lat_1: f32 = input_lat * pi / 180.;
@@ -103,11 +114,11 @@ pub fn convert(input_lon: f32, input_lat: f32) -> (f32, f32) {
     let VI: f32 = nu * F0 * lat.cos().powf(5.) * (5. - 18. * lat.tan().powf(2.) + lat.tan().powf(4.) + 14. * eta2 - 58. * eta2 * lat.tan().powf(2.)) / 120.;
     let N: f32 = I + II * (lon - lon0).powf(2.) + III * (lon - lon0).powf(4.) + IIIA * (lon - lon0).powf(6.);
     let E: f32 = E0 + IV * (lon - lon0) + V * (lon - lon0).powf(3.) + VI * (lon - lon0).powf(5.);
-    return (E, N);
+    return (round(E) as i32, round(N) as i32);
 }
 
 #[test]
 fn test_conversion() {
     // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-    assert_eq!((516275.96875, 173141.125), convert(-0.32824866, 51.44533267));
+    assert_eq!((516276, 173141), convert(-0.32824866, 51.44533267));
 }
