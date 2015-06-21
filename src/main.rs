@@ -7,8 +7,11 @@ fn it_works() {
 
  fn main() {
     // FIXME these are a function input
-    let input_lon: f32 = 0.1275;
-    let input_lat: f32 = 51.5072;
+    // let input_lon: f32 = 0.1275;
+    // let input_lat: f32 = 51.5072;
+
+    let input_lat: f32 = 51.44533267;
+    let input_lon: f32 = -0.32824866;
 
     let pi: f32 = consts::PI;
     //Convert input to degrees
@@ -36,23 +39,25 @@ fn it_works() {
     let ty: f32 = 125.157;
     let tz: f32 = -542.060;
     // The rotations along x, y, z respectively, in seconds
-    let rxs: f32 = 0.1502;
+    let rxs: f32 = -0.1502;
     let rys: f32 = -0.2470;
     let rzs: f32 = -0.8421;
     // In radians
-    let rx: f32 = rxs * pi / (180 as f32 * 3600 as f32);
-    let ry: f32 = rys * pi / (180 as f32 * 3600 as f32);
-    let rz: f32 = rzs * pi / (180 as f32 * 3600 as f32);
+    let rx: f32 = rxs * pi / (180. * 3600. as f32);
+    let ry: f32 = rys * pi / (180. * 3600. as f32);
+    let rz: f32 = rzs * pi / (180. * 3600. as f32);
     // panic begins on line 46
-    let x_2: f32 = tx + 1 as f32 + s * x_1 + -rz * y_1 + ry * z_1;
-    let y_2: f32 = ty + rz * x_1 + 1 as f32+ s * y_1 + -rx * z_1;
-    let z_2: f32 = tz + -ry * x_1 + rx * y_1 + 1 as f32 + s * z_1;
+    let x_2: f32 = tx + (1. + s) * x_1 + -rz * y_1 + ry * z_1;
+    let y_2: f32 = ty + rz * x_1 + (1. + s) * y_1 + -rx * z_1;
+    let z_2: f32 = tz + -ry * x_1 + rx * y_1 + (1. + s) * z_1;
 
     // The GSR80 semi-major and semi-minor axes used for WGS84 (m)
     let a: f32 = 6377563.396;
     let b: f32 = 6356256.909;
     // The eccentricity of the Airy 1830 ellipsoid
     let e2: f32 = 1 as f32 - b.powf(2.) / a.powf(2.);
+    println!("{:?}", (rx, ry, rz));
+    println!("{:?}", (x_2, y_2, z_2));
     let p: f32 = (x_2.powf(2.) + y_2.powf(2.)).sqrt();
     // Initial value
     let mut lat: f32 = z_2.atan2((p * (1 as f32 - e2)));
@@ -67,6 +72,7 @@ fn it_works() {
         lat = (z_2 + e2 * nu * latold.sin()).atan2(p);
     };
     let lon: f32 = y_2.atan2(x_2);
+    println!("{:?}", (lat, latold, lon));
     let H: f32 = p / lat.cos() - nu;
     // Scale factor on the central meridian
     let F0: f32 = 0.9996012717;
@@ -97,5 +103,5 @@ fn it_works() {
     let VI: f32 = nu * F0 * lat.cos().powf(5.) * (5. - 18. * lat.tan().powf(2.) + lat.tan().powf(4.) + 14. * eta2 - 58. * eta2 * lat.tan().powf(2.)) / 120.;
     let N: f32 = I + II * (lon - lon0).powf(2.) + III * (lon - lon0).powf(4.) + IIIA * (lon - lon0).powf(6.);
     let E: f32 = E0 + IV * (lon - lon0) + V * (lon - lon0).powf(3.) + VI * (lon - lon0).powf(5.);
-    println!("{:?}", (E.to_string(), N.to_string()));
+    println!("{:?}", (N.to_string(), E.to_string()));
 }
