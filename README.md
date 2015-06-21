@@ -41,6 +41,7 @@ An approximately 15x improvement on the simple test, a 5x improvement over Pypro
 ## TODO
 
 - Write a better real-world test
+- Threading…
 
 ## License
 MIT
