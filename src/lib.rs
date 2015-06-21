@@ -58,7 +58,6 @@ pub fn convert(input_lon: f32, input_lat: f32) -> (f32, f32) {
         lat = (z_2 + e2 * nu * latold.sin()).atan2(p);
     };
     let lon: f32 = y_2.atan2(x_2);
-    let H: f32 = p / lat.cos() - nu;
     // Scale factor on the central meridian
     let F0: f32 = 0.9996012717;
     // Latitude of true origin (radians)
