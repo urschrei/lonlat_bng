@@ -1,5 +1,6 @@
 use std::f32::consts;
 use std::mem;
+#[allow(non_snake_case)]
 
 pub fn convert(input_lon: f32, input_lat: f32) -> (f32, f32) {
     let pi: f32 = consts::PI;
