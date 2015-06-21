@@ -6,9 +6,10 @@
 //!```
 //! assert_eq!((516276, 173141), lonlat_bng::convert(-0.32824866, 51.44533267));
 //!```
+
+#[allow(non_snake_case)]
 use std::f32::consts;
 use std::mem;
-#[allow(non_snake_case)]
 
 // http://stackoverflow.com/a/28124775/155423
 fn round(x: f32) -> f32 {
