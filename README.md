@@ -4,7 +4,7 @@ An attempt at speeding up the conversion between decimal longitude and latitude 
 
 ## Motivation
 
-Python is relatively slow; this type of conversion is usually carried out in bulk, so a 10x improvement could save precious minutes
+Python is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement could save precious minutes
 
 ## Instructions
 
