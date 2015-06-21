@@ -1,18 +1,7 @@
 use std::f32::consts;
 use std::mem;
 
-#[test]
-fn it_works() {
-}
-
- fn main() {
-    // FIXME these are a function input
-    // let input_lon: f32 = 0.1275;
-    // let input_lat: f32 = 51.5072;
-
-    let input_lat: f32 = 51.44533267;
-    let input_lon: f32 = -0.32824866;
-
+pub fn convert(input_lon: f32, input_lat: f32) -> (f32, f32) {
     let pi: f32 = consts::PI;
     //Convert input to degrees
     let lat_1: f32 = input_lat * pi / 180.;
@@ -21,14 +10,14 @@ fn it_works() {
     let a_1: f32 = 6378137.;
     let b_1: f32 = 6356752.3141;
     // The eccentricity (squared) of the GRS80 ellipsoid
-    let e2_1: f32 = 1. as f32 - (b_1.powf(2.)) / (a_1.powf(2.));
+    let e2_1: f32 = 1. - (b_1.powf(2.)) / (a_1.powf(2.));
     // Transverse radius of curvature
-    let nu_1: f32 = a_1 / (1. as f32 - e2_1 * lat_1.sin().powf(2.)).sqrt();
+    let nu_1: f32 = a_1 / (1. - e2_1 * lat_1.sin().powf(2.)).sqrt();
     // Third spherical coordinate is 0, in this case
     let H: f32 = 0.;
     let x_1: f32 = (nu_1 + H) * lat_1.cos() * lon_1.cos();
     let y_1: f32 = (nu_1 + H) * lat_1.cos() * lon_1.sin();
-    let z_1: f32 = ((1. as f32 - e2_1) * nu_1 + H) * lat_1.sin();
+    let z_1: f32 = ((1. - e2_1) * nu_1 + H) * lat_1.sin();
 
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
     let small: f32 = 10.;
@@ -43,9 +32,9 @@ fn it_works() {
     let rys: f32 = -0.2470;
     let rzs: f32 = -0.8421;
     // In radians
-    let rx: f32 = rxs * pi / (180. * 3600. as f32);
-    let ry: f32 = rys * pi / (180. * 3600. as f32);
-    let rz: f32 = rzs * pi / (180. * 3600. as f32);
+    let rx: f32 = rxs * pi / (180. * 3600.);
+    let ry: f32 = rys * pi / (180. * 3600.);
+    let rz: f32 = rzs * pi / (180. * 3600.);
     // panic begins on line 46
     let x_2: f32 = tx + (1. + s) * x_1 + -rz * y_1 + ry * z_1;
     let y_2: f32 = ty + rz * x_1 + (1. + s) * y_1 + -rx * z_1;
@@ -55,43 +44,39 @@ fn it_works() {
     let a: f32 = 6377563.396;
     let b: f32 = 6356256.909;
     // The eccentricity of the Airy 1830 ellipsoid
-    let e2: f32 = 1 as f32 - b.powf(2.) / a.powf(2.);
-    println!("{:?}", (rx, ry, rz));
-    println!("{:?}", (x_2, y_2, z_2));
+    let e2: f32 = 1. - b.powf(2.) / a.powf(2.);
     let p: f32 = (x_2.powf(2.) + y_2.powf(2.)).sqrt();
     // Initial value
-    let mut lat: f32 = z_2.atan2((p * (1 as f32 - e2)));
-    let mut latold: f32 = 2 as f32 * pi;
+    let mut lat: f32 = z_2.atan2((p * (1. - e2)));
+    let mut latold: f32 = 2. * pi;
     // this is cheating, but not sure how else to initialise nu
     let mut nu: f32 = 1.;
     // Latitude is obtained by iterative procedure
     while (lat - latold).abs() > small.powf(-16.) {
-        // (lat, latold) = (latold, lat);
         mem::swap(&mut lat, &mut latold);
-        nu = a / (1 as f32 - e2 * latold.sin().powf(2.)).sqrt();
+        nu = a / (1. - e2 * latold.sin().powf(2.)).sqrt();
         lat = (z_2 + e2 * nu * latold.sin()).atan2(p);
     };
     let lon: f32 = y_2.atan2(x_2);
-    println!("{:?}", (lat, latold, lon));
     let H: f32 = p / lat.cos() - nu;
     // Scale factor on the central meridian
     let F0: f32 = 0.9996012717;
     // Latitude of true origin (radians)
-    let lat0: f32 = 49 as f32 * pi / 180 as f32;
+    let lat0: f32 = 49. * pi / 180.;
     // Longtitude of true origin and central meridian (radians)
-    let lon0: f32 = -2 as f32 * pi / 180 as f32;
+    let lon0: f32 = -2. * pi / 180.;
     // Northing & easting of true origin (m)
     let N0: f32 = -100000.;
     let E0: f32 = 400000.;
     let n: f32 = (a - b) / (a + b);
     // Meridional radius of curvature
-    let rho: f32 = a * F0 * (1. as f32 - e2) * (1. as f32 - e2 * lat.sin().powf(2.)).powf(-1.5);
-    let eta2: f32 = nu * F0 / rho - 1 as f32;
+    let rho: f32 = a * F0 * (1. - e2) * (1. - e2 * lat.sin().powf(2.)).powf(-1.5);
+    let eta2: f32 = nu * F0 / rho - 1.;
 
-    let M1: f32 = (1 as f32 + n + (5 as f32 /4 as f32) * n.powf(2.) + (5 as f32 / 4 as f32) * n.powf(3.)) * (lat - lat0);
-    let M2: f32 = (3 as f32* n + 3 as f32 * n.powf(2.) + (21 as f32 / 8 as f32) * n.powf(3.)) * (lat - lat0).sin() * (lat + lat0).cos();
-    let M3: f32 = ((15 as f32 / 8 as f32) * n.powf(2.) + (15 as f32/ 8 as f32) * n.powf(3.)) * (2 as f32 * (lat-lat0)).sin() * (2 as f32 * (lat + lat0)).cos();
-    let M4: f32 = (35 as f32 / 24 as f32) * n.powf(3 as f32) * (3 as f32* (lat - lat0)).sin() * (3 as f32 * (lat + lat0)).cos();
+    let M1: f32 = (1. + n + (5. / 4.) * n.powf(2.) + (5. / 4.) * n.powf(3.)) * (lat - lat0);
+    let M2: f32 = (3. * n + 3. * n.powf(2.) + (21. / 8.) * n.powf(3.)) * (lat - lat0).sin() * (lat + lat0).cos();
+    let M3: f32 = ((15. / 8.) * n.powf(2.) + (15. / 8.) * n.powf(3.)) * (2. * (lat-lat0)).sin() * (2. * (lat + lat0)).cos();
+    let M4: f32 = (35. / 24.) * n.powf(3.) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
     let M: f32 = b * F0 * (M1 - M2 + M3 - M4);
 
     let I: f32 = M + N0;
@@ -103,5 +88,12 @@ fn it_works() {
     let VI: f32 = nu * F0 * lat.cos().powf(5.) * (5. - 18. * lat.tan().powf(2.) + lat.tan().powf(4.) + 14. * eta2 - 58. * eta2 * lat.tan().powf(2.)) / 120.;
     let N: f32 = I + II * (lon - lon0).powf(2.) + III * (lon - lon0).powf(4.) + IIIA * (lon - lon0).powf(6.);
     let E: f32 = E0 + IV * (lon - lon0) + V * (lon - lon0).powf(3.) + VI * (lon - lon0).powf(5.);
-    println!("{:?}", (N.to_string(), E.to_string()));
+    return (E, N);
+}
+
+
+#[test]
+fn test_conversion() {
+    // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
+    assert_eq!((516275.96875, 173141.125), convert(-0.32824866, 51.44533267));
 }
