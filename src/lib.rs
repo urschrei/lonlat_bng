@@ -1,7 +1,22 @@
+//! The `lonlat_bng` crate provides a function that converts decimal longitude
+//! and latitude coordinates into British National Grid Coordinates
+//!
+//! # Examples
+//!
+//!```
+//! assert_eq!((516275.96875, 173141.125), lonlat_bng::convert(-0.32824866, 51.44533267));
+//!```
 use std::f32::consts;
 use std::mem;
 #[allow(non_snake_case)]
 
+/// This function performs lon, lat t0 BNG conversion
+///
+/// # Examples
+///
+/// ```
+/// use lonlat_bng::convert;
+/// assert_eq!((516275.96875, 173141.125), convert(-0.32824866, 51.44533267));
 pub fn convert(input_lon: f32, input_lat: f32) -> (f32, f32) {
     let pi: f32 = consts::PI;
     //Convert input to degrees
@@ -90,7 +105,6 @@ pub fn convert(input_lon: f32, input_lat: f32) -> (f32, f32) {
     let E: f32 = E0 + IV * (lon - lon0) + V * (lon - lon0).powf(3.) + VI * (lon - lon0).powf(5.);
     return (E, N);
 }
-
 
 #[test]
 fn test_conversion() {
