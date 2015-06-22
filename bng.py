@@ -17,7 +17,7 @@ def bng(input_lat, input_lon):
 
     """
     # Simple bounds checking
-    if not all([0 <= input_lat <= 90, -180 <= input_lon <= 180]):
+    if not all([-90 <= input_lat <= 90, -180 <= input_lon <= 180]):
         raise Exception(
             "input_lat should be between 0 and 90, input_lon should be between -180 and 80")
     # Convert input to degrees
