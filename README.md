@@ -18,14 +18,21 @@ Python is relatively slow; this type of conversion is usually carried out in bul
 An IPython (sorry, *Jupyter*) notebook with some benchmarks is [here](rust_BNG.ipynb)
 
 ## Results:
-
-# Simple Test
+### Simple Test
 Python: 10000 loops, best of 10: **31 µs** per loop  
 Rust: 100000 loops, best of 10: **2.04 µs** per loop* 💅  
 Pyproj: 100000 loops, best of 10: **11.8** µs per loop<sup>†</sup>  
 <sup>*</sup>Test warns that intermediate results may have been cached  
 
 An approximately 15x improvement on the simple test, a 5x improvement over Pyproj, and around a 2x improvement on the "real-world" test.
+
+## Package
+`convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI:  
+`pip install convertbng`  
+Usage:
+
+    from convertbng.util import convertbng
+    convertbng(lon, lat)
 
 ## Benchmark machine spec:
 
@@ -41,6 +48,7 @@ An approximately 15x improvement on the simple test, a 5x improvement over Pypro
 ## TODO
 
 - Write a better real-world test
+- Allow the converter to accept Numpy arrays
 - Threading…
 
 ## License
