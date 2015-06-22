@@ -31,6 +31,16 @@ fn round(x: f32) -> f32 {
 /// assert_eq!((516276, 173141), convert(-0.32824866, 51.44533267));
 #[no_mangle]
 pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
+
+    // if not all([0 <= input_lat <= 90, -180 <= input_lon <= 180]):
+    match input_lon {
+        -180.0...180.0 => input_lon,
+        _ => panic!("Out of bounds! Longitude must be between -180 and 180.")
+    };
+      match input_lat {
+        -90.0...90.0 => input_lat,
+        _ => panic!("Out of bounds! Latitude must be between -90 and 90.")
+    };
     let pi: f32 = consts::PI;
     //Convert input to degrees
     let lat_1: f32 = input_lat * pi / 180.;
@@ -123,4 +133,16 @@ pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
 fn test_conversion() {
     // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
     assert_eq!((516276, 173141), convert(-0.32824866, 51.44533267));
+}
+
+#[test]
+#[should_panic]
+fn test_bad_lon() {
+    assert_eq!((516276, 173141), convert(181., 51.44533267));
+}
+
+#[test]
+#[should_panic]
+fn test_bad_lat() {
+    assert_eq!((516276, 173141), convert(-0.32824866, -90.01));
 }
