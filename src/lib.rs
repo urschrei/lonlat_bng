@@ -37,7 +37,7 @@ pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
         -180.0...180.0 => input_lon,
         _ => panic!("Out of bounds! Longitude must be between -180 and 180.")
     };
-      match input_lat {
+    match input_lat {
         -90.0...90.0 => input_lat,
         _ => panic!("Out of bounds! Latitude must be between -90 and 90.")
     };
