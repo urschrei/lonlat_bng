@@ -10,6 +10,7 @@
 #[allow(non_snake_case)]
 use std::f32::consts;
 use std::mem;
+use std::vec;
 
 // http://stackoverflow.com/a/28124775/155423
 fn round(x: f32) -> f32 {
@@ -127,6 +128,25 @@ pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
     let N: f32 = I + II * (lon - lon0).powf(2.) + III * (lon - lon0).powf(4.) + IIIA * (lon - lon0).powf(6.);
     let E: f32 = E0 + IV * (lon - lon0) + V * (lon - lon0).powf(3.) + VI * (lon - lon0).powf(5.);
     return (round(E) as i32, round(N) as i32);
+}
+
+pub extern fn convert_vec(input_lon: Vec<f32>, input_lat: Vec<f32>) -> Vec<(i32, i32)> {
+    // let mut res: Vec<(i32, i32)>;
+    let combined: Vec<(i32, i32)> = input_lon
+        .iter()
+        .zip(input_lat.iter())
+        .map(|each| convert(*each.0, *each.1))
+        .collect();
+    return combined
+}
+
+#[test]
+fn test_vector_conversion() {
+    let lons: Vec<f32> = vec![-0.32824866];
+    let lats: Vec<f32> = vec![51.44533267];
+    assert_eq!(
+        vec![(516276, 173141)],
+        convert_vec(lons, lats));
 }
 
 #[test]
