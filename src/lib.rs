@@ -12,6 +12,10 @@ use std::f32::consts;
 use std::mem;
 use std::vec;
 
+extern crate libc;
+use libc::{c_int, c_float, size_t};
+use std::slice;
+
 // http://stackoverflow.com/a/28124775/155423
 fn round(x: f32) -> f32 {
     let y = x.floor();
@@ -130,8 +134,15 @@ pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
     return (round(E) as i32, round(N) as i32);
 }
 
-pub extern fn convert_vec(input_lon: Vec<f32>, input_lat: Vec<f32>) -> Vec<(i32, i32)> {
-    // let mut res: Vec<(i32, i32)>;
+#[no_mangle]
+pub extern fn convert_vec(input_lon: *const c_float, lon_size: size_t , input_lat: *const c_float, lat_size: size_t) -> Vec<(i32, i32)> {
+    let input_lon = unsafe {
+        slice::from_raw_parts(input_lon, lon_size as usize)
+    };
+    let input_lat = unsafe {
+        slice::from_raw_parts(input_lat, lat_size as usize)
+    };
+
     let combined: Vec<(i32, i32)> = input_lon
         .iter()
         .zip(input_lat.iter())
@@ -142,11 +153,16 @@ pub extern fn convert_vec(input_lon: Vec<f32>, input_lat: Vec<f32>) -> Vec<(i32,
 
 #[test]
 fn test_vector_conversion() {
-    let lons: Vec<f32> = vec![-0.32824866];
-    let lats: Vec<f32> = vec![51.44533267];
+    let lons: *const c_float = -0.32824866;
+    let lats: *const c_float = 51.44533267;
+    let lon_s: size_t = 1;
+    let lat_s: size_t = 1;
+
+    // let lons: Vec<f32> = vec![-0.32824866];
+    // let lats: Vec<f32> = vec![51.44533267];
     assert_eq!(
         vec![(516276, 173141)],
-        convert_vec(lons, lats));
+        convert_vec(lons, lon_s, lats, lat_s));
 }
 
 #[test]

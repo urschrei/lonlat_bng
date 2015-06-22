@@ -5,10 +5,13 @@ version = "0.1.0"
 authors = ["Stephan Hügel <urschrei@gmail.com>"]
 license = "MIT"
 keywords = ["BNG", "Geo"]
+
+[dependencies]
+libc = "0.1.8"
+
 [lib]
 name = "lonlat_bng"
 crate-type = ["dylib"]
 test = true
 doctest = true
 doc = true
-
