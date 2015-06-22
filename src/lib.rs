@@ -134,15 +134,8 @@ pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
     return (round(E) as i32, round(N) as i32);
 }
 
-#[no_mangle]
-pub extern fn convert_vec(input_lon: *const c_float, lon_size: size_t , input_lat: *const c_float, lat_size: size_t) -> Vec<(i32, i32)> {
-    let input_lon = unsafe {
-        slice::from_raw_parts(input_lon, lon_size as usize)
-    };
-    let input_lat = unsafe {
-        slice::from_raw_parts(input_lat, lat_size as usize)
-    };
-
+/// A wrapper for convert, which maps it over the zipped input vectors
+pub fn convert_vec(input_lon: Vec<f32>, input_lat: Vec<f32>) -> Vec<(i32, i32)> {
     let combined: Vec<(i32, i32)> = input_lon
         .iter()
         .zip(input_lat.iter())
@@ -151,18 +144,31 @@ pub extern fn convert_vec(input_lon: *const c_float, lon_size: size_t , input_la
     return combined
 }
 
+/// Essentially just a C-compatible wrapper for convert_vec
+#[no_mangle]
+pub extern fn convert_vec_py(input_lon: *const c_float, lon_size: size_t , input_lat: *const c_float, lat_size: size_t) -> Vec<(i32, i32)> {
+    let input_lon = unsafe {
+        slice::from_raw_parts(input_lon, lon_size as usize).to_owned()
+    };
+    let input_lat = unsafe {
+        slice::from_raw_parts(input_lat, lat_size as usize).to_owned()
+    };
+    let res: Vec<(i32, i32)> = convert_vec(input_lon, input_lat);
+    return res
+}
+
 #[test]
 fn test_vector_conversion() {
-    let lons: *const c_float = -0.32824866;
-    let lats: *const c_float = 51.44533267;
-    let lon_s: size_t = 1;
-    let lat_s: size_t = 1;
+    let lons = vec![-0.32824866];
+    let lats = vec![51.44533267];
+    // let lon_s: size_t = 1;
+    // let lat_s: size_t = 1;
 
     // let lons: Vec<f32> = vec![-0.32824866];
     // let lats: Vec<f32> = vec![51.44533267];
     assert_eq!(
         vec![(516276, 173141)],
-        convert_vec(lons, lon_s, lats, lat_s));
+        convert_vec(lons, lats,));
 }
 
 #[test]
