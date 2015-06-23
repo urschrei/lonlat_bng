@@ -64,24 +64,6 @@ impl Array {
     }
 }
 
-
-#[no_mangle]
-pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
-    // we're receiving floats
-    let lon = unsafe { lon.as_f32_slice() };
-    let lat = unsafe { lat.as_f32_slice() };
-
-    let vec: Vec<(i32, i32)> =
-        lon.iter().zip(lat.iter())
-        .map(|(&lon, &lat)| convert(lon, lat))
-        .collect();
-    let nvec = vec.iter()
-        .map(|ints| iTuple { a: ints.0 as u32, b: ints.1 as u32 })
-        .collect();
-
-    Array::from_vec(nvec)
-}
-
 // http://stackoverflow.com/a/28124775/155423
 fn round(x: f32) -> f32 {
     let y = x.floor();
@@ -227,6 +209,25 @@ pub extern fn convert_vec_py(input_lon: *const c_float,
     let inter = res.as_ptr();
     mem::forget(res);
     inter
+}
+
+/// A safer C-compatible wrapper for convert
+#[no_mangle]
+pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
+    // we're receiving floats
+    let lon = unsafe { lon.as_f32_slice() };
+    let lat = unsafe { lat.as_f32_slice() };
+    // map convert over our slices. Returns vector of integer tuples
+    let vec: Vec<(i32, i32)> =
+        lon.iter().zip(lat.iter())
+        .map(|(&lon, &lat)| convert(lon, lat))
+        .collect();
+    // convert back to vector of unsigned integer Tuples
+    let nvec = vec.iter()
+        .map(|ints| iTuple { a: ints.0 as u32, b: ints.1 as u32 })
+        .collect();
+
+    Array::from_vec(nvec)
 }
 
 #[test]
