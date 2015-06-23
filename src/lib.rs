@@ -14,8 +14,71 @@ use std::vec;
 use std::boxed;
 
 extern crate libc;
-use libc::{c_int, c_float, size_t};
+use libc::{c_int, c_float, size_t, uint32_t};
 use std::slice;
+
+#[repr(C)]
+pub struct fTuple {
+    a: c_float,
+    b: c_float,
+}
+
+#[repr(C)]
+pub struct iTuple {
+    a: uint32_t,
+    b: uint32_t,
+}
+
+#[repr(C)]
+pub struct Array {
+    data: *const libc::c_void,
+    len: libc::size_t,
+}
+
+impl Array {
+    unsafe fn as_u32_slice(&self) -> &[u32] {
+        assert!(!self.data.is_null());
+        slice::from_raw_parts(self.data as *const u32, self.len as usize)
+    }
+
+    unsafe fn as_f32_slice(&self) -> &[f32] {
+        assert!(!self.data.is_null());
+        slice::from_raw_parts(self.data as *const f32, self.len as usize)
+    }
+
+    fn from_vec<T>(mut vec: Vec<T>) -> Array {
+        // Important to make length and capacity match
+        // A better solution is to track both length and capacity
+        vec.shrink_to_fit();
+
+        let array = Array {
+            data: vec.as_ptr() as *const libc::c_void,
+            len: vec.len() as libc::size_t
+        };
+
+        // Whee! Leak the memory, and now the raw pointer (and
+        // eventually C) is the owner.
+        mem::forget(vec);
+
+        array
+    }
+}
+
+
+#[no_mangle]
+pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
+    // we're receiving floats
+    let lon = unsafe { lon.as_f32_slice() };
+    let lat = unsafe { lat.as_f32_slice() };
+
+    let vec =
+        lon.iter().zip(lat.iter())
+        .map(|(&lon, &lat)| convert(lon, lat))
+        .collect();
+    // let nvec = vec.map(|(&lon, &lat)| iTuple { a: lon, b: lat });
+
+    Array::from_vec(vec)
+}
 
 // http://stackoverflow.com/a/28124775/155423
 fn round(x: f32) -> f32 {
