@@ -10,21 +10,14 @@
 #[allow(non_snake_case)]
 use std::f32::consts;
 use std::mem;
-use std::vec;
-use std::boxed;
-
-extern crate libc;
-use libc::{c_int, c_float, size_t, uint32_t};
 use std::slice;
 
-#[repr(C)]
-pub struct fTuple {
-    a: c_float,
-    b: c_float,
-}
+extern crate libc;
+use libc::{c_float, size_t, uint32_t};
+
 
 #[repr(C)]
-pub struct iTuple {
+pub struct Tuple {
     a: uint32_t,
     b: uint32_t,
 }
@@ -36,11 +29,6 @@ pub struct Array {
 }
 
 impl Array {
-    unsafe fn as_u32_slice(&self) -> &[u32] {
-        assert!(!self.data.is_null());
-        slice::from_raw_parts(self.data as *const u32, self.len as usize)
-    }
-
     unsafe fn as_f32_slice(&self) -> &[f32] {
         assert!(!self.data.is_null());
         slice::from_raw_parts(self.data as *const f32, self.len as usize)
@@ -224,7 +212,7 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
         .collect();
     // convert back to vector of unsigned integer Tuples
     let nvec = vec.iter()
-        .map(|ints| iTuple { a: ints.0 as u32, b: ints.1 as u32 })
+        .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 })
         .collect();
 
     Array::from_vec(nvec)
