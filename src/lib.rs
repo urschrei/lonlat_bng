@@ -71,13 +71,15 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
     let lon = unsafe { lon.as_f32_slice() };
     let lat = unsafe { lat.as_f32_slice() };
 
-    let vec =
+    let vec: Vec<(i32, i32)> =
         lon.iter().zip(lat.iter())
         .map(|(&lon, &lat)| convert(lon, lat))
         .collect();
-    // let nvec = vec.map(|(&lon, &lat)| iTuple { a: lon, b: lat });
+    let nvec = vec.iter()
+        .map(|ints| iTuple { a: ints.0 as u32, b: ints.1 as u32 })
+        .collect();
 
-    Array::from_vec(vec)
+    Array::from_vec(nvec)
 }
 
 // http://stackoverflow.com/a/28124775/155423
