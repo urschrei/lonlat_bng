@@ -21,10 +21,15 @@ An IPython (sorry, *Jupyter*) notebook with some benchmarks is [here](rust_BNG.i
 ### Simple Test
 Python: 10000 loops, best of 10: **31 µs** per loop  
 Rust: 100000 loops, best of 10: **2.04 µs** per loop* 💅  
-Pyproj: 100000 loops, best of 10: **11.8** µs per loop<sup>†</sup>  
+Pyproj: 100000 loops, best of 10: **11.8 µs** per loop<sup>†</sup>  
 <sup>*</sup>Test warns that intermediate results may have been cached  
 
-An approximately 15x improvement on the simple test, a 5x improvement over Pyproj, and around a 2x improvement on the "real-world" test.
+### Real-world Test
+Convert 100,000 sets of random coordinates  
+
+Python: 1 loops, best of 10: **804 ms** per loop  
+Rust: 1 loops, best of 10: **204 ms** per loop  
+Pyproj: 10 loops, best of 10: **93.5 ms** per loop 💅  
 
 ## Package
 `convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI:  
