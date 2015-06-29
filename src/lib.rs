@@ -11,10 +11,12 @@
 use std::f32::consts;
 use std::mem;
 use std::slice;
+use std::thread::{self, JoinHandle};
 
 extern crate libc;
 use libc::{c_float, size_t, uint32_t};
 
+const NUMTHREADS: i32 = 4;
 
 #[repr(C)]
 pub struct Tuple {
@@ -216,6 +218,32 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
         .collect();
 
     Array::from_vec(nvec)
+}
+
+pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
+    // we're receiving floats
+    let lon = unsafe { lon.as_f32_slice() };
+    let lat = unsafe { lat.as_f32_slice() };
+    let orig: Vec<(&f32, &f32)> = lon.iter().zip(lat.iter()).to_owned().collect();
+    let mut guards: Vec<JoinHandle<Vec<(i32, i32)>>> = vec!();
+    // split into slices
+    for chunk in orig.chunks(orig.len() / NUMTHREADS as usize) {
+        let chunk = chunk.to_owned();
+        let g = thread::spawn(move || chunk
+            .into_iter()
+            .map(|(&lon, &lat)| convert(lon, lat))
+            .collect());
+        guards.push(g);
+    };
+    // collect the results
+    let mut result: Vec<(i32, i32)> = Vec::with_capacity(orig.len());
+    for g in guards {
+        result.extend(g.join().unwrap().into_iter());
+    }
+    let newres = result.iter()
+            .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 })
+            .collect();
+    Array::from_vec(newres)
 }
 
 #[test]
