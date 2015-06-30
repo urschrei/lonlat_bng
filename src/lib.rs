@@ -182,25 +182,6 @@ pub fn convert_vec(input_lon: Vec<f32>, input_lat: Vec<f32>) -> Vec<(i32, i32)> 
     return combined
 }
 
-/// Essentially just a C-compatible wrapper for convert_vec
-// http://stackoverflow.com/a/30511235/416626
-#[no_mangle]
-pub extern fn convert_vec_py(input_lon: *const c_float,
-                            lon_size: size_t ,
-                            input_lat: *const c_float,
-                            lat_size: size_t) -> *const (i32, i32) {
-    let input_lon = unsafe {
-        slice::from_raw_parts(input_lon, lon_size as usize).to_owned()
-    };
-    let input_lat = unsafe {
-        slice::from_raw_parts(input_lat, lat_size as usize).to_owned()
-    };
-    let res: Vec<(i32, i32)> = convert_vec(input_lon, input_lat).to_owned();
-    let inter = res.as_ptr();
-    mem::forget(res);
-    inter
-}
-
 /// A safer C-compatible wrapper for convert
 #[no_mangle]
 pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
