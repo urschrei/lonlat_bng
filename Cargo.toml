@@ -8,6 +8,7 @@ keywords = ["BNG", "Geo"]
 
 [dependencies]
 libc = "0.1.8"
+rand = "0.3"
 
 [lib]
 name = "lonlat_bng"

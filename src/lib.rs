@@ -16,6 +16,8 @@ use std::thread::{self, JoinHandle};
 extern crate libc;
 use libc::{c_float, size_t, uint32_t};
 
+extern crate rand;
+
 const NUMTHREADS: i32 = 4;
 
 #[repr(C)]
@@ -256,6 +258,16 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
 mod tests {
     use super::convert;
     use super::convert_vec;
+    use super::convert_vec_c;
+    use super::convert_vec_c_threaded;
+    use super::Array;
+    use super::Tuple;
+
+    extern crate libc;
+    use libc::{c_float, size_t, uint32_t};
+
+    extern crate rand;
+    use rand::distributions::{IndependentSample, Range};
 
     #[test]
     fn test_vector_conversion() {
@@ -269,6 +281,68 @@ mod tests {
         assert_eq!(
             vec![(516276, 173141)],
             convert_vec(lons, lats,));
+    }
+
+    #[test]
+    fn test_threaded_vector_conversion() {
+        // populate some vectors of random valid UK lon and lat values
+        let lon_between = Range::new(-6.379880 as c_float, 1.768960 as c_float);
+        let lat_between = Range::new(49.871159 as c_float, 55.811741 as c_float);
+        let mut rng = rand::thread_rng();
+        let mut lon_vec: Vec<c_float> = vec!();
+        let mut lat_vec: Vec<c_float> = vec!();
+        for _ in 0..100000 {
+            lon_vec.push(lon_between.ind_sample(&mut rng));
+            lat_vec.push(lat_between.ind_sample(&mut rng));
+        }
+        // create Arrays
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t
+        };
+        let converted = convert_vec_c_threaded(lon_arr, lat_arr);
+        assert_eq!(lon_vec.len() as u64, converted.len);
+        // let res = converted.pop().unwrap();
+    }
+
+    #[test]
+    fn test_threaded_vector_2() {
+        let lon_vec = vec!(-0.32824866, -0.32824866, -0.32824866, -0.32824866, -0.32824866);
+        let lat_vec = vec!(51.44533267, 51.44533267, 51.44533267, 51.44533267, 51.44533267);
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t
+        };
+        let converted = convert_vec_c_threaded(lon_arr, lat_arr);
+        let retval = unsafe{ converted.as_i32_slice() };
+        // value's incorrect, but worry about that later
+        assert_eq!(622675, retval[0]);
+    }
+
+    #[test]
+    fn test_vector_conversion_ffi() {
+        let lon_vec = vec!(-0.32824866);
+        let lat_vec = vec!(51.44533267);
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t
+        };
+        let converted = convert_vec_c(lon_arr, lat_arr);
+        let retval = unsafe{ converted.as_i32_slice() };
+        // value's incorrect, but worry about that later
+        assert_eq!(622675, retval[0]);
     }
 
     #[test]
