@@ -18,7 +18,7 @@ use libc::{c_float, size_t, uint32_t};
 
 extern crate rand;
 
-const NUMTHREADS: i32 = 4;
+const NUMTHREADS: usize = 8;
 
 #[repr(C)]
 pub struct Tuple {
@@ -233,7 +233,11 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
 
     let mut guards: Vec<JoinHandle<Vec<(i32, i32)>>> = vec!();
     // split into slices
-    for chunk in orig.chunks(orig.len() / NUMTHREADS as usize) {
+    let mut size = orig.len() / NUMTHREADS;
+    if orig.len() % NUMTHREADS > 0 { size += 1; }
+    // if orig.len() == 0, we need another adjustment
+    size = std::cmp::max(1, size);
+    for chunk in orig.chunks(size) {
         let chunk = chunk.to_owned();
         let g = thread::spawn(move || chunk
             .into_iter()
