@@ -248,34 +248,40 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
     Array::from_vec(nvec)
 }
 
-#[test]
-fn test_vector_conversion() {
-    let lons = vec![-0.32824866];
-    let lats = vec![51.44533267];
-    // let lon_s: size_t = 1;
-    // let lat_s: size_t = 1;
+#[cfg(test)]
+mod tests {
+    use super::convert;
+    use super::convert_vec;
 
-    // let lons: Vec<f32> = vec![-0.32824866];
-    // let lats: Vec<f32> = vec![51.44533267];
-    assert_eq!(
-        vec![(516276, 173141)],
-        convert_vec(lons, lats,));
-}
+    #[test]
+    fn test_vector_conversion() {
+        let lons = vec![-0.32824866];
+        let lats = vec![51.44533267];
+        // let lon_s: size_t = 1;
+        // let lat_s: size_t = 1;
 
-#[test]
-fn test_conversion() {
-    // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-    assert_eq!((516276, 173141), convert(-0.32824866, 51.44533267));
-}
+        // let lons: Vec<f32> = vec![-0.32824866];
+        // let lats: Vec<f32> = vec![51.44533267];
+        assert_eq!(
+            vec![(516276, 173141)],
+            convert_vec(lons, lats,));
+    }
 
-#[test]
-#[should_panic]
-fn test_bad_lon() {
-    assert_eq!((516276, 173141), convert(181., 51.44533267));
-}
+    #[test]
+    fn test_conversion() {
+        // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
+        assert_eq!((516276, 173141), convert(-0.32824866, 51.44533267));
+    }
 
-#[test]
-#[should_panic]
-fn test_bad_lat() {
-    assert_eq!((516276, 173141), convert(-0.32824866, -90.01));
+    #[test]
+    #[should_panic]
+    fn test_bad_lon() {
+        assert_eq!((516276, 173141), convert(181., 51.44533267));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_bad_lat() {
+        assert_eq!((516276, 173141), convert(-0.32824866, -90.01));
+    }
 }
