@@ -278,8 +278,8 @@ mod tests {
 
     #[test]
     fn test_threaded_vector_conversion() {
-        let lon_vec = vec!(-0.32824866, -0.32824866, -0.32824866, -0.32824866, -0.32824866);
-        let lat_vec = vec!(51.44533267, 51.44533267, 51.44533267, 51.44533267, 51.44533267);
+        let lon_vec = vec!(-2.0183041005533306, 0.95511887434519682, 0.44975855518383501, -0.096813621191803811, -0.36807065656416427, 0.63486335458665621);
+        let lat_vec = vec!(54.589097162646141, 51.560873800587828, 50.431429161121699, 54.535021436247419, 50.839059313135706, 55.412189281234419);
         let lon_arr = Array {
             data: lon_vec.as_ptr() as *const libc::c_void,
             len: lon_vec.len() as libc::size_t
@@ -291,13 +291,14 @@ mod tests {
         let converted = convert_vec_c_threaded(lon_arr, lat_arr);
         let retval = unsafe{ converted.as_i32_slice() };
         // the value's incorrect, but let's worry about that later
-        assert_eq!(622675, retval[0]);
+        assert_eq!(398915, retval[0]);
+        assert_eq!(521545, retval[1]);
     }
 
     #[test]
     fn test_nonthreaded_vector_conversion() {
-        let lon_vec = vec!(-0.32824866, -0.32824866, -0.32824866, -0.32824866, -0.32824866);
-        let lat_vec = vec!(51.44533267, 51.44533267, 51.44533267, 51.44533267, 51.44533267);
+        let lon_vec: Vec<f32> = vec!(-2.0183041005533306, 0.95511887434519682, 0.44975855518383501, -0.096813621191803811, -0.36807065656416427, 0.63486335458665621);
+        let lat_vec: Vec<f32> = vec!(54.589097162646141, 51.560873800587828, 50.431429161121699, 54.535021436247419, 50.839059313135706, 55.412189281234419);
         let lon_arr = Array {
             data: lon_vec.as_ptr() as *const libc::c_void,
             len: lon_vec.len() as libc::size_t
@@ -308,8 +309,8 @@ mod tests {
         };
         let converted = convert_vec_c(lon_arr, lat_arr);
         let retval = unsafe{ converted.as_i32_slice() };
-        // the value's incorrect, but let's worry about that later
-        assert_eq!(622675, retval[0]);
+        assert_eq!(398915, retval[0]);
+        assert_eq!(521545, retval[1]);
     }
 
     #[test]
