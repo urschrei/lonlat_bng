@@ -312,6 +312,26 @@ mod tests {
     }
 
     #[test]
+    fn test_threaded_vector_conversion_single() {
+        // I spent 8 hours confused cos I didn't catch that chunks(0) is invalid
+        let lon_vec: Vec<f32> = vec!(
+            -2.0183041005533306);
+        let lat_vec: Vec<f32> = vec!(
+            54.589097162646141);
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t
+        };
+        let converted = convert_vec_c_threaded(lon_arr, lat_arr);
+        let retval = unsafe{ converted.as_i32_slice() };
+        assert_eq!(398915, retval[0]);
+    }
+
+    #[test]
     fn test_nonthreaded_vector_conversion() {
          let lon_vec: Vec<f32> = vec!(
             -2.0183041005533306,
