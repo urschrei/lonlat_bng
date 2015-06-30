@@ -314,40 +314,6 @@ mod tests {
     }
 
     #[test]
-    fn compare_threaded_nonthreaded_conversion() {
-        // populate some vectors of random valid UK lon and lat values
-        // use separate vectors for each func, just to be sure
-        let lon_vec = vec!(-0.32824866, -0.32824866, -0.32824866, -0.32824866, -0.32824866);
-        let lat_vec = vec!(51.44533267, 51.44533267, 51.44533267, 51.44533267, 51.44533267);
-        let lon_vec_nt = vec!(-0.32824866, -0.32824866, -0.32824866, -0.32824866, -0.32824866);
-        let lat_vec_nt = vec!(51.44533267, 51.44533267, 51.44533267, 51.44533267, 51.44533267);
-        
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t
-        };
-
-        let lon_arr_nt = Array {
-            data: lon_vec_nt.as_ptr() as *const libc::c_void,
-            len: lon_vec_nt.len() as libc::size_t
-        };
-        let lat_arr_nt = Array {
-            data: lat_vec_nt.as_ptr() as *const libc::c_void,
-            len: lat_vec_nt.len() as libc::size_t
-        };
-
-        let converted_threaded = convert_vec_c_threaded(lon_arr, lat_arr);
-        let converted_nonthreaded = convert_vec_c(lon_arr_nt, lat_arr_nt);
-        let retval_t = unsafe{ converted_threaded.as_i32_slice() };
-        let retval_nt = unsafe{ converted_nonthreaded.as_i32_slice() };
-        assert_eq!(retval_t, retval_nt);
-    }
-
-    #[test]
     fn test_conversion() {
         // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
         assert_eq!((516276, 173141), convert(-0.32824866, 51.44533267));
