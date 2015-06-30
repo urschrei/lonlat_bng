@@ -201,18 +201,29 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
     Array::from_vec(nvec)
 }
 
+#[no_mangle]
 pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
     // we're receiving floats
     let lon = unsafe { lon.as_f32_slice() };
     let lat = unsafe { lat.as_f32_slice() };
-    let orig: Vec<(&f32, &f32)> = lon.iter().zip(lat.iter()).to_owned().collect();
+    // use owned values
+    let orig: Vec<(f32, f32)> = lon
+        .iter()
+        .map(|i| i.clone())
+        .collect::<Vec<f32>>()
+        .into_iter()
+    .zip(lat
+        .iter()
+        .map(|i| i.clone())
+        .collect::<Vec<f32>>()
+    .into_iter()).collect();
     let mut guards: Vec<JoinHandle<Vec<(i32, i32)>>> = vec!();
     // split into slices
     for chunk in orig.chunks(orig.len() / NUMTHREADS as usize) {
         let chunk = chunk.to_owned();
         let g = thread::spawn(move || chunk
             .into_iter()
-            .map(|(&lon, &lat)| convert(lon, lat))
+            .map(|(lon, lat)| convert(lon, lat))
             .collect());
         guards.push(g);
     };
