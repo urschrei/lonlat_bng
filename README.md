@@ -8,7 +8,7 @@ Python is relatively slow; this type of conversion is usually carried out in bul
 
 ## Instructions
 
-- Ensure you have Rust 1.0 installed
+- Ensure you have Rust 1.x installed
 - If you want to run the benchmark youself, install Pandas, IPython, Numpy, Pyproj, and their dependencies
 - Clone this repository
 - run `cargo build --release` from the repo root
@@ -17,7 +17,7 @@ Python is relatively slow; this type of conversion is usually carried out in bul
 ## Benchmark
 An IPython (sorry, *Jupyter*) notebook with some benchmarks is [here](rust_BNG.ipynb)
 
-## Results:
+## Results
 ### Simple Test
 Python: 10000 loops, best of 10: **31 µs** per loop  
 Rust: 100000 loops, best of 10: **2.04 µs** per loop* 💅  
@@ -29,7 +29,12 @@ Convert 100,000 sets of random coordinates
 
 Python: 1 loops, best of 10: **804 ms** per loop  
 Rust: 1 loops, best of 10: **204 ms** per loop  
-Pyproj: 10 loops, best of 10: **93.5 ms** per loop 💅  
+Pyproj: 10 loops, best of 10: **99.5 ms** per loop 💅  
+Rust (threaded): 10 loops, best of 10: **162.5 ms** per loop  
+
+
+## Conclusion
+Using multithreading, we can get much closer (pyproj is now only 65% faster). Not bad, considering the relative youth of Rust *as a language* (let alone this library), and the maturity of the [PROJ.4](https://en.wikipedia.org/wiki/PROJ.4) project.
 
 ## Package
 `convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI:  
@@ -54,7 +59,6 @@ Usage:
 
 - Write a better real-world test
 - Allow the converter to accept Numpy arrays
-- Threading…
 
 ## License
 MIT
