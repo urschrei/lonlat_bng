@@ -188,25 +188,7 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
     // we're receiving floats
     let lon = unsafe { lon.as_f32_slice() };
     let lat = unsafe { lat.as_f32_slice() };
-    // map convert over our slices. Returns vector of integer tuples
-    let vec: Vec<(i32, i32)> =
-        lon.iter().zip(lat.iter())
-        .map(|(&lon, &lat)| convert(lon, lat))
-        .collect();
-    // convert back to vector of unsigned integer Tuples
-    let nvec = vec.iter()
-        .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 })
-        .collect();
-
-    Array::from_vec(nvec)
-}
-
-#[no_mangle]
-pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
-    // we're receiving floats
-    let lon = unsafe { lon.as_f32_slice() };
-    let lat = unsafe { lat.as_f32_slice() };
-    // use owned values
+    // copy values and combine
     let orig: Vec<(f32, f32)> = lon
         .iter()
         .map(|i| i.clone())
@@ -217,25 +199,53 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
         .map(|i| i.clone())
         .collect::<Vec<f32>>()
     .into_iter()).collect();
+    // carry out the conversion 
+    let result: Vec<(i32, i32)> = orig.iter()
+        .map(|elem| convert(elem.0, elem.1))
+        .collect();
+    // convert back to vector of unsigned integer Tuples
+    let nvec = result.iter()
+        .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 })
+        .collect();
+    Array::from_vec(nvec)
+}
+
+#[no_mangle]
+pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
+    // we're receiving floats
+    let lon = unsafe { lon.as_f32_slice() };
+    let lat = unsafe { lat.as_f32_slice() };
+    // copy values and combine
+    let orig: Vec<(f32, f32)> = lon
+        .iter()
+        .map(|i| i.clone())
+        .collect::<Vec<f32>>()
+        .into_iter()
+    .zip(lat
+        .iter()
+        .map(|i| i.clone())
+        .collect::<Vec<f32>>()
+    .into_iter()).collect();
+
     let mut guards: Vec<JoinHandle<Vec<(i32, i32)>>> = vec!();
     // split into slices
     for chunk in orig.chunks(orig.len() / NUMTHREADS as usize) {
         let chunk = chunk.to_owned();
         let g = thread::spawn(move || chunk
             .into_iter()
-            .map(|(lon, lat)| convert(lon, lat))
+            .map(|elem| convert(elem.0, elem.1))
             .collect());
         guards.push(g);
-    };
-    // collect the results
+    }
     let mut result: Vec<(i32, i32)> = Vec::with_capacity(orig.len());
     for g in guards {
         result.extend(g.join().unwrap().into_iter());
     }
-    let newres = result.iter()
-            .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 })
-            .collect();
-    Array::from_vec(newres)
+    // convert back to vector of unsigned integer Tuples
+    let nvec = result.iter()
+        .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 })
+        .collect();
+    Array::from_vec(nvec)
 }
 
 #[test]
