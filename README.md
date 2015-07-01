@@ -41,8 +41,10 @@ Using multithreading, we can get much closer (pyproj is now only 65% faster). No
 `pip install convertbng`  
 Usage:
 
-    from convertbng.util import convertbng
-    convertbng(lon, lat)
+    from convertbng.util import convertbng, convertbng_list
+
+    res = convertbng(lon, lat)
+    res_list = convertbng_list([lons], [lats])
 
 ## Benchmark machine spec:
 
@@ -57,7 +59,6 @@ Usage:
 
 ## TODO
 
-- Write a better real-world test
 - Allow the converter to accept Numpy arrays
 
 ## License
