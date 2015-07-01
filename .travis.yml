@@ -1,0 +1,4 @@
+language: rust
+notifications:
+  email:
+    - urschrei@gmail.com
