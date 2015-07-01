@@ -12,7 +12,7 @@ rand = "0.3"
 
 [lib]
 name = "lonlat_bng"
-crate-type = ["dylib"]
+crate-type = ["dylib", "staticlib"]
 test = true
 doctest = true
 doc = true
