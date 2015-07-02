@@ -45,7 +45,17 @@ Usage:
     from convertbng.util import convertbng, convertbng_list
 
     res = convertbng(lon, lat)
-    res_list = convertbng_list([lons], [lats])
+
+    lons = [lon1, lon2, lon3]
+    lats = [lat1, lat2, lat3]
+    # assumes import numpy as np
+    lons_np = np.array(lons)
+    lats_np = np.array(lats)
+    
+    res_list = convertbng_list(lons, lats)
+    res_list_np = convertbng_list(lons_np, lats_np)
+
+Note that the return type for `convertbng_list()` is always a list of tuples.
 
 ## Benchmark machine spec:
 
