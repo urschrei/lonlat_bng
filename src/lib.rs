@@ -7,14 +7,13 @@
 //! assert_eq!((516276, 173141), lonlat_bng::convert(-0.32824866, 51.44533267));
 //!```
 
-#[allow(non_snake_case)]
 use std::f32::consts;
 use std::mem;
 use std::slice;
 use std::thread::{self, JoinHandle};
 
 extern crate libc;
-use libc::{c_float, size_t, uint32_t};
+use libc::{size_t, uint32_t};
 
 extern crate rand;
 
@@ -78,6 +77,7 @@ fn round(x: f32) -> f32 {
 /// ```
 /// use lonlat_bng::convert;
 /// assert_eq!((516276, 173141), convert(-0.32824866, 51.44533267));
+#[allow(non_snake_case)]
 #[no_mangle]
 pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
     match input_lon {
@@ -253,13 +253,9 @@ mod tests {
     use super::convert_vec_c;
     use super::convert_vec_c_threaded;
     use super::Array;
-    use super::Tuple;
 
     extern crate libc;
-    use libc::{c_float, size_t, uint32_t};
-
-    extern crate rand;
-    use rand::distributions::{IndependentSample, Range};
+    use libc::{size_t};
 
     #[test]
     fn test_threaded_vector_conversion() {
