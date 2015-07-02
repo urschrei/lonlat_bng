@@ -176,17 +176,7 @@ pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
     return (round(E) as i32, round(N) as i32);
 }
 
-/// A wrapper for convert, which maps it over the zipped input vectors
-pub fn convert_vec(input_lon: Vec<f32>, input_lat: Vec<f32>) -> Vec<(i32, i32)> {
-    let combined: Vec<(i32, i32)> = input_lon
-        .iter()
-        .zip(input_lat.iter())
-        .map(|each| convert(*each.0, *each.1))
-        .collect();
-    return combined
-}
-
-/// A safer C-compatible wrapper for convert
+/// A safer C-compatible wrapper for convert()
 #[no_mangle]
 pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
     // we're receiving floats
@@ -214,6 +204,7 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
     Array::from_vec(nvec)
 }
 
+/// A threaded version of the C-compatible wrapper for convert()
 #[no_mangle]
 pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
     // we're receiving floats
@@ -259,7 +250,6 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
 #[cfg(test)]
 mod tests {
     use super::convert;
-    use super::convert_vec;
     use super::convert_vec_c;
     use super::convert_vec_c_threaded;
     use super::Array;
@@ -270,15 +260,6 @@ mod tests {
 
     extern crate rand;
     use rand::distributions::{IndependentSample, Range};
-
-    #[test]
-    fn test_vector_conversion() {
-        let lons = vec![-0.32824866];
-        let lats = vec![51.44533267];
-        assert_eq!(
-            vec![(516276, 173141)],
-            convert_vec(lons, lats,));
-    }
 
     #[test]
     fn test_threaded_vector_conversion() {
