@@ -13,7 +13,7 @@ use std::slice;
 use std::thread::{self, JoinHandle};
 
 extern crate libc;
-use libc::{size_t, uint32_t};
+use libc::{size_t, c_void, uint32_t};
 
 extern crate rand;
 
@@ -27,7 +27,7 @@ pub struct Tuple {
 
 #[repr(C)]
 pub struct Array {
-    data: *const libc::c_void,
+    data: *const c_void,
     len: libc::size_t,
 }
 
