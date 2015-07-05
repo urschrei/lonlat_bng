@@ -173,7 +173,7 @@ pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
     let VI: f32 = nu * F0 * lat.cos().powf(5.) * (5. - 18. * lat.tan().powf(2.) + lat.tan().powf(4.) + 14. * eta2 - 58. * eta2 * lat.tan().powf(2.)) / 120.;
     let N: f32 = I + II * (lon - lon0).powf(2.) + III * (lon - lon0).powf(4.) + IIIA * (lon - lon0).powf(6.);
     let E: f32 = E0 + IV * (lon - lon0) + V * (lon - lon0).powf(3.) + VI * (lon - lon0).powf(5.);
-    return (round(E) as i32, round(N) as i32);
+    (round(E) as i32, round(N) as i32)
 }
 
 /// A safer C-compatible wrapper for convert()
