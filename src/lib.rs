@@ -17,7 +17,7 @@ use libc::{size_t, c_void, uint32_t};
 
 extern crate rand;
 
-const NUMTHREADS: usize = 8;
+const NUMTHREADS: usize = 7;
 
 #[repr(C)]
 pub struct Tuple {
@@ -336,6 +336,8 @@ mod tests {
         let retval = unsafe{ converted.as_i32_slice() };
         assert_eq!(398915, retval[0]);
         assert_eq!(521545, retval[1]);
+        assert_eq!(604932, retval[2]);
+        assert_eq!(188805, retval[3]);
     }
 
     #[test]
