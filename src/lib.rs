@@ -178,7 +178,16 @@ pub extern fn convert_bng(input_lon: f32, input_lat: f32) -> (i32, i32) {
     (round(E) as i32, round(N) as i32)
 }
 
-/// A safer C-compatible wrapper for convert()
+
+/// This function performs BNG to lon, lat conversion
+///
+#[allow(non_snake_case)]
+#[no_mangle]
+pub extern fn convert_lonlat(input_lon: f32, input_lat: f32) -> (i32, i32) {
+
+}
+
+/// A safer C-compatible wrapper for convert_bng()
 #[no_mangle]
 pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
     // we're receiving floats
@@ -201,7 +210,7 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
     Array::from_vec(nvec)
 }
 
-/// A threaded version of the C-compatible wrapper for convert()
+/// A threaded version of the C-compatible wrapper for convert_bng()
 #[no_mangle]
 pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
     // we're receiving floats
