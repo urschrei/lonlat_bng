@@ -183,8 +183,33 @@ pub extern fn convert_bng(input_lon: f32, input_lat: f32) -> (i32, i32) {
 ///
 #[allow(non_snake_case)]
 #[no_mangle]
-pub extern fn convert_lonlat(input_lon: f32, input_lat: f32) -> (i32, i32) {
+pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
+    let pi: f32 = consts::PI;
+    // The Airy 180 semi-major and semi-minor axes used for OSGB36 (m)
+    let a: f32 = 6377563.396;
+    let b: f32 = 6356256.909;
+    // scale factor on the central meridian
+    let F0: f32 = 0.9996012717;
+    // Latitude of true origin (radians)
+    let lat0: f32 = 49. * pi / 180.;
+    // Longtitude of true origin and central meridian (radians)
+    let lon0: f32 = -2. * pi / 180.;
+    // Northing & easting of true origin (m)
+    let N0 = -100000;
+    let E0 = 400000;
+    // eccentricity squared
+    let e2 = 1. - b.powf(2.) / a.powf(2.);
+    let n = (a - b) / (a + b);
 
+    let lat = lat0;
+    let M = 0.;
+
+    while (n - N0 - M) >= 0.00001 {
+        let lat = (n - N0 - M) / (a * F0) + lat;
+        let M1 = (1. + n + (5. / 4.) * n.powf(2.) + (5. / 4.) * n.powf(3.)) * (lat - lat0);
+    }
+
+    return (a, b)
 }
 
 /// A safer C-compatible wrapper for convert_bng()
