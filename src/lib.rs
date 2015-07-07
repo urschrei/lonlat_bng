@@ -324,6 +324,22 @@ mod tests {
             54.535021436247419,
             50.839059313135706,
             55.412189281234419);
+
+        // from http://www.bgs.ac.uk/data/webservices/convertForm.cfm
+        let correct_values = vec![
+            398915,
+            521545,
+            604932,
+            188805, // BNG says 188804
+            574082,
+            61932, // BNG says 61931
+            523242,
+            517193,
+            515004,
+            105661,
+            566898,
+            616298
+            ];
         let lon_arr = Array {
             data: lon_vec.as_ptr() as *const libc::c_void,
             len: lon_vec.len() as libc::size_t
@@ -334,10 +350,12 @@ mod tests {
         };
         let converted = convert_vec_c(lon_arr, lat_arr);
         let retval = unsafe{ converted.as_i32_slice() };
-        assert_eq!(398915, retval[0]);
-        assert_eq!(521545, retval[1]);
-        assert_eq!(604932, retval[2]);
-        assert_eq!(188805, retval[3]);
+        let combined: Vec<(&i32, &i32)> = retval.iter()
+            .zip(correct_values.iter())
+            .collect();
+        for val in combined.iter() {
+            assert_eq!(val.0, val.1);
+        };
     }
 
     #[test]
