@@ -80,12 +80,13 @@ fn round(x: f32) -> f32 {
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern fn convert(input_lon: f32, input_lat: f32) -> (i32, i32) {
+    // match is restricted to the UK bounding box
     match input_lon {
-        -180.0...180.0 => input_lon,
+        -6.379880...1.768960 => input_lon,
         _ => panic!("Out of bounds! Longitude must be between -180.00 and 180.00: {:?}", input_lon)
     };
     match input_lat {
-        -90.0...90.0 => input_lat,
+        49.871159...55.811741 => input_lat,
         _ => panic!("Out of bounds! Latitude must be between -90.00 and 90.00: {:?}", input_lat)
     };
     let pi: f32 = consts::PI;
