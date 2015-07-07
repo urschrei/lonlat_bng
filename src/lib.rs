@@ -188,16 +188,16 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
     // The Airy 180 semi-major and semi-minor axes used for OSGB36 (m)
     let a: f32 = 6377563.396;
     let b: f32 = 6356256.909;
-    // scale factor on the central meridian
+    // Scale factor on the central meridian
     let F0: f32 = 0.9996012717;
     // Latitude of true origin (radians)
     let lat0: f32 = 49. * pi / 180.;
     // Longtitude of true origin and central meridian (radians)
     let lon0: f32 = -2. * pi / 180.;
     // Northing & easting of true origin (m)
-    let N0 = -100000;
-    let E0 = 400000;
-    // eccentricity squared
+    let N0 = -100000.;
+    let E0 = 400000.;
+    // Eccentricity squared
     let e2 = 1. - b.powf(2.) / a.powf(2.);
     let n = (a - b) / (a + b);
 
@@ -207,8 +207,17 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
     while (n - N0 - M) >= 0.00001 {
         let lat = (n - N0 - M) / (a * F0) + lat;
         let M1 = (1. + n + (5. / 4.) * n.powf(2.) + (5. / 4.) * n.powf(3.)) * (lat - lat0);
+        let M2 = (3. * n +  3. * n.powf(2.) + (21. / 8.) * n.powf(3.)) * (lat - lat0).sin() * (lat + lat0).cos();
+        let M3 = ((15. / 8.) * n.powf(2.) + (15. / 8.) * n.powf(3.)) * (2. * (lat - lat0)).sin() * (2. * (lat + lat0)).cos();
+        let M4 = (35. / 24.) *n.powf(3.) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
+        // Meridional arc!
+        let M = b * F0 * (M1 - M2 + M3 - M4);
     }
-
+    // Transverse radius of curvature
+    let nu = a * F0 / (1. - e2 * (lat).powf(2.)).sin().sqrt();
+    // Meridional radius of curvature
+    let rho = a * F0 * (1. - e2) * (1. - e2 * lat.sin().powf(2.)).powf(-1.5);
+    let eta2 = nu / rho - 1.;
     return (a, b)
 }
 
