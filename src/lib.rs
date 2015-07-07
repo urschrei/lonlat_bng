@@ -206,10 +206,14 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
 
     while (n - N0 - M) >= 0.00001 {
         let lat = (n - N0 - M) / (a * F0) + lat;
-        let M1 = (1. + n + (5. / 4.) * n.powf(2.) + (5. / 4.) * n.powf(3.)) * (lat - lat0);
-        let M2 = (3. * n +  3. * n.powf(2.) + (21. / 8.) * n.powf(3.)) * (lat - lat0).sin() * (lat + lat0).cos();
-        let M3 = ((15. / 8.) * n.powf(2.) + (15. / 8.) * n.powf(3.)) * (2. * (lat - lat0)).sin() * (2. * (lat + lat0)).cos();
-        let M4 = (35. / 24.) *n.powf(3.) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
+        let M1 = (1. + n + (5. / 4.) * n.powf(2.) 
+            + (5. / 4.) * n.powf(3.)) * (lat - lat0);
+        let M2 = (3. * n +  3. * n.powf(2.) + (21. / 8.)
+            * n.powf(3.)) * (lat - lat0).sin() * (lat + lat0).cos();
+        let M3 = ((15. / 8.) * n.powf(2.) + (15. / 8.) * n.powf(3.))
+            * (2. * (lat - lat0)).sin() * (2. * (lat + lat0)).cos();
+        let M4 = (35. / 24.) *n.powf(3.) * (3. * (lat - lat0)).sin()
+            * (3. * (lat + lat0)).cos();
         // Meridional arc!
         let M = b * F0 * (M1 - M2 + M3 - M4);
     }
@@ -218,6 +222,37 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
     // Meridional radius of curvature
     let rho = a * F0 * (1. - e2) * (1. - e2 * lat.sin().powf(2.)).powf(-1.5);
     let eta2 = nu / rho - 1.;
+
+    let secLat = 1. / lat.cos();
+    let VII = lat.tan() / (2. * rho * nu);
+    let VIII = lat.tan() / (24. * rho * nu.powf(3.))
+        * (5. + 3. * lat.tan().powf(2.)
+        + eta2 - 9. * lat.tan().powf(2.) * eta2);
+    let IX = lat.tan() / (720. * rho * nu.powf(5.))
+        * (61. + 90. * lat.tan().powf(2.)
+        + 45. * lat.tan().powf(4.));
+    let X = secLat / nu;
+    let XI = secLat / (6. * nu.powf(3.)) * (nu / rho + 2. * lat.tan().powf(2.));
+    let XII = secLat / (120. * nu.powf(5.))
+        * (5. + 28. * lat.tan().powf(2.) + 24.
+        * lat.tan().powf(4.));
+    let XIIA = secLat / (5040. * nu.powf(7.))
+        * (61. + 662. * lat.tan().powf(2.) + 1320.
+        * lat.tan().powf(4.) + 720. * lat.tan().powf(6.));
+    let dE = input_lon as f32 - E0;
+    //  These are on the wrong ellipsoid currently: Airy1830 (Denoted by _1)
+    let lat_1 = lat - VII * dE.powf(2.)
+        + VIII * dE.powf(4.) - IX * dE.powf(6.);
+    let lon_1 = lon0 + X * dE - XI * dE.powf(3.)
+        + XII * dE.powf(5.) - XIIA * dE.powf(7.);
+
+    // We Want to convert to the GRS80 ellipsoid. 
+    // First, convert to cartesian from spherical polar coordinates
+    let H = 0.;
+    let x_1 = (nu / F0 + H) * lat_1.cos() * lon_1.cos();
+    let y_1 = (nu / F0 + H) * lat_1.cos() * lon_1.sin();
+    let z_1 = ((1. - e2) * nu / F0 + H) * lat_1.sin();
+
     return (a, b)
 }
 
