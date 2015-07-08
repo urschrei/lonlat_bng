@@ -42,7 +42,6 @@ impl Array {
         assert!(!self.data.is_null());
         slice::from_raw_parts(self.data as *const f32, self.len as usize)
     }
-    #[cfg(test)]
     unsafe fn as_i32_slice(&self) -> &[i32] {
         assert!(!self.data.is_null());
         slice::from_raw_parts(self.data as *const i32, self.len as usize)
@@ -335,7 +334,7 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
 
 /// A threaded version of the C-compatible wrapper for convert_bng()
 #[no_mangle]
-pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
+pub extern fn convert_bng_vec_c_threaded(lon: Array, lat: Array) -> Array {
     // we're receiving floats
     let lon = unsafe { lon.as_f32_slice() };
     let lat = unsafe { lat.as_f32_slice() };
@@ -372,7 +371,7 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
 
 /// A threaded version of the C-compatible wrapper for convert_lonlat()
 #[no_mangle]
-pub extern fn convert_bng_vec_c_threaded(eastings: Array, northings: Array) -> Array {
+pub extern fn convert_lonlat_vec_c_threaded(eastings: Array, northings: Array) -> Array {
     // we're receiving floats
     let lon = unsafe { eastings.as_i32_slice() };
     let lat = unsafe { northings.as_i32_slice() };
@@ -412,7 +411,8 @@ mod tests {
     use super::convert_bng;
     use super::convert_lonlat;
     use super::convert_vec_c;
-    use super::convert_vec_c_threaded;
+    use super::convert_bng_vec_c_threaded;
+    use super::convert_lonlat_vec_c_threaded;
     use super::Array;
 
     extern crate libc;
@@ -442,7 +442,7 @@ mod tests {
             data: lat_vec.as_ptr() as *const libc::c_void,
             len: lat_vec.len() as libc::size_t
         };
-        let converted = convert_vec_c_threaded(lon_arr, lat_arr);
+        let converted = convert_bng_vec_c_threaded(lon_arr, lat_arr);
         let retval = unsafe{ converted.as_i32_slice() };
         // the value's incorrect, but let's worry about that later
         assert_eq!(398915, retval[0]);
@@ -450,7 +450,7 @@ mod tests {
     }
 
     #[test]
-    fn test_threaded_vector_conversion_single() {
+    fn test_threaded_bng_conversion_single() {
         // I spent 8 hours confused cos I didn't catch that chunks(0) is invalid
         let lon_vec: Vec<f32> = vec!(
             -2.0183041005533306);
@@ -464,9 +464,29 @@ mod tests {
             data: lat_vec.as_ptr() as *const libc::c_void,
             len: lat_vec.len() as libc::size_t
         };
-        let converted = convert_vec_c_threaded(lon_arr, lat_arr);
+        let converted = convert_bng_vec_c_threaded(lon_arr, lat_arr);
         let retval = unsafe{ converted.as_i32_slice() };
         assert_eq!(398915, retval[0]);
+    }
+
+    #[test]
+    fn test_threaded_lonlat_conversion_single() {
+        // I spent 8 hours confused cos I didn't catch that chunks(0) is invalid
+        let easting_vec: Vec<i32> = vec!(
+            516276);
+        let northing_vec: Vec<i32> = vec!(
+            173141);
+        let easting_arr = Array {
+            data: easting_vec.as_ptr() as *const libc::c_void,
+            len: easting_vec.len() as libc::size_t
+        };
+        let northing_arr = Array {
+            data: northing_vec.as_ptr() as *const libc::c_void,
+            len: northing_vec.len() as libc::size_t
+        };
+        let converted = convert_lonlat_vec_c_threaded(easting_arr, northing_arr);
+        let retval = unsafe{ converted.as_f32_slice() };
+        assert_eq!(-0.328248, retval[0]);
     }
 
     #[test]
