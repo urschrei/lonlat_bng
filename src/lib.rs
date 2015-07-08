@@ -212,11 +212,11 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
     let e2 = 1. - b.powf(2.) / a.powf(2.);
     let n = (a - b) / (a + b);
 
-    let lat = lat0;
-    let M = 0.;
+    let mut lat = lat0;
+    let mut M = 0.0;
 
     while (input_lat as f32 - N0 - M) >= 0.00001 {
-        let lat = (n - N0 - M) / (a * F0) + lat;
+        lat = (input_lat as f32 - N0 - M) / (a * F0) + lat;
         let M1 = (1. + n + (5. / 4.) * n.powf(2.) 
             + (5. / 4.) * n.powf(3.)) * (lat - lat0);
         let M2 = (3. * n +  3. * n.powf(2.) + (21. / 8.)
@@ -226,7 +226,7 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
         let M4 = (35. / 24.) *n.powf(3.) * (3. * (lat - lat0)).sin()
             * (3. * (lat + lat0)).cos();
         // Meridional arc!
-        let M = b * F0 * (M1 - M2 + M3 - M4);
+        M = b * F0 * (M1 - M2 + M3 - M4);
     }
     // Transverse radius of curvature
     let nu = a * F0 / (1. - e2 * (lat).powf(2.)).sin().sqrt();
@@ -288,7 +288,7 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
     let p = (x_2.powf(2.) + y_2.powf(2.)).sqrt();
 
     // Lat is obtained by iterative procedure
-    let mut lat = z_2.atan2((p * (1. -e2_2))); // Initial value
+    let mut lat = z_2.atan2((p * (1. - e2_2))); // Initial value
     let mut latold = 2. *pi;
 
     let mut nu_2: f32 = 1.;
