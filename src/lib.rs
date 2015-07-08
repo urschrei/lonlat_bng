@@ -13,16 +13,22 @@ use std::slice;
 use std::thread::{self, JoinHandle};
 
 extern crate libc;
-use libc::{size_t, c_void, uint32_t};
+use libc::{size_t, c_void, c_float, uint32_t};
 
 extern crate rand;
 
 const NUMTHREADS: usize = 7;
 
 #[repr(C)]
-pub struct Tuple {
+pub struct IntTuple {
     a: uint32_t,
     b: uint32_t,
+}
+
+#[repr(C)]
+pub struct FloatTuple {
+    a: c_float,
+    b: c_float,
 }
 
 #[repr(C)]
@@ -322,7 +328,7 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
         .map(|elem| convert_bng(elem.0, elem.1));
     // convert back to vector of unsigned integer Tuples
     let nvec = result
-        .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 })
+        .map(|ints| IntTuple { a: ints.0 as u32, b: ints.1 as u32 })
         .collect();
     Array::from_vec(nvec)
 }
@@ -356,7 +362,13 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
             .collect());
         guards.push(g);
     }
-    let mut result: Vec<Tuple> = Vec::with_capacity(orig.len());
+    let mut result: Vec<IntTuple> = Vec::with_capacity(orig.len());
+    for g in guards {
+        result.extend(g.join().unwrap().into_iter()
+                       .map(|ints| IntTuple { a: ints.0 as u32, b: ints.1 as u32 }));
+    }
+    Array::from_vec(result)
+}
     for g in guards {
         result.extend(g.join().unwrap().into_iter()
                        .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 }));
