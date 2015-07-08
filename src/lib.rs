@@ -186,10 +186,10 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
     // copy values and combine
     let orig: Vec<(f32, f32)> = lon
         .iter()
-        .map(|i| i.clone())
+        .cloned()
     .zip(lat
         .iter()
-        .map(|i| i.clone()))
+        .cloned())
     .collect();
     // carry out the conversion 
     let result: Vec<(i32, i32)> = orig.iter()
@@ -211,10 +211,10 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
     // copy values and combine
     let orig: Vec<(f32, f32)> = lon
         .iter()
-        .map(|i| i.clone())
+        .cloned()
     .zip(lat
         .iter()
-        .map(|i| i.clone()))
+        .cloned())
     .collect();
 
     let mut guards: Vec<JoinHandle<Vec<(i32, i32)>>> = vec!();
