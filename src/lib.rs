@@ -209,27 +209,26 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
     let N0 = -100000.;
     let E0 = 400000.;
     // Eccentricity squared
-    let e2 = 1. - b.powf(2.) / a.powf(2.);
+    let e2 = 1. - (b * b) / (a * a);
     let n = (a - b) / (a + b);
 
     let mut lat = lat0;
     let mut M = 0.0;
-
     while (input_lat as f32 - N0 - M) >= 0.00001 {
         lat = (input_lat as f32 - N0 - M) / (a * F0) + lat;
-        let M1 = (1. + n + (5. / 4.) * n.powf(2.) 
+        let M1 = (1. + n + (5. / 4.) * n.powf(3.)
             + (5. / 4.) * n.powf(3.)) * (lat - lat0);
-        let M2 = (3. * n +  3. * n.powf(2.) + (21. / 8.)
+        let M2 = (3. * n + 3. * n.powf(2.) + (21. / 8.)
             * n.powf(3.)) * (lat - lat0).sin() * (lat + lat0).cos();
         let M3 = ((15. / 8.) * n.powf(2.) + (15. / 8.) * n.powf(3.))
             * (2. * (lat - lat0)).sin() * (2. * (lat + lat0)).cos();
-        let M4 = (35. / 24.) *n.powf(3.) * (3. * (lat - lat0)).sin()
+        let M4 = (35. / 24.) * n.powf(3.) * (3. * (lat - lat0)).sin()
             * (3. * (lat + lat0)).cos();
         // Meridional arc!
         M = b * F0 * (M1 - M2 + M3 - M4);
     }
     // Transverse radius of curvature
-    let nu = a * F0 / (1. - e2 * (lat).powf(2.)).sin().sqrt();
+    let nu = a * F0 / (1. - e2 * lat.sin().powf(2.)).sqrt();
     // Meridional radius of curvature
     let rho = a * F0 * (1. - e2) * (1. - e2 * lat.sin().powf(2.)).powf(-1.5);
     let eta2 = nu / rho - 1.;
@@ -290,13 +289,13 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
     // Lat is obtained by iterative procedure
     let mut lat = z_2.atan2((p * (1. - e2_2))); // Initial value
     let mut latold = 2. *pi;
-
     let mut nu_2: f32 = 1.;
     while (lat - latold).abs() > ten.powf(-16.) {
         mem::swap(&mut lat, &mut latold);
         nu_2 = a_2 / (1. - e2_2 * latold.sin().powf(2.)).sqrt();
         lat = (z_2 + e2_2 * nu_2 * latold.sin()).atan2(p);
     }
+
     let lon = y_2.atan2(x_2);
     let H = p / lat.cos() - nu_2;
 
