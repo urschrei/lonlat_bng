@@ -184,19 +184,17 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
     let lon = unsafe { lon.as_f32_slice() };
     let lat = unsafe { lat.as_f32_slice() };
     // copy values and combine
-    let orig: Vec<(f32, f32)> = lon
+    let orig = lon
         .iter()
         .cloned()
     .zip(lat
         .iter()
-        .cloned())
-    .collect();
+        .cloned());
     // carry out the conversion 
-    let result: Vec<(i32, i32)> = orig.iter()
-        .map(|elem| convert(elem.0, elem.1))
-        .collect();
+    let result = orig
+        .map(|elem| convert(elem.0, elem.1));
     // convert back to vector of unsigned integer Tuples
-    let nvec = result.iter()
+    let nvec = result
         .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 })
         .collect();
     Array::from_vec(nvec)
