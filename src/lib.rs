@@ -369,9 +369,40 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
     }
     Array::from_vec(result)
 }
+
+/// A threaded version of the C-compatible wrapper for convert_lonlat()
+#[no_mangle]
+pub extern fn convert_bng_vec_c_threaded(eastings: Array, northings: Array) -> Array {
+    // we're receiving floats
+    let lon = unsafe { eastings.as_i32_slice() };
+    let lat = unsafe { northings.as_i32_slice() };
+    // copy values and combine
+    let orig: Vec<(i32, i32)> = lon
+        .iter()
+        .cloned()
+    .zip(lat
+        .iter()
+        .cloned())
+    .collect();
+
+    let mut guards: Vec<JoinHandle<Vec<(f32, f32)>>> = vec!();
+    // split into slices
+    let mut size = orig.len() / NUMTHREADS;
+    if orig.len() % NUMTHREADS > 0 { size += 1; }
+    // if orig.len() == 0, we need another adjustment
+    size = std::cmp::max(1, size);
+    for chunk in orig.chunks(size) {
+        let chunk = chunk.to_owned();
+        let g = thread::spawn(move || chunk
+            .into_iter()
+            .map(|elem| convert_lonlat(elem.0, elem.1))
+            .collect());
+        guards.push(g);
+    }
+    let mut result: Vec<FloatTuple> = Vec::with_capacity(orig.len());
     for g in guards {
         result.extend(g.join().unwrap().into_iter()
-                       .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 }));
+                       .map(|floats| FloatTuple { a: floats.0 as f32, b: floats.1 as f32 }));
     }
     Array::from_vec(result)
 }
