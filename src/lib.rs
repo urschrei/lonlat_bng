@@ -194,7 +194,7 @@ pub extern fn convert_bng(input_lon: f32, input_lat: f32) -> (i32, i32) {
 ///
 #[allow(non_snake_case)]
 #[no_mangle]
-pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
+pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f32, f32) {
     let pi: f32 = consts::PI;
     // The Airy 180 semi-major and semi-minor axes used for OSGB36 (m)
     let a: f32 = 6377563.396;
@@ -214,8 +214,8 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
 
     let mut lat = lat0;
     let mut M = 0.0;
-    while (input_lat as f32 - N0 - M) >= 0.00001 {
-        lat = (input_lat as f32 - N0 - M) / (a * F0) + lat;
+    while (input_n as f32 - N0 - M) >= 0.00001 {
+        lat = (input_n as f32 - N0 - M) / (a * F0) + lat;
         let M1 = (1. + n + (5. / 4.) * n.powf(3.)
             + (5. / 4.) * n.powf(3.)) * (lat - lat0);
         let M2 = (3. * n + 3. * n.powf(2.) + (21. / 8.)
@@ -249,7 +249,7 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
     let XIIA = secLat / (5040. * nu.powf(7.))
         * (61. + 662. * lat.tan().powf(2.) + 1320.
         * lat.tan().powf(4.) + 720. * lat.tan().powf(6.));
-    let dE = input_lon as f32 - E0;
+    let dE = input_e as f32 - E0;
     //  These are on the wrong ellipsoid currently: Airy1830 (Denoted by _1)
     let lat_1 = lat - VII * dE.powf(2.)
         + VIII * dE.powf(4.) - IX * dE.powf(6.);
