@@ -37,6 +37,12 @@ pub struct Array {
     len: libc::size_t,
 }
 
+#[no_mangle]
+pub extern fn drop_array(p: *const Array) {
+    if p.is_null() { return }
+    unsafe { drop(p) };
+}
+
 impl Array {
     unsafe fn as_f32_slice(&self) -> &[f32] {
         assert!(!self.data.is_null());
