@@ -484,7 +484,7 @@ mod tests {
 
     #[test]
     fn test_lonlat_conversion() {
-        assert_eq!((-0.32824866, 51.44533267), convert_lonlat(516276, 173141));
+        assert_eq!((-0.328248, 51.44534), convert_lonlat(516276, 173141));
     }
 
     #[test]
