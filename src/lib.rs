@@ -319,7 +319,7 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
         .cloned());
     // carry out the conversion 
     let result = orig
-        .map(|elem| convert(elem.0, elem.1));
+        .map(|elem| convert_bng(elem.0, elem.1));
     // convert back to vector of unsigned integer Tuples
     let nvec = result
         .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 })
