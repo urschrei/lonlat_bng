@@ -1,4 +1,4 @@
-
+from math import *
 
 def OSGB36toWGS84(E,N):
  #E, N are the British national grid coordinates - eastings and northings
@@ -12,7 +12,6 @@ def OSGB36toWGS84(E,N):
 
     #Initialise the iterative variables
     lat,M = lat0, 0
-
     while N-N0-M >= 0.00001: #Accurate to 0.01mm
         lat = (N-N0-M)/(a*F0) + lat;
         M1 = (1 + n + (5./4)*n**2 + (5./4)*n**3) * (lat-lat0)
@@ -20,7 +19,7 @@ def OSGB36toWGS84(E,N):
         M3 = ((15./8)*n**2 + (15./8)*n**3) * sin(2*(lat-lat0)) * cos(2*(lat+lat0))
         M4 = (35./24)*n**3 * sin(3*(lat-lat0)) * cos(3*(lat+lat0))
         #meridional arc
-        M = b * F0 * (M1 - M2 + M3 - M4)          
+        M = b * F0 * (M1 - M2 + M3 - M4)
 
     #transverse radius of curvature
     nu = a*F0/sqrt(1-e2*sin(lat)**2)
@@ -41,6 +40,7 @@ def OSGB36toWGS84(E,N):
 
     #These are on the wrong ellipsoid currently: Airy1830. (Denoted by _1)
     lat_1 = lat - VII*dE**2 + VIII*dE**4 - IX*dE**6
+    print lat_1
     lon_1 = lon0 + X*dE - XI*dE**3 + XII*dE**5 - XIIA*dE**7
 
     #Want to convert to the GRS80 ellipsoid. 
@@ -66,15 +66,17 @@ def OSGB36toWGS84(E,N):
     p = sqrt(x_2**2 + y_2**2)
 
     #Lat is obtained by an iterative proceedure:   
-    lat = arctan2(z_2,(p*(1-e2_2))) #Initial value
+    lat = atan2(z_2,(p*(1-e2_2))) #Initial value
+    print "Lat before iteration", lat
     latold = 2*pi
     while abs(lat - latold)>10**-16: 
         lat, latold = latold, lat
         nu_2 = a_2/sqrt(1-e2_2*sin(latold)**2)
-        lat = arctan2(z_2+e2_2*nu_2*sin(latold), p)
+        lat = atan2(z_2+e2_2*nu_2*sin(latold), p)
+
 
     #Lon and height are then pretty easy
-    lon = arctan2(y_2,x_2)
+    lon = atan2(y_2,x_2)
     H = p/cos(lat) - nu_2
 
 
@@ -84,3 +86,5 @@ def OSGB36toWGS84(E,N):
 
     #Job's a good'n. 
     return lat, lon
+
+print OSGB36toWGS84(516276, 173141)
