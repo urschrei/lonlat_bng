@@ -229,15 +229,12 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
             .collect());
         guards.push(g);
     }
-    let mut result: Vec<(i32, i32)> = Vec::with_capacity(orig.len());
+    let mut result: Vec<Tuple> = Vec::with_capacity(orig.len());
     for g in guards {
-        result.extend(g.join().unwrap().into_iter());
+        result.extend(g.join().unwrap().into_iter()
+                       .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 }));
     }
-    // convert back to vector of unsigned integer Tuples
-    let nvec = result.iter()
-        .map(|ints| Tuple { a: ints.0 as u32, b: ints.1 as u32 })
-        .collect();
-    Array::from_vec(nvec)
+    Array::from_vec(result)
 }
 
 #[cfg(test)]
