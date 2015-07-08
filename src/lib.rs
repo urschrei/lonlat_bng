@@ -36,6 +36,7 @@ impl Array {
         assert!(!self.data.is_null());
         slice::from_raw_parts(self.data as *const f32, self.len as usize)
     }
+    #[cfg(test)]
     unsafe fn as_i32_slice(&self) -> &[i32] {
         assert!(!self.data.is_null());
         slice::from_raw_parts(self.data as *const i32, self.len as usize)
