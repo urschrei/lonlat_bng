@@ -123,7 +123,6 @@ pub extern fn convert_bng(input_lon: f32, input_lat: f32) -> (i32, i32) {
     let rx: f32 = rxs * pi / (180. * 3600.);
     let ry: f32 = rys * pi / (180. * 3600.);
     let rz: f32 = rzs * pi / (180. * 3600.);
-    // panic begins on line 46
     let x_2: f32 = tx + (1. + s) * x_1 + -rz * y_1 + ry * z_1;
     let y_2: f32 = ty + rz * x_1 + (1. + s) * y_1 + -rx * z_1;
     let z_2: f32 = tz + -ry * x_1 + rx * y_1 + (1. + s) * z_1;
@@ -160,21 +159,33 @@ pub extern fn convert_bng(input_lon: f32, input_lat: f32) -> (i32, i32) {
     let rho: f32 = a * F0 * (1. - e2) * (1. - e2 * lat.sin().powf(2.)).powf(-1.5);
     let eta2: f32 = nu * F0 / rho - 1.;
 
-    let M1: f32 = (1. + n + (5. / 4.) * n.powf(2.) + (5. / 4.) * n.powf(3.)) * (lat - lat0);
-    let M2: f32 = (3. * n + 3. * n.powf(2.) + (21. / 8.) * n.powf(3.)) * (lat - lat0).sin() * (lat + lat0).cos();
-    let M3: f32 = ((15. / 8.) * n.powf(2.) + (15. / 8.) * n.powf(3.)) * (2. * (lat-lat0)).sin() * (2. * (lat + lat0)).cos();
-    let M4: f32 = (35. / 24.) * n.powf(3.) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
+    let M1: f32 = (1. + n + (5. / 4.) * n.powf(2.)
+        + (5. / 4.) * n.powf(3.)) * (lat - lat0);
+    let M2: f32 = (3. * n + 3. * n.powf(2.) + (21. / 8.)
+        * n.powf(3.)) * (lat - lat0).sin() * (lat + lat0).cos();
+    let M3: f32 = ((15. / 8.) * n.powf(2.) + (15. / 8.)
+        * n.powf(3.)) * (2. * (lat-lat0)).sin() * (2. * (lat + lat0)).cos();
+    let M4: f32 = (35. / 24.) * n.powf(3.) * (3. * (lat - lat0)).sin()
+        * (3. * (lat + lat0)).cos();
     let M: f32 = b * F0 * (M1 - M2 + M3 - M4);
 
     let I: f32 = M + N0;
     let II: f32 = nu * F0 * lat.sin() * lat.cos() / 2.;
-    let III: f32 = nu * F0 * lat.sin() * lat.cos().powf(3.) * (5. - lat.tan().powf(2.) + 9. * eta2) / 24.;
-    let IIIA: f32 = nu * F0 * lat.sin() * lat.cos().powf(5.) * (61. - 58. * lat.tan().powf(2.) + lat.tan().powf(4.)) / 720.;
+    let III: f32 = nu * F0 * lat.sin() * lat.cos().powf(3.)
+        * (5. - lat.tan().powf(2.) + 9. * eta2) / 24.;
+    let IIIA: f32 = nu * F0 * lat.sin() * lat.cos().powf(5.)
+        * (61. - 58. * lat.tan().powf(2.)
+        + lat.tan().powf(4.)) / 720.;
     let IV: f32 = nu * F0 * lat.cos();
-    let V: f32 = nu * F0 * lat.cos().powf(3.) * (nu / rho - lat.tan().powf(2.)) / 6.;
-    let VI: f32 = nu * F0 * lat.cos().powf(5.) * (5. - 18. * lat.tan().powf(2.) + lat.tan().powf(4.) + 14. * eta2 - 58. * eta2 * lat.tan().powf(2.)) / 120.;
-    let N: f32 = I + II * (lon - lon0).powf(2.) + III * (lon - lon0).powf(4.) + IIIA * (lon - lon0).powf(6.);
-    let E: f32 = E0 + IV * (lon - lon0) + V * (lon - lon0).powf(3.) + VI * (lon - lon0).powf(5.);
+    let V: f32 = nu * F0 * lat.cos().powf(3.)
+        * (nu / rho - lat.tan().powf(2.)) / 6.;
+    let VI: f32 = nu * F0 * lat.cos().powf(5.)
+        * (5. - 18. * lat.tan().powf(2.) + lat.tan().powf(4.)
+        + 14. * eta2 - 58. * eta2 * lat.tan().powf(2.)) / 120.;
+    let N: f32 = I + II * (lon - lon0).powf(2.)
+        + III * (lon - lon0).powf(4.) + IIIA * (lon - lon0).powf(6.);
+    let E: f32 = E0 + IV * (lon - lon0) + V * (lon - lon0).powf(3.)
+        + VI * (lon - lon0).powf(5.);
     (round(E) as i32, round(N) as i32)
 }
 
@@ -204,7 +215,7 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
     let lat = lat0;
     let M = 0.;
 
-    while (n - N0 - M) >= 0.00001 {
+    while (input_lat as f32 - N0 - M) >= 0.00001 {
         let lat = (n - N0 - M) / (a * F0) + lat;
         let M1 = (1. + n + (5. / 4.) * n.powf(2.) 
             + (5. / 4.) * n.powf(3.)) * (lat - lat0);
@@ -246,14 +257,52 @@ pub extern fn convert_lonlat(input_lon: i32, input_lat: i32) -> (f32, f32) {
     let lon_1 = lon0 + X * dE - XI * dE.powf(3.)
         + XII * dE.powf(5.) - XIIA * dE.powf(7.);
 
-    // We Want to convert to the GRS80 ellipsoid. 
+    // We Want to convert to the GRS80 ellipsoid
     // First, convert to cartesian from spherical polar coordinates
     let H = 0.;
     let x_1 = (nu / F0 + H) * lat_1.cos() * lon_1.cos();
     let y_1 = (nu / F0 + H) * lat_1.cos() * lon_1.sin();
     let z_1 = ((1. - e2) * nu / F0 + H) * lat_1.sin();
 
-    return (a, b)
+    // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
+    let ten: f32 = 10.;
+    let s = -20.4894 * ten.powf(-6.); // The scale factor -1
+    let tx = 446.448;
+    let ty = -125.157;
+    let tz = 542.060; // The translations along x,y,z axes respectively
+    let rxs =0.1502;
+    let rys= 0.2470;
+    let rzs = 0.8421; // The rotations along x,y,z respectively, in seconds
+    let rx = rxs * pi / (180.*3600.);
+    let ry = rys * pi / (180.*3600.);
+    let rz = rzs * pi / (180.*3600.); // In radians
+    let x_2 = tx + (1. + s) * x_1 + (-rz) * y_1 + (ry) * z_1;
+    let y_2 = ty + (rz) * x_1 + (1. + s) * y_1 + (-rx) * z_1;
+    let z_2 = tz + (-ry) * x_1 + (rx) * y_1 + (1. + s) * z_1;
+
+    // Back to spherical polar coordinates from cartesian
+    // Need some of the characteristics of the new ellipsoid
+    let a_2 = 6378137.00;
+    let b_2 = 6356752.3141; // The GSR80 semi-major and semi-minor axes used for WGS84(m)
+    let e2_2 = 1. - (b_2 * b_2) / (a_2 * a_2); // The eccentricity of the GRS80 ellipsoid
+    let p = (x_2.powf(2.) + y_2.powf(2.)).sqrt();
+
+    // Lat is obtained by iterative procedure
+    let mut lat = z_2.atan2((p * (1. -e2_2))); // Initial value
+    let mut latold = 2. *pi;
+
+    let mut nu_2: f32 = 1.;
+    while (lat - latold).abs() > ten.powf(-16.) {
+        mem::swap(&mut lat, &mut latold);
+        nu_2 = a_2 / (1. - e2_2 * latold.sin().powf(2.)).sqrt();
+        lat = (z_2 + e2_2 * nu_2 * latold.sin()).atan2(p);
+    }
+    let lon = y_2.atan2(x_2);
+    let H = p / lat.cos() - nu_2;
+
+    let lat = lat * 180./ pi;
+    let lon = lon * 180. / pi;
+    return (lon, lat)
 }
 
 /// A safer C-compatible wrapper for convert_bng()
@@ -319,6 +368,7 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
 #[cfg(test)]
 mod tests {
     use super::convert_bng;
+    use super::convert_lonlat;
     use super::convert_vec_c;
     use super::convert_vec_c_threaded;
     use super::Array;
@@ -428,9 +478,14 @@ mod tests {
     }
 
     #[test]
-    fn test_conversion() {
+    fn test_bng_conversion() {
         // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
         assert_eq!((516276, 173141), convert_bng(-0.32824866, 51.44533267));
+    }
+
+    #[test]
+    fn test_lonlat_conversion() {
+        assert_eq!((-0.32824866, 51.44533267), convert_lonlat(516276, 173141));
     }
 
     #[test]
