@@ -299,18 +299,16 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f32, f32) {
     // Lat is obtained by iterative procedure
     let mut lat = z_2.atan2((p * (1. - e2_2))); // Initial value
     let mut latold = 2. *pi;
-    let mut nu_2: f32 = 1.;
+    let mut nu_2: f32;
     while (lat - latold).abs() > ten.powf(-16.) {
         mem::swap(&mut lat, &mut latold);
         nu_2 = a_2 / (1. - e2_2 * latold.sin().powf(2.)).sqrt();
         lat = (z_2 + e2_2 * nu_2 * latold.sin()).atan2(p);
     }
 
-    let lon = y_2.atan2(x_2);
-    let H = p / lat.cos() - nu_2;
-
-    let lat = lat * 180./ pi;
-    let lon = lon * 180. / pi;
+    let mut lon = y_2.atan2(x_2);
+    lat = lat * 180. / pi;
+    lon = lon * 180. / pi;
     return (lon, lat)
 }
 
