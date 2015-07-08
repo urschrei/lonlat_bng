@@ -187,13 +187,10 @@ pub extern fn convert_vec_c(lon: Array, lat: Array) -> Array {
     let orig: Vec<(f32, f32)> = lon
         .iter()
         .map(|i| i.clone())
-        .collect::<Vec<f32>>()
-        .into_iter()
     .zip(lat
         .iter()
-        .map(|i| i.clone())
-        .collect::<Vec<f32>>()
-    .into_iter()).collect();
+        .map(|i| i.clone()))
+    .collect();
     // carry out the conversion 
     let result: Vec<(i32, i32)> = orig.iter()
         .map(|elem| convert(elem.0, elem.1))
@@ -215,13 +212,10 @@ pub extern fn convert_vec_c_threaded(lon: Array, lat: Array) -> Array {
     let orig: Vec<(f32, f32)> = lon
         .iter()
         .map(|i| i.clone())
-        .collect::<Vec<f32>>()
-        .into_iter()
     .zip(lat
         .iter()
-        .map(|i| i.clone())
-        .collect::<Vec<f32>>()
-    .into_iter()).collect();
+        .map(|i| i.clone()))
+    .collect();
 
     let mut guards: Vec<JoinHandle<Vec<(i32, i32)>>> = vec!();
     // split into slices
