@@ -299,8 +299,7 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     let z_1 = ((1. - e2) * nu / F0 + H) * lat_1.sin();
 
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
-    let ten: f64 = 10.;
-    let s = -20.4894 * ten.powi(-6); // The scale factor -1
+    let s = -20.4894 * (10. as f64).powi(-6); // The scale factor -1
     // The translations along x, y, z axes respectively
     let tx = TX.abs();
     let ty = TY * -1.;
@@ -329,7 +328,7 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     let mut lat = z_2.atan2((p * (1. - e2_2))); // Initial value
     let mut latold = 2. *pi;
     let mut nu_2: f64;
-    while (lat - latold).abs() > ten.powi(-16) {
+    while (lat - latold).abs() > (10. as f64).powi(-16) {
         mem::swap(&mut lat, &mut latold);
         nu_2 = a_2 / (1. - e2_2 * latold.sin().powi(2)).sqrt();
         lat = (z_2 + e2_2 * nu_2 * latold.sin()).atan2(p);
