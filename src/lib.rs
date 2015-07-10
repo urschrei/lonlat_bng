@@ -251,7 +251,7 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     let N0 = TRUE_ORIGIN_NORTHING;
     let E0 = TRUE_ORIGIN_EASTING;
     // Eccentricity squared
-    let e2 = 1. - (b * b) / (a * a);
+    let e2 = 1. - b.powi(2) / a.powi(2);
     let n = (a - b) / (a + b);
 
     let mut lat = lat0;
