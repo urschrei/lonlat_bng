@@ -18,7 +18,7 @@ extern crate rand;
 
 const NUMTHREADS: usize = 7;
 
-// constants used for coordinate conversions
+// Constants used for coordinate conversions
 //
 // Ellipsoids
 const AIRY_1830_SEMI_MAJOR: f64 = 6377563.396;
@@ -327,13 +327,15 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     // Need some of the characteristics of the new ellipsoid
     // The GRS80 semi-major and semi-minor axes used for WGS84(m)
     let a_2 = GRS80_SEMI_MAJOR;
-    let b_2 = GRS80_SEMI_MINOR; 
-    let e2_2 = 1. - (b_2 * b_2) / (a_2 * a_2); // The eccentricity of the GRS80 ellipsoid
+    let b_2 = GRS80_SEMI_MINOR;
+    // The eccentricity of the GRS80 ellipsoid
+    let e2_2 = 1. - (b_2 * b_2) / (a_2 * a_2);
     let p = (x_2.powi(2) + y_2.powi(2)).sqrt();
 
     // Lat is obtained by iterative procedure
-    let mut lat = z_2.atan2((p * (1. - e2_2))); // Initial value
-    let mut latold = 2. *pi;
+    // Initial value
+    let mut lat: f64 = z_2.atan2((p * (1. - e2_2)));
+    let mut latold: f64 = 2. * pi;
     let mut nu_2: f64;
     while (lat - latold).abs() > (10. as f64).powi(-16) {
         mem::swap(&mut lat, &mut latold);
