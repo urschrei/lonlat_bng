@@ -7,7 +7,7 @@
 //! assert_eq!((516276, 173141), lonlat_bng::convert(-0.32824866, 51.44533267));
 //!```
 
-use std::{f32, f64};
+use std::{f64};
 // use std::f32::consts;
 use std::mem;
 use std::slice;
