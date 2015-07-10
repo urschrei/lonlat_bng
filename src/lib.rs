@@ -28,7 +28,15 @@ const GRS80_SEMI_MINOR: f64 = 6356752.3141;
 // Northing & easting of true origin (m)
 const TRUE_ORIGIN_NORTHING: f64 = -100000.;
 const TRUE_ORIGIN_EASTING: f64 = 400000.;
-//
+// For Helmert Transform to OSGB36, translations along the x, y, z axes
+// When transforming to WGS84, reverse the signs
+const TX: f64 = -446.448;
+const TY: f64 = 125.157;
+const TZ: f64 = -542.060;
+// Rotations along the x, y, z axes, in seconds
+const RXS: f64 = -0.1502;
+const RYS: f64 = -0.2470;
+const RZS: f64 = -0.8421;
 //
 
 #[repr(C)]
@@ -131,17 +139,16 @@ pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
     let z_1: f64 = ((1. - e2_1) * nu_1 + H) * lat_1.sin();
 
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
-    let small: f64 = 10.;
     let cst: f64 = 20.4894;
-    let s: f64 =  cst * small.powi(-6);
+    let s: f64 =  cst * (10 as f64).powi(-6);
     // The translations along x, y, z axes respectively
-    let tx: f64 = -446.448;
-    let ty: f64 = 125.157;
-    let tz: f64 = -542.060;
+    let tx = TX;
+    let ty = TY;
+    let tz = TZ;
     // The rotations along x, y, z respectively, in seconds
-    let rxs: f64 = -0.1502;
-    let rys: f64 = -0.2470;
-    let rzs: f64 = -0.8421;
+    let rxs = RXS;
+    let rys = RYS;
+    let rzs = RZS;
     // In radians
     let rx: f64 = rxs * pi / (180. * 3600.);
     let ry: f64 = rys * pi / (180. * 3600.);
@@ -162,7 +169,7 @@ pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
     // this is cheating, but not sure how else to initialise nu
     let mut nu: f64 = 1.;
     // Latitude is obtained by iterative procedure
-    while (lat - latold).abs() > small.powi(-16) {
+    while (lat - latold).abs() > (10 as f64).powi(-16) {
         mem::swap(&mut lat, &mut latold);
         nu = a / (1. - e2 * latold.sin().powi(2)).sqrt();
         lat = (z_2 + e2 * nu * latold.sin()).atan2(p);
@@ -172,7 +179,7 @@ pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
     let F0: f64 = 0.9996012717;
     // Latitude of true origin (radians)
     let lat0: f64 = 49. * pi / 180.;
-    // Longtitude of true origin and central meridian (radians)
+    // Longitude of true origin and central meridian (radians)
     let lon0: f64 = -2. * pi / 180.;
     // Northing & easting of true origin (m)
     let N0: f64 = TRUE_ORIGIN_NORTHING;
@@ -231,7 +238,7 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     let F0: f64 = 0.9996012717;
     // Latitude of true origin (radians)
     let lat0: f64 = 49. * pi / 180.;
-    // Longtitude of true origin and central meridian (radians)
+    // Longitude of true origin and central meridian (radians)
     let lon0: f64 = -2. * pi / 180.;
     // Northing & easting of true origin (m)
     let N0 = TRUE_ORIGIN_NORTHING;
@@ -294,12 +301,15 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
     let ten: f64 = 10.;
     let s = -20.4894 * ten.powi(-6); // The scale factor -1
-    let tx = 446.448;
-    let ty = -125.157;
-    let tz = 542.060; // The translations along x,y,z axes respectively
-    let rxs =0.1502;
-    let rys= 0.2470;
-    let rzs = 0.8421; // The rotations along x,y,z respectively, in seconds
+    // The translations along x, y, z axes respectively
+    let tx = TX.abs();
+    let ty = TY * -1.;
+    let tz = TZ.abs();
+    // The rotations along x, y, z respectively, in seconds
+    let rxs = RXS * -1.;
+    let rys = RYS * -1.;
+    let rzs = RZS * -1.;
+
     let rx = rxs * pi / (180.*3600.);
     let ry = rys * pi / (180.*3600.);
     let rz = rzs * pi / (180.*3600.); // In radians
