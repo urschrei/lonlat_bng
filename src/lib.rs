@@ -119,15 +119,11 @@ fn round(x: f64) -> f64 {
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
-    // match is restricted to the UK bounding box
-    match input_lon {
-        -6.379880...1.768960 => input_lon,
-        _ => panic!("Out of bounds! Longitude must be between -180.00 and 180.00: {:?}", input_lon)
-    };
-    match input_lat {
-        49.871159...55.811741 => input_lat,
-        _ => panic!("Out of bounds! Latitude must be between -90.00 and 90.00: {:?}", input_lat)
-    };
+    // input is restricted to the UK bounding box
+    assert!(-6.379880 <= input_lon && input_lon <= 1.768960,
+        "Out of bounds! Longitude must be between -6.379880 and 1.768960: {}", input_lon);
+    assert!(49.871159 <= input_lat && input_lat <= 55.811741,
+        "Out of bounds! Longitude must be between 49.871159 and 55.811741: {}", input_lon);
     let pi: f64 = f64::consts::PI;
     //Convert input to degrees
     let lat_1: f64 = input_lat * pi / 180.;
