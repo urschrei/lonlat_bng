@@ -255,7 +255,7 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     let n = (a - b) / (a + b);
 
     let mut lat = lat0;
-    let mut M = 0.0;
+    let mut M: f64 = 0.0;
     while (input_n as f64 - N0 - M) >= 0.00001 {
         lat = (input_n as f64 - N0 - M) / (a * F0) + lat;
         let M1 = (1. + n + (5. / 4.) * n.powi(3)
