@@ -6,9 +6,7 @@
 //!```
 //! assert_eq!((516276, 173141), lonlat_bng::convert(-0.32824866, 51.44533267));
 //!```
-
 use std::{f64};
-// use std::f32::consts;
 use std::mem;
 use std::slice;
 use std::thread::{self, JoinHandle};
@@ -19,6 +17,19 @@ use libc::{size_t, c_void, c_float, uint32_t};
 extern crate rand;
 
 const NUMTHREADS: usize = 7;
+
+// constants used for coordinate conversions
+//
+// Ellipsoids
+const AIRY_1830_SEMI_MAJOR: f64 = 6377563.396;
+const AIRY_1830_SEMI_MINOR: f64 = 6356256.909;
+const GRS80_SEMI_MAJOR: f64 = 6378137.000;
+const GRS80_SEMI_MINOR: f64 = 6356752.3141;
+// Northing & easting of true origin (m)
+const TRUE_ORIGIN_NORTHING: f64 = -100000.;
+const TRUE_ORIGIN_EASTING: f64 = 400000.;
+//
+//
 
 #[repr(C)]
 pub struct IntTuple {
@@ -106,9 +117,9 @@ pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
     //Convert input to degrees
     let lat_1: f64 = input_lat * pi / 180.;
     let lon_1: f64 = input_lon * pi / 180.;
-    // The GSR80 semi-major and semi-minor axes used for WGS84 (m)
-    let a_1: f64 = 6378137.;
-    let b_1: f64 = 6356752.3141;
+    // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
+    let a_1: f64 = GRS80_SEMI_MAJOR;
+    let b_1: f64 = GRS80_SEMI_MINOR;
     // The eccentricity (squared) of the GRS80 ellipsoid
     let e2_1: f64 = 1. - (b_1.powi(2)) / (a_1.powi(2));
     // Transverse radius of curvature
@@ -139,9 +150,9 @@ pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
     let y_2: f64 = ty + rz * x_1 + (1. + s) * y_1 + -rx * z_1;
     let z_2: f64 = tz + -ry * x_1 + rx * y_1 + (1. + s) * z_1;
 
-    // The GSR80 semi-major and semi-minor axes used for WGS84 (m)
-    let a: f64 = 6377563.396;
-    let b: f64 = 6356256.909;
+    // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
+    let a: f64 = AIRY_1830_SEMI_MAJOR;
+    let b: f64 = AIRY_1830_SEMI_MINOR;
     // The eccentricity of the Airy 1830 ellipsoid
     let e2: f64 = 1. - b.powi(2) / a.powi(2);
     let p: f64 = (x_2.powi(2) + y_2.powi(2)).sqrt();
@@ -164,8 +175,8 @@ pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
     // Longtitude of true origin and central meridian (radians)
     let lon0: f64 = -2. * pi / 180.;
     // Northing & easting of true origin (m)
-    let N0: f64 = -100000.;
-    let E0: f64 = 400000.;
+    let N0: f64 = TRUE_ORIGIN_NORTHING;
+    let E0: f64 = TRUE_ORIGIN_EASTING;
     let n: f64 = (a - b) / (a + b);
     // Meridional radius of curvature
     let rho: f64 = a * F0 * (1. - e2) * (1. - e2 * lat.sin().powi(2)).powf(-1.5);
@@ -213,9 +224,9 @@ pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
 #[no_mangle]
 pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     let pi: f64 = f64::consts::PI;
-    // The Airy 180 semi-major and semi-minor axes used for OSGB36 (m)
-    let a: f64 = 6377563.396;
-    let b: f64 = 6356256.909;
+    // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
+    let a: f64 = AIRY_1830_SEMI_MAJOR;
+    let b: f64 = AIRY_1830_SEMI_MINOR;
     // Scale factor on the central meridian
     let F0: f64 = 0.9996012717;
     // Latitude of true origin (radians)
@@ -223,8 +234,8 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     // Longtitude of true origin and central meridian (radians)
     let lon0: f64 = -2. * pi / 180.;
     // Northing & easting of true origin (m)
-    let N0 = -100000.;
-    let E0 = 400000.;
+    let N0 = TRUE_ORIGIN_NORTHING;
+    let E0 = TRUE_ORIGIN_EASTING;
     // Eccentricity squared
     let e2 = 1. - (b * b) / (a * a);
     let n = (a - b) / (a + b);
@@ -298,8 +309,9 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
 
     // Back to spherical polar coordinates from cartesian
     // Need some of the characteristics of the new ellipsoid
-    let a_2 = 6378137.00;
-    let b_2 = 6356752.3141; // The GSR80 semi-major and semi-minor axes used for WGS84(m)
+    // The GRS80 semi-major and semi-minor axes used for WGS84(m)
+    let a_2 = GRS80_SEMI_MAJOR;
+    let b_2 = GRS80_SEMI_MINOR; 
     let e2_2 = 1. - (b_2 * b_2) / (a_2 * a_2); // The eccentricity of the GRS80 ellipsoid
     let p = (x_2.powi(2) + y_2.powi(2)).sqrt();
 
