@@ -91,6 +91,13 @@ impl Array {
     }
 }
 
+/// Calculate the meridional radius of curvature
+#[allow(non_snake_case)]
+fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
+    let rho: f64 = a * F0 * (1. - e2) * (1. - e2 * lat.sin().powi(2)).powf(-1.5);
+    rho
+}
+
 // http://stackoverflow.com/a/28124775/155423
 fn round(x: f64) -> f64 {
     let y = x.floor();
@@ -186,7 +193,7 @@ pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
     let E0: f64 = TRUE_ORIGIN_EASTING;
     let n: f64 = (a - b) / (a + b);
     // Meridional radius of curvature
-    let rho: f64 = a * F0 * (1. - e2) * (1. - e2 * lat.sin().powi(2)).powf(-1.5);
+    let rho = curvature(a, F0, e2, lat);
     let eta2: f64 = nu * F0 / rho - 1.;
 
     let M1: f64 = (1. + n + (5. / 4.) * n.powi(2)
@@ -265,7 +272,7 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     // Transverse radius of curvature
     let nu = a * F0 / (1. - e2 * lat.sin().powi(2)).sqrt();
     // Meridional radius of curvature
-    let rho = a * F0 * (1. - e2) * (1. - e2 * lat.sin().powi(2)).powf(-1.5);
+    let rho = curvature(a, F0, e2, lat);
     let eta2 = nu / rho - 1.;
 
     let secLat = 1. / lat.cos();
