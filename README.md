@@ -37,6 +37,9 @@ Rust (threaded): 10 loops, best of 10: **162.5 ms** per loop
 ## Conclusion
 Using multithreading, we can get much closer (pyproj is now only 65% faster). Not bad, considering the relative youth of Rust *as a language* (let alone this library), and the maturity of the [PROJ.4](https://en.wikipedia.org/wiki/PROJ.4) project.
 
+## Accuracy
+The Helmert transform used is accurate to within 4 – 5 metres, so this library is **not suitable** for calculations used in e.g. surveying. If higher accuracy is required, please use a product which incorporates the OSTN02 calculations, which adjust for local variation within the Terrestrial Reference Frame. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.
+
 ## Package
 `convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI:  
 `pip install convertbng`  
