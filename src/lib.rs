@@ -325,7 +325,7 @@ pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     let a_2 = GRS80_SEMI_MAJOR;
     let b_2 = GRS80_SEMI_MINOR;
     // The eccentricity of the GRS80 ellipsoid
-    let e2_2 = 1. - (b_2 * b_2) / (a_2 * a_2);
+    let e2_2 = 1. - b_2.powi(2) / a_2.powi(2);
     let p = (x_2.powi(2) + y_2.powi(2)).sqrt();
 
     // Lat is obtained by iterative procedure
