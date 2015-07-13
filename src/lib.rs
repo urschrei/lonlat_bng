@@ -123,7 +123,7 @@ pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
     assert!(-6.379880 <= input_lon && input_lon <= 1.768960,
         "Out of bounds! Longitude must be between -6.379880 and 1.768960: {}", input_lon);
     assert!(49.871159 <= input_lat && input_lat <= 55.811741,
-        "Out of bounds! Longitude must be between 49.871159 and 55.811741: {}", input_lon);
+        "Out of bounds! Latitude must be between 49.871159 and 55.811741: {}", input_lat);
     let pi: f64 = f64::consts::PI;
     //Convert input to degrees
     let lat_1: f64 = input_lat * pi / 180.;
