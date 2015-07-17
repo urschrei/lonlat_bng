@@ -117,8 +117,7 @@ fn round(x: f64) -> f64 {
 /// use lonlat_bng::convert_bng;
 /// assert_eq!((516276, 173141), convert_bng(-0.32824866, 51.44533267));
 #[allow(non_snake_case)]
-#[no_mangle]
-pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
+fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
     // input is restricted to the UK bounding box
     assert!(-6.379880 <= input_lon && input_lon <= 1.768960,
         "Out of bounds! Longitude must be between -6.379880 and 1.768960: {}", input_lon);
@@ -231,8 +230,7 @@ pub extern fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
 /// use lonlat_bng::convert_lonlat;
 /// assert_eq!((-0.328248, 51.44534), convert_lonlat(516276, 173141)));
 #[allow(non_snake_case)]
-#[no_mangle]
-pub extern fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
+fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     let pi: f64 = f64::consts::PI;
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a: f64 = AIRY_1830_SEMI_MAJOR;

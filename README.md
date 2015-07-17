@@ -40,25 +40,18 @@ Using multithreading, we can get much closer (pyproj is now only 65% faster). No
 ## Accuracy
 The Helmert transform used is accurate to within 4 – 5 metres, so this library is **not suitable** for calculations used in e.g. surveying. If higher accuracy is required, please use a product which incorporates the OSTN02 calculations, which adjust for local variation within the Terrestrial Reference Frame. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.
 
-## Package
+## As a Rust library
+The functions exposed by the library are:
+
+`lonlat_bng::convert_to_bng`
+`lonlat_bng::convert_to_lonlat`
+
+Both functions accept two `Array`s of lon, lat coordinates or BNG Eastings and Northings, respectively. Converting vectors to `Array` is trivial (see the tests for examples).
+
+## As a Python Package
 `convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI:  
-`pip install convertbng`  
-Usage:
-
-    from convertbng.util import convertbng, convertbng_list
-
-    res = convertbng(lon, lat)
-
-    lons = [lon1, lon2, lon3]
-    lats = [lat1, lat2, lat3]
-    # assumes import numpy as np
-    lons_np = np.array(lons)
-    lats_np = np.array(lats)
-    
-    res_list = convertbng_list(lons, lats)
-    res_list_np = convertbng_list(lons_np, lats_np)
-
-Note that the return type for `convertbng_list()` is always a list of tuples.
+`pip install convertbng`
+More information is available in its [repository](https://github.com/urschrei/rust_bng)
 
 ## Benchmark machine spec:
 
