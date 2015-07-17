@@ -43,14 +43,14 @@ The Helmert transform used is accurate to within 4 – 5 metres, so this library
 ## As a Rust library
 The functions exposed by the library are:
 
-`lonlat_bng::convert_to_bng`
+`lonlat_bng::convert_to_bng`  
 `lonlat_bng::convert_to_lonlat`
 
 Both functions accept two `Array`s of lon, lat coordinates or BNG Eastings and Northings, respectively. Converting vectors to `Array` is trivial (see the tests for examples).
 
 ## As a Python Package
 `convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI:  
-`pip install convertbng`
+`pip install convertbng`  
 More information is available in its [repository](https://github.com/urschrei/rust_bng)
 
 ## Benchmark machine spec:
