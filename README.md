@@ -26,7 +26,7 @@ Pyproj: 100000 loops, best of 10: **11.8 µs** per loop<sup>†</sup>
 <sup>*</sup>Test warns that intermediate results may have been cached  
 
 ### Real-world Test
-Convert 100,000 sets of random coordinates  
+Convert 10,000000 sets of random coordinates  
 
 Python: 1 loops, best of 10: **804 ms** per loop  
 Rust: 1 loops, best of 10: **204 ms** per loop  
@@ -63,10 +63,6 @@ More information is available in its [repository](https://github.com/urschrei/ru
 - Numpy 1.9.2
 - Pandas 0.16.2
 - Pyproj 1.9.4
-
-## TODO
-
-- Allow the converter to accept Numpy arrays
 
 ## License
 MIT
