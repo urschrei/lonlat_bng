@@ -41,6 +41,10 @@ Using multithreading, we can get much closer (pyproj is now only 65% faster). No
 The Helmert transform used is accurate to within 4 – 5 metres, so this library is **not suitable** for calculations used in e.g. surveying. If higher accuracy is required, please use a product which incorporates the OSTN02 calculations, which adjust for local variation within the Terrestrial Reference Frame. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.
 
 ## As a Rust library
+Add the following to your `Cargo.toml`:
+
+    lonlat_bng = "*"
+
 The functions exposed by the library are:
 
 `lonlat_bng::convert_to_bng`  
