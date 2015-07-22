@@ -10,7 +10,7 @@ Python is relatively slow; this type of conversion is usually carried out in bul
 ## Instructions
 
 - Ensure you have Rust 1.x installed
-- If you want to run the benchmark youself, install Pandas, IPython, Numpy, Pyproj, and their dependencies
+- If you want to run the benchmark yourself, install Pandas, IPython, Numpy, Pyproj, and their dependencies
 - Clone this repository
 - run `cargo build --release` from the repo root
 - run `ipython notebook`, and open `rust_BNG`.
