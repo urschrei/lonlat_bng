@@ -9,8 +9,8 @@ repository = "https://github.com/urschrei/rust_bng"
 readme = "README.md"
 
 [dependencies]
-libc = "0.1.8"
-rand = "0.3"
+libc = "0.2.1"
+rand = "0.3.11"
 
 [lib]
 name = "lonlat_bng"
