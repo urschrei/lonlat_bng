@@ -570,7 +570,7 @@ mod tests {
     #[test]
     fn test_lonlat_conversion() {
         let res = convert_lonlat(516276, 173141);
-        // We shouldn't reslly be using error margins, but it should be OK
+        // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
         // http://floating-point-gui.de/errors/comparison/
         assert!((res.0 - -0.32824799370716407).abs() / -0.32824799370716407 < 0.0000000001);
