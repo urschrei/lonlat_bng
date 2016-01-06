@@ -58,11 +58,11 @@ pub struct Array {
 }
 
 #[no_mangle]
-pub extern "C" fn drop_array(p: *const Array) {
-    if p.is_null() {
-        return;
-    }
-    unsafe { drop(p) };
+pub extern "C" fn drop_array(arr: Array) {
+    // if p.is_null() {
+    //     return;
+    // }
+    unsafe { drop(Vec::from_raw_parts(arr.data, arr.len, arr.len)) };
 }
 
 impl Array {
@@ -451,6 +451,7 @@ pub extern "C" fn convert_to_lonlat(eastings: Array, northings: Array) -> Array 
 
 #[cfg(test)]
 mod tests {
+    use super::drop_array;
     use super::convert_bng;
     use super::convert_lonlat;
     use super::convert_vec_c;
@@ -559,6 +560,24 @@ mod tests {
         for val in combined.iter() {
             assert_eq!(val.0, val.1);
         }
+    }
+
+    #[test]
+    fn test_dropping_array() {
+        let lon_vec: Vec<f32> = vec![-2.0183041005533306];
+        let lat_vec: Vec<f32> = vec![54.589097162646141];
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t,
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t,
+        };
+        let converted = convert_to_bng(lon_arr, lat_arr);
+        drop_array(converted);
+        // let retval = unsafe { converted.as_i32_slice() };
+        // assert_eq!(398915, retval[0]);
     }
 
     #[test]
