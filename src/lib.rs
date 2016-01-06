@@ -574,8 +574,6 @@ mod tests {
         };
         let converted = convert_to_bng(lon_arr, lat_arr);
         drop_array(converted);
-        // let retval = unsafe { converted.as_i32_slice() };
-        // assert_eq!(398915, retval[0]);
     }
 
     #[test]
