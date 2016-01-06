@@ -59,10 +59,8 @@ pub struct Array {
 
 #[no_mangle]
 pub extern "C" fn drop_array(arr: Array) {
-    // if p.is_null() {
-    //     return;
-    // }
-    unsafe { drop(Vec::from_raw_parts(arr.data, arr.len, arr.len)) };
+    // TODO: null check on arr
+    unsafe { Vec::from_raw_parts(arr.data as *mut u8, arr.len, arr.len) };
 }
 
 impl Array {
