@@ -16,6 +16,9 @@ use libc::{size_t, c_void, c_float, uint32_t};
 
 extern crate rand;
 
+extern crate crossbeam;
+use crossbeam::{scope};
+
 const NUMTHREADS: usize = 7;
 
 // Constants used for coordinate conversions
@@ -376,6 +379,28 @@ pub extern "C" fn convert_to_bng(lon: Array, lat: Array) -> Array {
     if orig.len() % NUMTHREADS > 0 {
         size += 1;
     }
+
+    let orig_crossbeam: Vec<(&f32, &f32)> = lon.iter()
+                                            .zip(lat.iter())
+                                            .collect();
+    let mut size_crossbeam = orig_crossbeam.len() / NUMTHREADS;
+    size_crossbeam = std::cmp::max(1, size);
+    crossbeam::scope(|scope| {
+        for chunk in orig_crossbeam.chunks(size) {
+            scope.spawn(move || {
+                // yr func goes here
+                chunk.into_iter()
+                .map(|elem| convert_bng(elem.0 as &f64, elem.1 as &f64))
+                .collect()
+            });
+        }
+    });
+
+
+
+
+
+
     // if orig.len() == 0, we need another adjustment
     size = std::cmp::max(1, size);
     for chunk in orig.chunks(size) {
