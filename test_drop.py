@@ -41,7 +41,7 @@ class BNG_FFIArray(Structure):
 # nicer to consume.
 def bng_void_array_to_tuple_list(array, _func, _args):
     res = cast(array.data, POINTER(BNG_FFITuple * array.len))[0]
-    drop_array(array)
+    drop_bng_array(array)
     return res
 
 
@@ -71,6 +71,7 @@ class LONLAT_FFIArray(Structure):
 # nicer to consume.
 def lonlat_void_array_to_tuple_list(array, _func, _args):
     res = cast(array.data, POINTER(LONLAT_FFITuple * array.len))[0]
+    drop_ll_array(array)
     return res
 
 # Multi-threaded
@@ -85,8 +86,12 @@ convert_lonlat.restype = LONLAT_FFIArray
 convert_lonlat.errcheck = lonlat_void_array_to_tuple_list
 
 # cleanup
-drop_array = lib.drop_array 
-drop_array.argtypes = (BNG_FFIArray,)
+drop_bng_array = lib.drop_int_array
+drop_bng_array.argtypes = (BNG_FFIArray,)
+drop_bng_array.restype = None
+drop_ll_array = lib.drop_float_array
+drop_ll_array.argtypes = (LONLAT_FFIArray,)
+drop_ll_array.restype = None 
 
 
 def convertbng_threaded(lons, lats):
@@ -99,3 +104,4 @@ def convertlonlat_threaded(eastings, northings):
 
 # actually test the thing
 print convertbng_threaded([-0.32824866], [51.44533267])
+print convertlonlat_threaded([516276], [173141])
