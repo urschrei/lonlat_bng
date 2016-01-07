@@ -17,7 +17,7 @@ use libc::{size_t, c_void, c_float, uint32_t};
 extern crate rand;
 
 extern crate crossbeam;
-use crossbeam::{scope};
+use crossbeam::scope;
 
 const NUMTHREADS: usize = 7;
 
@@ -130,18 +130,18 @@ fn round(x: f64) -> f64 {
 /// use lonlat_bng::convert_bng;
 /// assert_eq!((516276, 173141), convert_bng(-0.32824866, 51.44533267));
 #[allow(non_snake_case)]
-fn convert_bng(input_lon: f64, input_lat: f64) -> (i32, i32) {
+fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
     // input is restricted to the UK bounding box
-    assert!(-6.379880 <= input_lon && input_lon <= 1.768960,
+    assert!(-6.379880 <= *input_lon && *input_lon <= 1.768960,
             "Out of bounds! Longitude must be between -6.379880 and 1.768960: {}",
             input_lon);
-    assert!(49.871159 <= input_lat && input_lat <= 55.811741,
+    assert!(49.871159 <= *input_lat && *input_lat <= 55.811741,
             "Out of bounds! Latitude must be between 49.871159 and 55.811741: {}",
             input_lat);
     let pi: f64 = f64::consts::PI;
     // Convert input to degrees
-    let lat_1: f64 = input_lat * pi / 180.;
-    let lon_1: f64 = input_lon * pi / 180.;
+    let lat_1: f64 = *input_lat as f64 * pi / 180.;
+    let lon_1: f64 = *input_lon as f64 * pi / 180.;
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1: f64 = GRS80_SEMI_MAJOR;
     let b_1: f64 = GRS80_SEMI_MINOR;
@@ -348,27 +348,27 @@ fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
 
 /// A safer C-compatible wrapper for convert_bng()
 #[no_mangle]
-pub extern "C" fn convert_vec_c(lon: Array, lat: Array) -> Array {
-    // we're receiving floats
-    let lon = unsafe { lon.as_f32_slice() };
-    let lat = unsafe { lat.as_f32_slice() };
-    // copy values and combine
-    let orig = lon.iter()
-                  .cloned()
-                  .zip(lat.iter()
-                          .cloned());
-    // carry out the conversion
-    let result = orig.map(|elem| convert_bng(elem.0 as f64, elem.1 as f64));
-    // convert back to vector of unsigned integer Tuples
-    let nvec = result.map(|ints| {
-                         IntTuple {
-                             a: ints.0 as u32,
-                             b: ints.1 as u32,
-                         }
-                     })
-                     .collect();
-    Array::from_vec(nvec)
-}
+// pub extern "C" fn convert_vec_c(lon: Array, lat: Array) -> Array {
+//     // we're receiving floats
+//     let lon = unsafe { lon.as_f32_slice() };
+//     let lat = unsafe { lat.as_f32_slice() };
+//     // copy values and combine
+//     let orig = lon.iter()
+//                   .cloned()
+//                   .zip(lat.iter()
+//                           .cloned());
+//     // carry out the conversion
+//     let result = orig.map(|elem| convert_bng(elem.0 as f64, elem.1 as f64));
+//     // convert back to vector of unsigned integer Tuples
+//     let nvec = result.map(|ints| {
+//                          IntTuple {
+//                              a: ints.0 as u32,
+//                              b: ints.1 as u32,
+//                          }
+//                      })
+//                      .collect();
+//     Array::from_vec(nvec)
+// }
 
 /// A threaded version of the C-compatible wrapper for convert_bng()
 #[no_mangle]
@@ -376,65 +376,34 @@ pub extern "C" fn convert_to_bng(lon: Array, lat: Array) -> Array {
     // we're receiving floats
     let lon = unsafe { lon.as_f32_slice() };
     let lat = unsafe { lat.as_f32_slice() };
-    // copy values and combine
-    let orig: Vec<(f32, f32)> = lon.iter()
-                                   .cloned()
-                                   .zip(lat.iter()
-                                           .cloned())
-                                   .collect();
-
-    let mut guards: Vec<JoinHandle<Vec<(i32, i32)>>> = vec![];
-    // split into slices
+    // combine
+    let orig: Vec<(&f32, &f32)> = lon.iter()
+                                       .zip(lat.iter())
+                                       .collect();
     let mut size = orig.len() / NUMTHREADS;
     if orig.len() % NUMTHREADS > 0 {
         size += 1;
     }
-
-    let orig_crossbeam: Vec<(&f32, &f32)> = lon.iter()
-                                            .zip(lat.iter())
-                                            .collect();
-    let mut size_crossbeam = orig_crossbeam.len() / NUMTHREADS;
-    size_crossbeam = std::cmp::max(1, size);
+    size = std::cmp::max(1, size);
     crossbeam::scope(|scope| {
-        for chunk in orig_crossbeam.chunks(size) {
+        let result: Vec<Vec<(i32, i32)>> = Vec::with_capacity(orig.len());
+        for chunk in orig.chunks(size) {
             scope.spawn(move || {
-                // yr func goes here
-                chunk.into_iter()
-                .map(|elem| convert_bng(elem.0 as &f64, elem.1 as &f64))
-                .collect()
+                result.push(chunk.iter()
+                     .map(|elem| convert_bng(elem.0, elem.1))
+                     .collect::<Vec<(i32, i32)>>());
             });
         }
+        panic!("{:?}", result);
     });
-
-
-
-
-
-
-    // if orig.len() == 0, we need another adjustment
-    size = std::cmp::max(1, size);
-    for chunk in orig.chunks(size) {
-        let chunk = chunk.to_owned();
-        let g = thread::spawn(move || {
-            chunk.into_iter()
-                 .map(|elem| convert_bng(elem.0 as f64, elem.1 as f64))
-                 .collect()
-        });
-        guards.push(g);
-    }
-    let mut result: Vec<IntTuple> = Vec::with_capacity(orig.len());
-    for g in guards {
-        result.extend(g.join()
-                       .unwrap()
-                       .into_iter()
-                       .map(|ints| {
-                           IntTuple {
-                               a: ints.0 as u32,
-                               b: ints.1 as u32,
-                           }
-                       }));
-    }
-    Array::from_vec(result)
+    Array::from_vec(orig)
+    // let result = orig.into_iter().map(|ints| {
+    //     IntTuple {
+    //         a: ints.0 as u32,
+    //         b: ints.1 as u32,
+    //     }
+    // }).collect();
+    // Array::from_vec(result)
 }
 
 /// A threaded version of the C-compatible wrapper for convert_lonlat()
@@ -487,7 +456,7 @@ mod tests {
     use super::drop_int_array;
     use super::convert_bng;
     use super::convert_lonlat;
-    use super::convert_vec_c;
+    // use super::convert_vec_c;
     use super::convert_to_bng;
     use super::convert_to_lonlat;
     use super::Array;
@@ -559,41 +528,41 @@ mod tests {
         assert_eq!(-0.328248, retval[0]);
     }
 
-    #[test]
-    fn test_nonthreaded_vector_conversion() {
-        let lon_vec: Vec<f32> = vec![-2.0183041005533306,
-                                     0.95511887434519682,
-                                     0.44975855518383501,
-                                     -0.096813621191803811,
-                                     -0.36807065656416427,
-                                     0.63486335458665621];
-        let lat_vec: Vec<f32> = vec![54.589097162646141,
-                                     51.560873800587828,
-                                     50.431429161121699,
-                                     54.535021436247419,
-                                     50.839059313135706,
-                                     55.412189281234419];
+    // #[test]
+    // fn test_nonthreaded_vector_conversion() {
+    //     let lon_vec: Vec<f32> = vec![-2.0183041005533306,
+    //                                  0.95511887434519682,
+    //                                  0.44975855518383501,
+    //                                  -0.096813621191803811,
+    //                                  -0.36807065656416427,
+    //                                  0.63486335458665621];
+    //     let lat_vec: Vec<f32> = vec![54.589097162646141,
+    //                                  51.560873800587828,
+    //                                  50.431429161121699,
+    //                                  54.535021436247419,
+    //                                  50.839059313135706,
+    //                                  55.412189281234419];
 
-        // from http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-        let correct_values = vec![398915, 521545, 604932, 188804, 574082, 61931, 523242, 517193,
-                                  515004, 105661, 566898, 616298];
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
-        let converted = convert_vec_c(lon_arr, lat_arr);
-        let retval = unsafe { converted.as_i32_slice() };
-        let combined: Vec<(&i32, &i32)> = retval.iter()
-                                                .zip(correct_values.iter())
-                                                .collect();
-        for val in combined.iter() {
-            assert_eq!(val.0, val.1);
-        }
-    }
+    //     // from http://www.bgs.ac.uk/data/webservices/convertForm.cfm
+    //     let correct_values = vec![398915, 521545, 604932, 188804, 574082, 61931, 523242, 517193,
+    //                               515004, 105661, 566898, 616298];
+    //     let lon_arr = Array {
+    //         data: lon_vec.as_ptr() as *const libc::c_void,
+    //         len: lon_vec.len() as libc::size_t,
+    //     };
+    //     let lat_arr = Array {
+    //         data: lat_vec.as_ptr() as *const libc::c_void,
+    //         len: lat_vec.len() as libc::size_t,
+    //     };
+    //     let converted = convert_vec_c(lon_arr, lat_arr);
+    //     let retval = unsafe { converted.as_i32_slice() };
+    //     let combined: Vec<(&i32, &i32)> = retval.iter()
+    //                                             .zip(correct_values.iter())
+    //                                             .collect();
+    //     for val in combined.iter() {
+    //         assert_eq!(val.0, val.1);
+    //     }
+    // }
 
     #[test]
     fn test_dropping_array() {
@@ -614,7 +583,7 @@ mod tests {
     #[test]
     fn test_bng_conversion() {
         // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-        assert_eq!((516276, 173141), convert_bng(-0.32824866, 51.44533267));
+        assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267));
     }
 
     #[test]
@@ -630,12 +599,12 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_bad_lon() {
-        assert_eq!((516276, 173141), convert_bng(181., 51.44533267));
+        assert_eq!((516276, 173141), convert_bng(&181., &51.44533267));
     }
 
     #[test]
     #[should_panic]
     fn test_bad_lat() {
-        assert_eq!((516276, 173141), convert_bng(-0.32824866, -90.01));
+        assert_eq!((516276, 173141), convert_bng(&-0.32824866, &-90.01));
     }
 }
