@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import pandas as pd
 import math
@@ -102,6 +104,21 @@ def convertlonlat_threaded(eastings, northings):
     """ Multi-threaded BNG to lon, lat wrapper """
     return [(i.a, i.b) for i in iter(convert_lonlat(eastings, northings))]
 
+# UK bounding box
+N = 55.811741
+E = 1.768960
+S = 49.871159
+W = -6.379880
+
+bng = pyproj.Proj(init='epsg:27700')
+wgs84 = pyproj.Proj(init='epsg:4326')
+
+lon_ls = list(np.random.uniform(W, E, [100000]))
+lat_ls = list(np.random.uniform(S, N, [100000]))
+
 # actually test the thing
 print convertbng_threaded([-0.32824866], [51.44533267])
 print convertlonlat_threaded([516276], [173141])
+print("Converting 100k coords…")
+convertbng_threaded(lon_ls, lat_ls)
+print("done.")
