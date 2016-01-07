@@ -60,10 +60,20 @@ pub struct Array {
     len: libc::size_t,
 }
 
+/// Free memory "leaked" by rust by sending it back across the FFI boundary
+/// and reconstituting it
 #[no_mangle]
-pub extern "C" fn drop_array(arr: Array) {
+pub extern "C" fn drop_int_array(arr: Array) {
     // TODO: null check on arr
-    unsafe { Vec::from_raw_parts(arr.data as *mut u8, arr.len, arr.len) };
+    unsafe { Vec::from_raw_parts(arr.data as *mut i32, arr.len, arr.len) };
+}
+
+/// Free memory "leaked" by rust by sending it back across the FFI boundary
+/// and reconstituting it
+#[no_mangle]
+pub extern "C" fn drop_float_array(arr: Array) {
+    // TODO: null check on arr
+    unsafe { Vec::from_raw_parts(arr.data as *mut f32, arr.len, arr.len) };
 }
 
 impl Array {
@@ -474,7 +484,7 @@ pub extern "C" fn convert_to_lonlat(eastings: Array, northings: Array) -> Array 
 
 #[cfg(test)]
 mod tests {
-    use super::drop_array;
+    use super::drop_int_array;
     use super::convert_bng;
     use super::convert_lonlat;
     use super::convert_vec_c;
@@ -598,7 +608,7 @@ mod tests {
             len: lat_vec.len() as libc::size_t,
         };
         let converted = convert_to_bng(lon_arr, lat_arr);
-        drop_array(converted);
+        drop_int_array(converted);
     }
 
     #[test]
