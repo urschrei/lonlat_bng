@@ -19,6 +19,9 @@ extern crate rand;
 extern crate crossbeam;
 use crossbeam::scope;
 
+extern crate itertools;
+use itertools::{Zip, Chunks};
+
 const NUMTHREADS: usize = 7;
 
 // Constants used for coordinate conversions
@@ -120,6 +123,12 @@ fn round(x: f64) -> f64 {
         let z = (2.0 * x - y).floor();
         z * x.signum() // Should use copysign, but not stably-available
     }
+}
+
+fn convert_test(input_lon: f32, input_lat: f32) -> (f32, f32) {
+    let out_lon = input_lon + 1.;
+    let out_lat = input_lat + 1.;
+    (out_lon, out_lat)
 }
 
 /// This function performs lon, lat to BNG conversion
@@ -372,14 +381,12 @@ fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
 /// A threaded version of the C-compatible wrapper for convert_bng()
 #[no_mangle]
 pub extern "C" fn convert_to_bng(lon: Array, lat: Array) -> Array {
-    // we're receiving floats
-    let lon = unsafe { lon.as_f32_slice() };
-    let lat = unsafe { lat.as_f32_slice() };
-    // combine
-    let mut orig: Vec<_> = lon.iter()
-                              .zip(lat.iter())
-                              .collect();
-    // let mut result: Vec<(i32, i32)> = vec![];
+    let mut orig: Vec<(f32, f32)> = unsafe { lon.as_f32_slice() }
+                                        .iter()
+                                        .cloned()
+                                        .zip(unsafe { lat.as_f32_slice() }.iter().cloned())
+                                        .collect();
+    let mut result: Vec<(f32, f32)> = Vec::with_capacity(orig.len());
     let mut size = orig.len() / NUMTHREADS;
     if orig.len() % NUMTHREADS > 0 {
         size += 1;
@@ -389,9 +396,7 @@ pub extern "C" fn convert_to_bng(lon: Array, lat: Array) -> Array {
         for chunk in orig.chunks_mut(size) {
             scope.spawn(move || {
                 for elem in chunk.iter_mut() {
-                    // we have a fundamental problem with a type mismatch here
-                    // orig holds (&f32, &f32), but we're returning (i32, i32)
-                    *elem = convert_bng(*elem.0, *elem.1);
+                    *elem = convert_test(elem.0, elem.1);
                 }
             });
         }
@@ -452,12 +457,33 @@ mod tests {
     // use super::convert_vec_c;
     use super::convert_to_bng;
     use super::convert_to_lonlat;
+    use super::convert_test;
     use super::Array;
 
     extern crate libc;
     use libc::size_t;
 
+
     #[test]
+    fn test_crossbeam() {
+        let lon_vec: Vec<f32> = vec![-2.0183041005533306];
+        let lat_vec: Vec<f32> = vec![54.589097162646141];
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t,
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t,
+        };
+        let converted = convert_to_bng(lon_arr, lat_arr);
+        let retval = unsafe { converted.as_f32_slice() };
+        // dummy function simply subtracts 1. from input lon and lat
+        assert_eq!(-1.0183041, retval[0]);
+    }
+
+    #[test]
+    #[ignore]
     fn test_threaded_bng_conversion() {
         let lon_vec: Vec<f32> = vec![-2.0183041005533306,
                                      0.95511887434519682,
@@ -487,6 +513,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_threaded_bng_conversion_single() {
         // I spent 8 hours confused cos I didn't catch that chunks(0) is invalid
         let lon_vec: Vec<f32> = vec![-2.0183041005533306];
