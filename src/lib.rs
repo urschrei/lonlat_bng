@@ -130,18 +130,18 @@ fn round(x: f64) -> f64 {
 /// use lonlat_bng::convert_bng;
 /// assert_eq!((516276, 173141), convert_bng(-0.32824866, 51.44533267));
 #[allow(non_snake_case)]
-fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
+fn convert_bng(input_lon: f32, input_lat: f32) -> (i32, i32) {
     // input is restricted to the UK bounding box
-    assert!(-6.379880 <= *input_lon && *input_lon <= 1.768960,
+    assert!(-6.379880 <= input_lon && input_lon <= 1.768960,
             "Out of bounds! Longitude must be between -6.379880 and 1.768960: {}",
             input_lon);
-    assert!(49.871159 <= *input_lat && *input_lat <= 55.811741,
+    assert!(49.871159 <= input_lat && input_lat <= 55.811741,
             "Out of bounds! Latitude must be between 49.871159 and 55.811741: {}",
             input_lat);
     let pi: f64 = f64::consts::PI;
     // Convert input to degrees
-    let lat_1: f64 = *input_lat as f64 * pi / 180.;
-    let lon_1: f64 = *input_lon as f64 * pi / 180.;
+    let lat_1: f64 = input_lat as f64 * pi / 180.;
+    let lon_1: f64 = input_lon as f64 * pi / 180.;
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1: f64 = GRS80_SEMI_MAJOR;
     let b_1: f64 = GRS80_SEMI_MINOR;
@@ -369,7 +369,6 @@ fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
 //                      .collect();
 //     Array::from_vec(nvec)
 // }
-
 /// A threaded version of the C-compatible wrapper for convert_bng()
 #[no_mangle]
 pub extern "C" fn convert_to_bng(lon: Array, lat: Array) -> Array {
@@ -377,33 +376,27 @@ pub extern "C" fn convert_to_bng(lon: Array, lat: Array) -> Array {
     let lon = unsafe { lon.as_f32_slice() };
     let lat = unsafe { lat.as_f32_slice() };
     // combine
-    let orig: Vec<(&f32, &f32)> = lon.iter()
-                                       .zip(lat.iter())
-                                       .collect();
+    let mut orig: Vec<_> = lon.iter()
+                              .zip(lat.iter())
+                              .collect();
+    // let mut result: Vec<(i32, i32)> = vec![];
     let mut size = orig.len() / NUMTHREADS;
     if orig.len() % NUMTHREADS > 0 {
         size += 1;
     }
     size = std::cmp::max(1, size);
     crossbeam::scope(|scope| {
-        let result: Vec<Vec<(i32, i32)>> = Vec::with_capacity(orig.len());
-        for chunk in orig.chunks(size) {
+        for chunk in orig.chunks_mut(size) {
             scope.spawn(move || {
-                result.push(chunk.iter()
-                     .map(|elem| convert_bng(elem.0, elem.1))
-                     .collect::<Vec<(i32, i32)>>());
+                for elem in chunk.iter_mut() {
+                    // we have a fundamental problem with a type mismatch here
+                    // orig holds (&f32, &f32), but we're returning (i32, i32)
+                    *elem = convert_bng(*elem.0, *elem.1);
+                }
             });
         }
-        panic!("{:?}", result);
     });
     Array::from_vec(orig)
-    // let result = orig.into_iter().map(|ints| {
-    //     IntTuple {
-    //         a: ints.0 as u32,
-    //         b: ints.1 as u32,
-    //     }
-    // }).collect();
-    // Array::from_vec(result)
 }
 
 /// A threaded version of the C-compatible wrapper for convert_lonlat()
@@ -465,7 +458,7 @@ mod tests {
     use libc::size_t;
 
     #[test]
-    fn test_threaded_vector_conversion() {
+    fn test_threaded_bng_conversion() {
         let lon_vec: Vec<f32> = vec![-2.0183041005533306,
                                      0.95511887434519682,
                                      0.44975855518383501,
@@ -583,7 +576,7 @@ mod tests {
     #[test]
     fn test_bng_conversion() {
         // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-        assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267));
+        assert_eq!((516276, 173141), convert_bng(-0.32824866, 51.44533267));
     }
 
     #[test]
@@ -599,12 +592,12 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_bad_lon() {
-        assert_eq!((516276, 173141), convert_bng(&181., &51.44533267));
+        assert_eq!((516276, 173141), convert_bng(181., 51.44533267));
     }
 
     #[test]
     #[should_panic]
     fn test_bad_lat() {
-        assert_eq!((516276, 173141), convert_bng(&-0.32824866, &-90.01));
+        assert_eq!((516276, 173141), convert_bng(-0.32824866, -90.01));
     }
 }
