@@ -19,9 +19,6 @@ extern crate rand;
 extern crate crossbeam;
 use crossbeam::scope;
 
-extern crate itertools;
-use itertools::{Zip, Chunks};
-
 const NUMTHREADS: usize = 7;
 
 // Constants used for coordinate conversions
@@ -357,27 +354,26 @@ fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
 
 /// A safer C-compatible wrapper for convert_bng()
 #[no_mangle]
-// pub extern "C" fn convert_vec_c(lon: Array, lat: Array) -> Array {
-//     // we're receiving floats
-//     let lon = unsafe { lon.as_f32_slice() };
-//     let lat = unsafe { lat.as_f32_slice() };
-//     // copy values and combine
-//     let orig = lon.iter()
-//                   .cloned()
-//                   .zip(lat.iter()
-//                           .cloned());
-//     // carry out the conversion
-//     let result = orig.map(|elem| convert_bng(elem.0 as f64, elem.1 as f64));
-//     // convert back to vector of unsigned integer Tuples
-//     let nvec = result.map(|ints| {
-//                          IntTuple {
-//                              a: ints.0 as u32,
-//                              b: ints.1 as u32,
-//                          }
-//                      })
-//                      .collect();
-//     Array::from_vec(nvec)
-// }
+pub extern "C" fn convert_vec_c(lon: Array, lat: Array) -> Array {
+    // we're receiving floats
+    let lon = unsafe { lon.as_f32_slice() };
+    let lat = unsafe { lat.as_f32_slice() };
+    // copy values and combine
+    let orig = lon.iter()
+                  .zip(lat.iter());
+    // carry out the conversion
+    let result = orig.map(|elem| convert_bng(elem.0, elem.1));
+    // convert back to vector of unsigned integer Tuples
+    let nvec = result.map(|ints| {
+                         IntTuple {
+                             a: ints.0 as u32,
+                             b: ints.1 as u32,
+                         }
+                     })
+                     .collect();
+    Array::from_vec(nvec)
+}
+
 /// A threaded version of the C-compatible wrapper for convert_bng()
 #[no_mangle]
 pub extern "C" fn convert_to_bng(lon: Array, lat: Array) -> Array {
