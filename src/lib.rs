@@ -364,9 +364,7 @@ pub extern "C" fn convert_to_bng(lon: Array, lat: Array) -> Array {
                                       .iter()
                                       .zip(unsafe { lat.as_f32_slice() }.iter())
                                       .collect();
-    // we need to fill this with (i32, i32);
-    // let mut result = orig.clone();
-    let mut result: Vec<(i32, i32)> = vec![(1, 1); orig.len()];
+    let mut result = vec![(1, 1); orig.len()];
     let mut size = orig.len() / NUMTHREADS;
     if orig.len() % NUMTHREADS > 0 {
         size += 1;
