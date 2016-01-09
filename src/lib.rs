@@ -111,12 +111,6 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
     rho
 }
 
-fn convert_test(input_lon: f32, input_lat: f32) -> (f32, f32) {
-    let out_lon = input_lon + 1.;
-    let out_lat = input_lat + 1.;
-    (out_lon, out_lat)
-}
-
 /// This function performs lon, lat to BNG conversion
 ///
 /// Examples
@@ -443,7 +437,6 @@ mod tests {
     // use super::convert_vec_c;
     use super::convert_to_bng;
     use super::convert_to_lonlat;
-    use super::convert_test;
     use super::Array;
 
     extern crate libc;
