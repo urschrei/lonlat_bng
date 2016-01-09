@@ -434,33 +434,13 @@ mod tests {
     use super::drop_int_array;
     use super::convert_bng;
     use super::convert_lonlat;
-    // use super::convert_vec_c;
+    use super::convert_vec_c;
     use super::convert_to_bng;
     use super::convert_to_lonlat;
     use super::Array;
 
     extern crate libc;
     use libc::size_t;
-
-
-    #[test]
-    #[ignore]
-    fn test_crossbeam() {
-        let lon_vec: Vec<f32> = vec![-2.0183041005533306];
-        let lat_vec: Vec<f32> = vec![54.589097162646141];
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
-        let converted = convert_to_bng(lon_arr, lat_arr);
-        let retval = unsafe { converted.as_f32_slice() };
-        // dummy function simply subtracts 1. from input lon and lat
-        assert_eq!(-1.0183041, retval[0]);
-    }
 
     #[test]
     fn test_threaded_bng_conversion() {
@@ -526,41 +506,41 @@ mod tests {
         assert_eq!(-0.328248, retval[0]);
     }
 
-    // #[test]
-    // fn test_nonthreaded_vector_conversion() {
-    //     let lon_vec: Vec<f32> = vec![-2.0183041005533306,
-    //                                  0.95511887434519682,
-    //                                  0.44975855518383501,
-    //                                  -0.096813621191803811,
-    //                                  -0.36807065656416427,
-    //                                  0.63486335458665621];
-    //     let lat_vec: Vec<f32> = vec![54.589097162646141,
-    //                                  51.560873800587828,
-    //                                  50.431429161121699,
-    //                                  54.535021436247419,
-    //                                  50.839059313135706,
-    //                                  55.412189281234419];
+    #[test]
+    fn test_nonthreaded_vector_conversion() {
+        let lon_vec: Vec<f32> = vec![-2.0183041005533306,
+                                     0.95511887434519682,
+                                     0.44975855518383501,
+                                     -0.096813621191803811,
+                                     -0.36807065656416427,
+                                     0.63486335458665621];
+        let lat_vec: Vec<f32> = vec![54.589097162646141,
+                                     51.560873800587828,
+                                     50.431429161121699,
+                                     54.535021436247419,
+                                     50.839059313135706,
+                                     55.412189281234419];
 
-    //     // from http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-    //     let correct_values = vec![398915, 521545, 604932, 188804, 574082, 61931, 523242, 517193,
-    //                               515004, 105661, 566898, 616298];
-    //     let lon_arr = Array {
-    //         data: lon_vec.as_ptr() as *const libc::c_void,
-    //         len: lon_vec.len() as libc::size_t,
-    //     };
-    //     let lat_arr = Array {
-    //         data: lat_vec.as_ptr() as *const libc::c_void,
-    //         len: lat_vec.len() as libc::size_t,
-    //     };
-    //     let converted = convert_vec_c(lon_arr, lat_arr);
-    //     let retval = unsafe { converted.as_i32_slice() };
-    //     let combined: Vec<(&i32, &i32)> = retval.iter()
-    //                                             .zip(correct_values.iter())
-    //                                             .collect();
-    //     for val in combined.iter() {
-    //         assert_eq!(val.0, val.1);
-    //     }
-    // }
+        // from http://www.bgs.ac.uk/data/webservices/convertForm.cfm
+        let correct_values = vec![398915, 521545, 604932, 188804, 574082, 61931, 523242, 517193,
+                                  515004, 105661, 566898, 616298];
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t,
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t,
+        };
+        let converted = convert_vec_c(lon_arr, lat_arr);
+        let retval = unsafe { converted.as_i32_slice() };
+        let combined: Vec<(&i32, &i32)> = retval.iter()
+                                                .zip(correct_values.iter())
+                                                .collect();
+        for val in combined.iter() {
+            assert_eq!(val.0, val.1);
+        }
+    }
 
     #[test]
     fn test_dropping_array() {
