@@ -19,7 +19,7 @@ extern crate rand;
 extern crate crossbeam;
 use crossbeam::scope;
 
-const NUMTHREADS: usize = 7;
+const NUMTHREADS: usize = 4;
 
 // Constants used for coordinate conversions
 //
