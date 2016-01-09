@@ -16,7 +16,7 @@ use libc::{size_t, c_void, c_float, uint32_t};
 
 extern crate rand;
 
-const NUMTHREADS: usize = 7;
+const NUMTHREADS: usize = 4;
 
 // Constants used for coordinate conversions
 //
