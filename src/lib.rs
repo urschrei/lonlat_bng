@@ -111,17 +111,6 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
     rho
 }
 
-// http://stackoverflow.com/a/28124775/155423
-fn round(x: f64) -> f64 {
-    let y = x.floor();
-    if x == y {
-        x
-    } else {
-        let z = (2.0 * x - y).floor();
-        z * x.signum() // Should use copysign, but not stably-available
-    }
-}
-
 fn convert_test(input_lon: f32, input_lat: f32) -> (f32, f32) {
     let out_lon = input_lon + 1.;
     let out_lat = input_lat + 1.;
@@ -234,7 +223,7 @@ fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
     let N: f64 = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
                  IIIA * (lon - lon0).powi(6);
     let E: f64 = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
-    (round(E) as i32, round(N) as i32)
+    (E.round() as i32, N.round() as i32)
 }
 
 
