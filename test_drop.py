@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
-import pandas as pd
-import math
-from ctypes import cdll, c_float, Structure, ARRAY, POINTER, c_int32, c_uint32, c_size_t, c_void_p, cast
+from ctypes import cdll, c_float, Structure, POINTER, c_uint32, c_size_t, c_void_p, cast
 from sys import platform
 from bng import bng
+import numpy as np
 import pyproj
 
 
@@ -44,7 +42,7 @@ class BNG_FFIArray(Structure):
 def bng_void_array_to_tuple_list(array, _func, _args):
     res = cast(array.data, POINTER(BNG_FFITuple * array.len))[0]
     drop_bng_array(array)
-    return res
+    return [(i.a, i.b) for i in iter(res)]
 
 
 class LONLAT_FFITuple(Structure):
@@ -74,7 +72,7 @@ class LONLAT_FFIArray(Structure):
 def lonlat_void_array_to_tuple_list(array, _func, _args):
     res = cast(array.data, POINTER(LONLAT_FFITuple * array.len))[0]
     drop_ll_array(array)
-    return res
+    return [(i.a, i.b) for i in iter(res)]
 
 # Multi-threaded
 convert_bng = lib.convert_to_bng
@@ -98,11 +96,11 @@ drop_ll_array.restype = None
 
 def convertbng_threaded(lons, lats):
     """ Multi-threaded lon lat to BNG wrapper """
-    return [(i.a, i.b) for i in iter(convert_bng(lons, lats))]
+    return convert_bng(lons, lats)
 
 def convertlonlat_threaded(eastings, northings):
     """ Multi-threaded BNG to lon, lat wrapper """
-    return [(i.a, i.b) for i in iter(convert_lonlat(eastings, northings))]
+    return convert_lonlat(eastings, northings)
 
 # UK bounding box
 N = 55.811741
@@ -113,12 +111,15 @@ W = -6.379880
 bng = pyproj.Proj(init='epsg:27700')
 wgs84 = pyproj.Proj(init='epsg:4326')
 
-lon_ls = list(np.random.uniform(W, E, [100000]))
-lat_ls = list(np.random.uniform(S, N, [100000]))
+num_coords = 10000
+lon_ls = list(np.random.uniform(W, E, [num_coords]))
+lat_ls = list(np.random.uniform(S, N, [num_coords]))
 
 # actually test the thing
+print("Threaded lon, lat --> BNG")
 print convertbng_threaded([-0.32824866], [51.44533267])
+print("Threaded BNG --> lon, lat")
 print convertlonlat_threaded([516276], [173141])
-print("Converting 100k coords…")
+print("Threaded conversion of %s lon, lat coords --> BNG…" % num_coords)
 convertbng_threaded(lon_ls, lat_ls)
 print("done.")
