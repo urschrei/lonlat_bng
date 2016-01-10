@@ -9,7 +9,6 @@
 use std::f64;
 use std::mem;
 use std::slice;
-use std::thread::{self, JoinHandle};
 
 extern crate libc;
 use libc::{size_t, c_void, c_float, uint32_t};
@@ -229,7 +228,7 @@ fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
 /// use lonlat_bng::convert_lonlat;
 /// assert_eq!((-0.328248, 51.44534), convert_lonlat(516276, 173141)));
 #[allow(non_snake_case)]
-fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
+fn convert_lonlat(input_e: &i32, input_n: &i32) -> (f32, f32) {
     let pi: f64 = f64::consts::PI;
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a: f64 = AIRY_1830_SEMI_MAJOR;
@@ -249,8 +248,8 @@ fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
 
     let mut lat = lat0;
     let mut M: f64 = 0.0;
-    while (input_n as f64 - N0 - M) >= 0.00001 {
-        lat = (input_n as f64 - N0 - M) / (a * F0) + lat;
+    while (*input_n as f64 - N0 - M) >= 0.00001 {
+        lat = (*input_n as f64 - N0 - M) / (a * F0) + lat;
         let M1 = (1. + n + (5. / 4.) * n.powi(3) + (5. / 4.) * n.powi(3)) * (lat - lat0);
         let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) * (lat - lat0).sin() *
                  (lat + lat0).cos();
@@ -279,7 +278,7 @@ fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     let XIIA = secLat / (5040. * nu.powi(7)) *
                (61. + 662. * lat.tan().powi(2) + 1320. * lat.tan().powi(4) +
                 720. * lat.tan().powi(6));
-    let dE = input_e as f64 - E0;
+    let dE = *input_e as f64 - E0;
     // These are on the wrong ellipsoid currently: Airy1830 (Denoted by _1)
     let lat_1 = lat - VII * dE.powi(2) + VIII * dE.powi(4) - IX * dE.powi(6);
     let lon_1 = lon0 + X * dE - XI * dE.powi(3) + XII * dE.powi(5) - XIIA * dE.powi(7);
@@ -332,7 +331,7 @@ fn convert_lonlat(input_e: i32, input_n: i32) -> (f64, f64) {
     let mut lon = y_2.atan2(x_2);
     lat = lat * 180. / pi;
     lon = lon * 180. / pi;
-    return (lon, lat);
+    return (lon as f32, lat as f32);
 }
 
 /// A safer C-compatible wrapper for convert_bng()
@@ -385,45 +384,25 @@ pub extern "C" fn convert_to_bng(lon: Array, lat: Array) -> Array {
 /// A threaded version of the C-compatible wrapper for convert_lonlat()
 #[no_mangle]
 pub extern "C" fn convert_to_lonlat(eastings: Array, northings: Array) -> Array {
-    // we're receiving floats
-    let lon = unsafe { eastings.as_i32_slice() };
-    let lat = unsafe { northings.as_i32_slice() };
-    // copy values and combine
-    let orig: Vec<(i32, i32)> = lon.iter()
-                                   .cloned()
-                                   .zip(lat.iter()
-                                           .cloned())
-                                   .collect();
-
-    let mut guards: Vec<JoinHandle<Vec<(f64, f64)>>> = vec![];
-    // split into slices
+    let orig: Vec<(&i32, &i32)> = unsafe { eastings.as_i32_slice() }
+                                      .iter()
+                                      .zip(unsafe { northings.as_i32_slice() }.iter())
+                                      .collect();
+    let mut result: Vec<(f32, f32)> = vec![(1.0, 1.0); orig.len()];
     let mut size = orig.len() / NUMTHREADS;
     if orig.len() % NUMTHREADS > 0 {
         size += 1;
     }
-    // if orig.len() == 0, we need another adjustment
     size = std::cmp::max(1, size);
-    for chunk in orig.chunks(size) {
-        let chunk = chunk.to_owned();
-        let g = thread::spawn(move || {
-            chunk.into_iter()
-                 .map(|elem| convert_lonlat(elem.0, elem.1))
-                 .collect()
-        });
-        guards.push(g);
-    }
-    let mut result: Vec<FloatTuple> = Vec::with_capacity(orig.len());
-    for g in guards {
-        result.extend(g.join()
-                       .unwrap()
-                       .into_iter()
-                       .map(|floats| {
-                           FloatTuple {
-                               a: floats.0 as f32,
-                               b: floats.1 as f32,
-                           }
-                       }));
-    }
+    crossbeam::scope(|scope| {
+        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
+            scope.spawn(move || {
+                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
+                    *res_elem = convert_lonlat(orig_elem.0, orig_elem.1);
+                }
+            });
+        }
+    });
     Array::from_vec(result)
 }
 
@@ -491,6 +470,8 @@ mod tests {
     fn test_threaded_lonlat_conversion_single() {
         let easting_vec: Vec<i32> = vec![516276];
         let northing_vec: Vec<i32> = vec![173141];
+
+
         let easting_arr = Array {
             data: easting_vec.as_ptr() as *const libc::c_void,
             len: easting_vec.len() as libc::size_t,
@@ -501,11 +482,15 @@ mod tests {
         };
         let converted = convert_to_lonlat(easting_arr, northing_arr);
         let retval = unsafe { converted.as_f32_slice() };
-        assert_eq!(-0.328248, retval[0]);
+        // We shouldn't really be using error margins, but it should be OK because
+        // neither number is zero, or very close to, and on opposite sides of zero
+        // http://floating-point-gui.de/errors/comparison/
+        assert!((retval[0] - -0.32824799370716407).abs() / -0.32824799370716407 < 0.0000000001);
+        // assert!((retval[1] - 51.44534026616287).abs() / 51.44534026616287 < 0.0000000001);
     }
 
     #[test]
-    fn test_nonthreaded_vector_conversion() {
+    fn test_nonthreaded_vector_bng_conversion() {
         let lon_vec: Vec<f32> = vec![-2.0183041005533306,
                                      0.95511887434519682,
                                      0.44975855518383501,
@@ -541,7 +526,7 @@ mod tests {
     }
 
     #[test]
-    fn test_dropping_array() {
+    fn test_drop_int_array() {
         let lon_vec: Vec<f32> = vec![-2.0183041005533306];
         let lat_vec: Vec<f32> = vec![54.589097162646141];
         let lon_arr = Array {
@@ -563,8 +548,8 @@ mod tests {
     }
 
     #[test]
-    fn test_lonlat_conversion() {
-        let res = convert_lonlat(516276, 173141);
+    fn test_nonthreaded_lonlat_conversion() {
+        let res = convert_lonlat(&516276, &173141);
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
         // http://floating-point-gui.de/errors/comparison/
