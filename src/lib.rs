@@ -120,17 +120,17 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
 /// use lonlat_bng::convert_bng;
 /// assert_eq!((516276, 173141), convert_bng(-0.32824866, 51.44533267));
 #[allow(non_snake_case)]
-fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
+fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
     // input is restricted to the UK bounding box
-    assert!(-6.379880 <= *input_lon && *input_lon <= 1.768960,
+    assert!(-6.379880 <= *longitude && *longitude <= 1.768960,
             "Out of bounds! Longitude must be between -6.379880 and 1.768960: {}",
-            input_lon);
-    assert!(49.871159 <= *input_lat && *input_lat <= 55.811741,
+            longitude);
+    assert!(49.871159 <= *latitude && *latitude <= 55.811741,
             "Out of bounds! Latitude must be between 49.871159 and 55.811741: {}",
-            input_lat);
+            latitude);
     // Convert input to degrees
-    let lat_1: f64 = *input_lat as f64 * PI / 180.;
-    let lon_1: f64 = *input_lon as f64 * PI / 180.;
+    let lat_1: f64 = *latitude as f64 * PI / 180.;
+    let lon_1: f64 = *longitude as f64 * PI / 180.;
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1: f64 = GRS80_SEMI_MAJOR;
     let b_1: f64 = GRS80_SEMI_MINOR;
@@ -229,7 +229,7 @@ fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
 /// use lonlat_bng::convert_lonlat;
 /// assert_eq!((-0.328248, 51.44534), convert_lonlat(516276, 173141)));
 #[allow(non_snake_case)]
-fn convert_lonlat(input_e: &i32, input_n: &i32) -> (f32, f32) {
+fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a: f64 = AIRY_1830_SEMI_MAJOR;
     let b: f64 = AIRY_1830_SEMI_MINOR;
@@ -248,8 +248,8 @@ fn convert_lonlat(input_e: &i32, input_n: &i32) -> (f32, f32) {
 
     let mut lat = lat0;
     let mut M: f64 = 0.0;
-    while (*input_n as f64 - N0 - M) >= 0.00001 {
-        lat = (*input_n as f64 - N0 - M) / (a * F0) + lat;
+    while (*northing as f64 - N0 - M) >= 0.00001 {
+        lat = (*northing as f64 - N0 - M) / (a * F0) + lat;
         let M1 = (1. + n + (5. / 4.) * n.powi(3) + (5. / 4.) * n.powi(3)) * (lat - lat0);
         let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) * (lat - lat0).sin() *
                  (lat + lat0).cos();
@@ -278,7 +278,7 @@ fn convert_lonlat(input_e: &i32, input_n: &i32) -> (f32, f32) {
     let XIIA = secLat / (5040. * nu.powi(7)) *
                (61. + 662. * lat.tan().powi(2) + 1320. * lat.tan().powi(4) +
                 720. * lat.tan().powi(6));
-    let dE = *input_e as f64 - E0;
+    let dE = *easting as f64 - E0;
     // These are on the wrong ellipsoid currently: Airy1830 (Denoted by _1)
     let lat_1 = lat - VII * dE.powi(2) + VIII * dE.powi(4) - IX * dE.powi(6);
     let lon_1 = lon0 + X * dE - XI * dE.powi(3) + XII * dE.powi(5) - XIIA * dE.powi(7);
