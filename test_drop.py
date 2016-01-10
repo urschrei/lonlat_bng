@@ -42,7 +42,7 @@ class BNG_FFIArray(Structure):
 def bng_void_array_to_tuple_list(array, _func, _args):
     res = cast(array.data, POINTER(BNG_FFITuple * array.len))[0]
     drop_bng_array(array)
-    return res
+    return [(i.a, i.b) for i in iter(res)]
 
 
 class LONLAT_FFITuple(Structure):
@@ -72,7 +72,7 @@ class LONLAT_FFIArray(Structure):
 def lonlat_void_array_to_tuple_list(array, _func, _args):
     res = cast(array.data, POINTER(LONLAT_FFITuple * array.len))[0]
     drop_ll_array(array)
-    return res
+    return [(i.a, i.b) for i in iter(res)]
 
 # Multi-threaded
 convert_bng = lib.convert_to_bng
@@ -96,11 +96,11 @@ drop_ll_array.restype = None
 
 def convertbng_threaded(lons, lats):
     """ Multi-threaded lon lat to BNG wrapper """
-    return [(i.a, i.b) for i in iter(convert_bng(lons, lats))]
+    return convert_bng(lons, lats)
 
 def convertlonlat_threaded(eastings, northings):
     """ Multi-threaded BNG to lon, lat wrapper """
-    return [(i.a, i.b) for i in iter(convert_lonlat(eastings, northings))]
+    return convert_lonlat(eastings, northings)
 
 # UK bounding box
 N = 55.811741
