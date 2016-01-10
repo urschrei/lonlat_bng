@@ -336,10 +336,10 @@ fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
 
 /// A safer C-compatible wrapper for convert_bng()
 #[no_mangle]
-pub extern "C" fn convert_vec_c(lon: Array, lat: Array) -> Array {
+pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
     // we're receiving floats
-    let lon = unsafe { lon.as_f32_slice() };
-    let lat = unsafe { lat.as_f32_slice() };
+    let lon = unsafe { longitudes.as_f32_slice() };
+    let lat = unsafe { latitudes.as_f32_slice() };
     // copy values and combine
     let orig = lon.iter()
                   .zip(lat.iter());
@@ -358,10 +358,10 @@ pub extern "C" fn convert_vec_c(lon: Array, lat: Array) -> Array {
 
 /// A threaded version of the C-compatible wrapper for convert_bng()
 #[no_mangle]
-pub extern "C" fn convert_to_bng(lon: Array, lat: Array) -> Array {
-    let orig: Vec<(&f32, &f32)> = unsafe { lon.as_f32_slice() }
+pub extern "C" fn convert_to_bng(longitudes: Array, latitudes: Array) -> Array {
+    let orig: Vec<(&f32, &f32)> = unsafe { longitudes.as_f32_slice() }
                                       .iter()
-                                      .zip(unsafe { lat.as_f32_slice() }.iter())
+                                      .zip(unsafe { latitudes.as_f32_slice() }.iter())
                                       .collect();
     let mut result = vec![(1, 1); orig.len()];
     let mut size = orig.len() / NUMTHREADS;
