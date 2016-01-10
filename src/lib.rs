@@ -39,6 +39,8 @@ const TZ: f64 = -542.060;
 const RXS: f64 = -0.1502;
 const RYS: f64 = -0.2470;
 const RZS: f64 = -0.8421;
+// etc
+const PI: f64 = f64::consts::PI;
 //
 
 #[repr(C)]
@@ -126,10 +128,9 @@ fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
     assert!(49.871159 <= *input_lat && *input_lat <= 55.811741,
             "Out of bounds! Latitude must be between 49.871159 and 55.811741: {}",
             input_lat);
-    let pi: f64 = f64::consts::PI;
     // Convert input to degrees
-    let lat_1: f64 = *input_lat as f64 * pi / 180.;
-    let lon_1: f64 = *input_lon as f64 * pi / 180.;
+    let lat_1: f64 = *input_lat as f64 * PI / 180.;
+    let lon_1: f64 = *input_lon as f64 * PI / 180.;
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1: f64 = GRS80_SEMI_MAJOR;
     let b_1: f64 = GRS80_SEMI_MINOR;
@@ -155,9 +156,9 @@ fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
     let rys = RYS;
     let rzs = RZS;
     // In radians
-    let rx: f64 = rxs * pi / (180. * 3600.);
-    let ry: f64 = rys * pi / (180. * 3600.);
-    let rz: f64 = rzs * pi / (180. * 3600.);
+    let rx: f64 = rxs * PI / (180. * 3600.);
+    let ry: f64 = rys * PI / (180. * 3600.);
+    let rz: f64 = rzs * PI / (180. * 3600.);
     let x_2: f64 = tx + (1. + s) * x_1 + -rz * y_1 + ry * z_1;
     let y_2: f64 = ty + rz * x_1 + (1. + s) * y_1 + -rx * z_1;
     let z_2: f64 = tz + -ry * x_1 + rx * y_1 + (1. + s) * z_1;
@@ -170,7 +171,7 @@ fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
     let p: f64 = (x_2.powi(2) + y_2.powi(2)).sqrt();
     // Initial value
     let mut lat: f64 = z_2.atan2((p * (1. - e2)));
-    let mut latold: f64 = 2. * pi;
+    let mut latold: f64 = 2. * PI;
     // this is cheating, but not sure how else to initialise nu
     let mut nu: f64 = 1.;
     // Latitude is obtained by iterative procedure
@@ -183,9 +184,9 @@ fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
     // Scale factor on the central meridian
     let F0: f64 = 0.9996012717;
     // Latitude of true origin (radians)
-    let lat0: f64 = 49. * pi / 180.;
+    let lat0: f64 = 49. * PI / 180.;
     // Longitude of true origin and central meridian (radians)
-    let lon0: f64 = -2. * pi / 180.;
+    let lon0: f64 = -2. * PI / 180.;
     // Northing & easting of true origin (m)
     let N0: f64 = TRUE_ORIGIN_NORTHING;
     let E0: f64 = TRUE_ORIGIN_EASTING;
@@ -229,16 +230,15 @@ fn convert_bng(input_lon: &f32, input_lat: &f32) -> (i32, i32) {
 /// assert_eq!((-0.328248, 51.44534), convert_lonlat(516276, 173141)));
 #[allow(non_snake_case)]
 fn convert_lonlat(input_e: &i32, input_n: &i32) -> (f32, f32) {
-    let pi: f64 = f64::consts::PI;
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a: f64 = AIRY_1830_SEMI_MAJOR;
     let b: f64 = AIRY_1830_SEMI_MINOR;
     // Scale factor on the central meridian
     let F0: f64 = 0.9996012717;
     // Latitude of true origin (radians)
-    let lat0: f64 = 49. * pi / 180.;
+    let lat0: f64 = 49. * PI / 180.;
     // Longitude of true origin and central meridian (radians)
-    let lon0: f64 = -2. * pi / 180.;
+    let lon0: f64 = -2. * PI / 180.;
     // Northing & easting of true origin (m)
     let N0 = TRUE_ORIGIN_NORTHING;
     let E0 = TRUE_ORIGIN_EASTING;
@@ -301,9 +301,9 @@ fn convert_lonlat(input_e: &i32, input_n: &i32) -> (f32, f32) {
     let rys = RYS * -1.;
     let rzs = RZS * -1.;
 
-    let rx = rxs * pi / (180. * 3600.);
-    let ry = rys * pi / (180. * 3600.);
-    let rz = rzs * pi / (180. * 3600.); // In radians
+    let rx = rxs * PI / (180. * 3600.);
+    let ry = rys * PI / (180. * 3600.);
+    let rz = rzs * PI / (180. * 3600.); // In radians
     let x_2 = tx + (1. + s) * x_1 + (-rz) * y_1 + (ry) * z_1;
     let y_2 = ty + (rz) * x_1 + (1. + s) * y_1 + (-rx) * z_1;
     let z_2 = tz + (-ry) * x_1 + (rx) * y_1 + (1. + s) * z_1;
@@ -320,7 +320,7 @@ fn convert_lonlat(input_e: &i32, input_n: &i32) -> (f32, f32) {
     // Lat is obtained by iterative procedure
     // Initial value
     let mut lat: f64 = z_2.atan2((p * (1. - e2_2)));
-    let mut latold: f64 = 2. * pi;
+    let mut latold: f64 = 2. * PI;
     let mut nu_2: f64;
     while (lat - latold).abs() > (10. as f64).powi(-16) {
         mem::swap(&mut lat, &mut latold);
@@ -329,8 +329,8 @@ fn convert_lonlat(input_e: &i32, input_n: &i32) -> (f32, f32) {
     }
 
     let mut lon = y_2.atan2(x_2);
-    lat = lat * 180. / pi;
-    lon = lon * 180. / pi;
+    lat = lat * 180. / PI;
+    lon = lon * 180. / PI;
     return (lon as f32, lat as f32);
 }
 
