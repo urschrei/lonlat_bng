@@ -113,12 +113,15 @@ W = -6.379880
 bng = pyproj.Proj(init='epsg:27700')
 wgs84 = pyproj.Proj(init='epsg:4326')
 
-lon_ls = list(np.random.uniform(W, E, [100000]))
-lat_ls = list(np.random.uniform(S, N, [100000]))
+num_coords = 100000
+lon_ls = list(np.random.uniform(W, E, [num_coords]))
+lat_ls = list(np.random.uniform(S, N, [num_coords]))
 
 # actually test the thing
+print("Threaded lon, lat --> BNG")
 print convertbng_threaded([-0.32824866], [51.44533267])
+print("Threaded BNG --> lon, lat")
 print convertlonlat_threaded([516276], [173141])
-print("Converting 100k coords…")
+print("Threaded conversion of %s lon, lat coords --> BNG…" % num_coords)
 convertbng_threaded(lon_ls, lat_ls)
 print("done.")
