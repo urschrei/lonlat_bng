@@ -2,7 +2,7 @@
 
 from ctypes import cdll, c_float, Structure, POINTER, c_uint32, c_size_t, c_void_p, cast
 from sys import platform
-from bng import bng
+# from bng import bng
 import numpy as np
 import pyproj
 
@@ -41,8 +41,9 @@ class BNG_FFIArray(Structure):
 # nicer to consume.
 def bng_void_array_to_tuple_list(array, _func, _args):
     res = cast(array.data, POINTER(BNG_FFITuple * array.len))[0]
+    res_list = [(i.a, i.b) for i in iter(res)]
     drop_bng_array(array)
-    return [(i.a, i.b) for i in iter(res)]
+    return res_list
 
 
 class LONLAT_FFITuple(Structure):
@@ -71,8 +72,9 @@ class LONLAT_FFIArray(Structure):
 # nicer to consume.
 def lonlat_void_array_to_tuple_list(array, _func, _args):
     res = cast(array.data, POINTER(LONLAT_FFITuple * array.len))[0]
+    res_list = [(i.a, i.b) for i in iter(res)]
     drop_ll_array(array)
-    return [(i.a, i.b) for i in iter(res)]
+    return res_list
 
 # Multi-threaded
 convert_bng = lib.convert_to_bng
@@ -111,7 +113,7 @@ W = -6.379880
 pp_bng = pyproj.Proj(init='epsg:27700')
 wgs84 = pyproj.Proj(init='epsg:4326')
 
-num_coords = 10000
+num_coords = 1000000
 lon_ls = list(np.random.uniform(W, E, [num_coords]))
 lat_ls = list(np.random.uniform(S, N, [num_coords]))
 
@@ -119,9 +121,9 @@ lat_ls = list(np.random.uniform(S, N, [num_coords]))
 # print("Pyproj")
 # proj_res = zip(*pyproj.transform(wgs84, pp_bng, lon_ls, lat_ls))
 print("Threaded lon, lat --> BNG")
-print convertbng_threaded([-0.32824866], [51.44533267])
+convertbng_threaded([-0.32824866], [51.44533267])
 print("Threaded BNG --> lon, lat")
-print convertlonlat_threaded([516276], [173141])
+convertlonlat_threaded([516276], [173141])
 print("Threaded conversion of %s lon, lat coords --> BNG…" % num_coords)
 convertbng_threaded(lon_ls, lat_ls)
 print("done.")
