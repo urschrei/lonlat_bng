@@ -1,11 +1,16 @@
-//! The `lonlat_bng` crate provides a function that converts decimal longitude
-//! and latitude coordinates into British National Grid Coordinates
+//! The `lonlat_bng` crate provides functions that convert decimal longitude
+//! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.
 //!
 //! Examples
 //!
 //! ```
-//! assert_eq!((516276, 173141), lonlat_bng::convert(-0.32824866, 51.44533267));
+//! assert_eq!((516276, 173141), lonlat_bng::convert_bng(-0.32824866, 51.44533267));
 //! ```
+//! ```
+//! assert_eq!((-0.328248, 51.44534), lonlat_bng::convert_lonlat(516276, 173141)));
+//! ```
+//! The crate also provides threaded versions of each function, which accept Arrays of values. These are intended for use with FFI.
+//! An example implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng).
 use std::f64;
 use std::mem;
 use std::slice;
@@ -62,7 +67,7 @@ pub struct Array {
 }
 
 /// Free memory "leaked" by rust by sending it back across the FFI boundary
-/// and reconstituting it
+/// and reconstituting it (i32 values).
 #[no_mangle]
 pub extern "C" fn drop_int_array(arr: Array) {
     if arr.data.is_null() {
@@ -72,7 +77,7 @@ pub extern "C" fn drop_int_array(arr: Array) {
 }
 
 /// Free memory "leaked" by rust by sending it back across the FFI boundary
-/// and reconstituting it
+/// and reconstituting it (f32 values).
 #[no_mangle]
 pub extern "C" fn drop_float_array(arr: Array) {
     if arr.data.is_null() {
@@ -124,7 +129,7 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
 /// use lonlat_bng::convert_bng;
 /// assert_eq!((516276, 173141), convert_bng(-0.32824866, 51.44533267));
 #[allow(non_snake_case)]
-fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
+pub fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
     // input is restricted to the UK bounding box
     assert!(-6.379880 <= *longitude && *longitude <= 1.768960,
             "Out of bounds! Longitude must be between -6.379880 and 1.768960: {}",
@@ -233,7 +238,7 @@ fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
 /// use lonlat_bng::convert_lonlat;
 /// assert_eq!((-0.328248, 51.44534), convert_lonlat(516276, 173141)));
 #[allow(non_snake_case)]
-fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
+pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a = AIRY_1830_SEMI_MAJOR;
     let b = AIRY_1830_SEMI_MINOR;
@@ -338,7 +343,7 @@ fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
     return (lon as f32, lat as f32);
 }
 
-/// A safer C-compatible wrapper for convert_bng()
+/// A C-compatible wrapper for convert_bng()
 #[no_mangle]
 pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
     // we're receiving floats
@@ -360,9 +365,9 @@ pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
     Array::from_vec(nvec)
 }
 
-/// A threaded version of the C-compatible wrapper for convert_bng()
+/// A threaded, FFI-compatible wrapper for convert_bng()
 #[no_mangle]
-pub extern "C" fn convert_to_bng(longitudes: Array, latitudes: Array) -> Array {
+pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> Array {
     let orig: Vec<(&f32, &f32)> = unsafe { longitudes.as_f32_slice() }
                                       .iter()
                                       .zip(unsafe { latitudes.as_f32_slice() }.iter())
@@ -385,9 +390,9 @@ pub extern "C" fn convert_to_bng(longitudes: Array, latitudes: Array) -> Array {
     Array::from_vec(result)
 }
 
-/// A threaded version of the C-compatible wrapper for convert_lonlat()
+/// A threaded, FFI-compatible wrapper for convert_lonlat()
 #[no_mangle]
-pub extern "C" fn convert_to_lonlat(eastings: Array, northings: Array) -> Array {
+pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> Array {
     let orig: Vec<(&i32, &i32)> = unsafe { eastings.as_i32_slice() }
                                       .iter()
                                       .zip(unsafe { northings.as_i32_slice() }.iter())
@@ -416,8 +421,8 @@ mod tests {
     use super::convert_bng;
     use super::convert_lonlat;
     use super::convert_vec_c;
-    use super::convert_to_bng;
-    use super::convert_to_lonlat;
+    use super::convert_to_bng_threaded;
+    use super::convert_to_lonlat_threaded;
     use super::Array;
 
     extern crate libc;
@@ -445,7 +450,7 @@ mod tests {
             data: lat_vec.as_ptr() as *const libc::c_void,
             len: lat_vec.len() as libc::size_t,
         };
-        let converted = convert_to_bng(lon_arr, lat_arr);
+        let converted = convert_to_bng_threaded(lon_arr, lat_arr);
         let retval = unsafe { converted.as_i32_slice() };
         // the value's incorrect, but let's worry about that later
         assert_eq!(398915, retval[0]);
@@ -465,7 +470,7 @@ mod tests {
             data: lat_vec.as_ptr() as *const libc::c_void,
             len: lat_vec.len() as libc::size_t,
         };
-        let converted = convert_to_bng(lon_arr, lat_arr);
+        let converted = convert_to_bng_threaded(lon_arr, lat_arr);
         let retval = unsafe { converted.as_i32_slice() };
         assert_eq!(398915, retval[0]);
     }
@@ -484,7 +489,7 @@ mod tests {
             data: northing_vec.as_ptr() as *const libc::c_void,
             len: northing_vec.len() as libc::size_t,
         };
-        let converted = convert_to_lonlat(easting_arr, northing_arr);
+        let converted = convert_to_lonlat_threaded(easting_arr, northing_arr);
         let retval = unsafe { converted.as_f32_slice() };
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
@@ -541,7 +546,7 @@ mod tests {
             data: lat_vec.as_ptr() as *const libc::c_void,
             len: lat_vec.len() as libc::size_t,
         };
-        let converted = convert_to_bng(lon_arr, lat_arr);
+        let converted = convert_to_bng_threaded(lon_arr, lat_arr);
         drop_int_array(converted);
     }
 
@@ -552,7 +557,7 @@ mod tests {
     }
 
     #[test]
-    fn test_nonthreaded_lonlat_conversion() {
+    fn test_lonlat_conversion() {
         let res = convert_lonlat(&516276, &173141);
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
