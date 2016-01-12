@@ -102,7 +102,7 @@ impl Array {
         };
 
         // Whee! Leak the memory, and now the raw pointer (and
-        // eventually C) is the owner.
+        // eventually Python) is the owner.
         mem::forget(vec);
 
         array
