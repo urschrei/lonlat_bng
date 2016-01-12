@@ -1,10 +1,10 @@
 [package]
 name = "lonlat_bng"
 description = "Convert longitude and latitude coordinates to BNG coordinates, and vice versa"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Stephan Hügel <urschrei@gmail.com>"]
 license = "MIT"
-keywords = ["BNG", "OSGB36", "Geo"]
+keywords = ["BNG", "OSGB36", "epsg:27700", "Geo"]
 repository = "https://github.com/urschrei/rust_bng"
 readme = "README.md"
 
