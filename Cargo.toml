@@ -4,7 +4,7 @@ description = "Convert longitude and latitude coordinates to BNG coordinates, an
 version = "0.1.5"
 authors = ["Stephan Hügel <urschrei@gmail.com>"]
 license = "MIT"
-keywords = ["BNG", "OSGB36", "epsg:27700", "Geo"]
+keywords = ["BNG", "OSGB36", "Geo"]
 repository = "https://github.com/urschrei/rust_bng"
 readme = "README.md"
 
