@@ -235,14 +235,14 @@ fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
 #[allow(non_snake_case)]
 fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
-    let a: f64 = AIRY_1830_SEMI_MAJOR;
-    let b: f64 = AIRY_1830_SEMI_MINOR;
+    let a = AIRY_1830_SEMI_MAJOR;
+    let b = AIRY_1830_SEMI_MINOR;
     // Scale factor on the central meridian
     let F0: f64 = 0.9996012717;
     // Latitude of true origin (radians)
-    let lat0: f64 = 49. * PI / 180.;
+    let lat0 = 49. * PI / 180.;
     // Longitude of true origin and central meridian (radians)
-    let lon0: f64 = -2. * PI / 180.;
+    let lon0 = -2. * PI / 180.;
     // Northing & easting of true origin (m)
     let N0 = TRUE_ORIGIN_NORTHING;
     let E0 = TRUE_ORIGIN_EASTING;
@@ -323,8 +323,8 @@ fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
 
     // Lat is obtained by iterative procedure
     // Initial value
-    let mut lat: f64 = z_2.atan2((p * (1. - e2_2)));
-    let mut latold: f64 = 2. * PI;
+    let mut lat = z_2.atan2((p * (1. - e2_2)));
+    let mut latold = 2. * PI;
     let mut nu_2: f64;
     while (lat - latold).abs() > (10. as f64).powi(-16) {
         mem::swap(&mut lat, &mut latold);
