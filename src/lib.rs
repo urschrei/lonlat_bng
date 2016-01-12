@@ -136,21 +136,21 @@ fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
     let lat_1: f64 = *latitude as f64 * PI / 180.;
     let lon_1: f64 = *longitude as f64 * PI / 180.;
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
-    let a_1: f64 = GRS80_SEMI_MAJOR;
-    let b_1: f64 = GRS80_SEMI_MINOR;
+    let a_1 = GRS80_SEMI_MAJOR;
+    let b_1 = GRS80_SEMI_MINOR;
     // The eccentricity (squared) of the GRS80 ellipsoid
-    let e2_1: f64 = 1. - (b_1.powi(2)) / (a_1.powi(2));
+    let e2_1 = 1. - (b_1.powi(2)) / (a_1.powi(2));
     // Transverse radius of curvature
-    let nu_1: f64 = a_1 / (1. - e2_1 * lat_1.sin().powi(2)).sqrt();
+    let nu_1 = a_1 / (1. - e2_1 * lat_1.sin().powi(2)).sqrt();
     // Third spherical coordinate is 0, in this case
     let H: f64 = 0.;
-    let x_1: f64 = (nu_1 + H) * lat_1.cos() * lon_1.cos();
-    let y_1: f64 = (nu_1 + H) * lat_1.cos() * lon_1.sin();
-    let z_1: f64 = ((1. - e2_1) * nu_1 + H) * lat_1.sin();
+    let x_1 = (nu_1 + H) * lat_1.cos() * lon_1.cos();
+    let y_1 = (nu_1 + H) * lat_1.cos() * lon_1.sin();
+    let z_1 = ((1. - e2_1) * nu_1 + H) * lat_1.sin();
 
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
     let cst: f64 = 20.4894;
-    let s: f64 = cst * (10 as f64).powi(-6);
+    let s = cst * (10 as f64).powi(-6);
     // The translations along x, y, z axes respectively
     let tx = TX;
     let ty = TY;
@@ -160,22 +160,22 @@ fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
     let rys = RYS;
     let rzs = RZS;
     // In radians
-    let rx: f64 = rxs * PI / (180. * 3600.);
-    let ry: f64 = rys * PI / (180. * 3600.);
-    let rz: f64 = rzs * PI / (180. * 3600.);
-    let x_2: f64 = tx + (1. + s) * x_1 + -rz * y_1 + ry * z_1;
-    let y_2: f64 = ty + rz * x_1 + (1. + s) * y_1 + -rx * z_1;
-    let z_2: f64 = tz + -ry * x_1 + rx * y_1 + (1. + s) * z_1;
+    let rx = rxs * PI / (180. * 3600.);
+    let ry = rys * PI / (180. * 3600.);
+    let rz = rzs * PI / (180. * 3600.);
+    let x_2 = tx + (1. + s) * x_1 + -rz * y_1 + ry * z_1;
+    let y_2 = ty + rz * x_1 + (1. + s) * y_1 + -rx * z_1;
+    let z_2 = tz + -ry * x_1 + rx * y_1 + (1. + s) * z_1;
 
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
-    let a: f64 = AIRY_1830_SEMI_MAJOR;
-    let b: f64 = AIRY_1830_SEMI_MINOR;
+    let a = AIRY_1830_SEMI_MAJOR;
+    let b = AIRY_1830_SEMI_MINOR;
     // The eccentricity of the Airy 1830 ellipsoid
-    let e2: f64 = 1. - b.powi(2) / a.powi(2);
-    let p: f64 = (x_2.powi(2) + y_2.powi(2)).sqrt();
+    let e2 = 1. - b.powi(2) / a.powi(2);
+    let p = (x_2.powi(2) + y_2.powi(2)).sqrt();
     // Initial value
-    let mut lat: f64 = z_2.atan2((p * (1. - e2)));
-    let mut latold: f64 = 2. * PI;
+    let mut lat = z_2.atan2((p * (1. - e2)));
+    let mut latold = 2. * PI;
     // this is cheating, but not sure how else to initialise nu
     let mut nu: f64 = 1.;
     // Latitude is obtained by iterative procedure
@@ -184,43 +184,43 @@ fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
         nu = a / (1. - e2 * latold.sin().powi(2)).sqrt();
         lat = (z_2 + e2 * nu * latold.sin()).atan2(p);
     }
-    let lon: f64 = y_2.atan2(x_2);
+    let lon = y_2.atan2(x_2);
     // Scale factor on the central meridian
     let F0: f64 = 0.9996012717;
     // Latitude of true origin (radians)
-    let lat0: f64 = 49. * PI / 180.;
+    let lat0 = 49. * PI / 180.;
     // Longitude of true origin and central meridian (radians)
-    let lon0: f64 = -2. * PI / 180.;
+    let lon0 = -2. * PI / 180.;
     // Northing & easting of true origin (m)
-    let N0: f64 = TRUE_ORIGIN_NORTHING;
-    let E0: f64 = TRUE_ORIGIN_EASTING;
-    let n: f64 = (a - b) / (a + b);
+    let N0 = TRUE_ORIGIN_NORTHING;
+    let E0 = TRUE_ORIGIN_EASTING;
+    let n = (a - b) / (a + b);
     // Meridional radius of curvature
     let rho = curvature(a, F0, e2, lat);
-    let eta2: f64 = nu * F0 / rho - 1.;
+    let eta2 = nu * F0 / rho - 1.;
 
-    let M1: f64 = (1. + n + (5. / 4.) * n.powi(2) + (5. / 4.) * n.powi(3)) * (lat - lat0);
-    let M2: f64 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) * (lat - lat0).sin() *
+    let M1 = (1. + n + (5. / 4.) * n.powi(2) + (5. / 4.) * n.powi(3)) * (lat - lat0);
+    let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) * (lat - lat0).sin() *
                   (lat + lat0).cos();
-    let M3: f64 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3)) * (2. * (lat - lat0)).sin() *
+    let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3)) * (2. * (lat - lat0)).sin() *
                   (2. * (lat + lat0)).cos();
-    let M4: f64 = (35. / 24.) * n.powi(3) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
-    let M: f64 = b * F0 * (M1 - M2 + M3 - M4);
+    let M4 = (35. / 24.) * n.powi(3) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
+    let M = b * F0 * (M1 - M2 + M3 - M4);
 
-    let I: f64 = M + N0;
-    let II: f64 = nu * F0 * lat.sin() * lat.cos() / 2.;
-    let III: f64 = nu * F0 * lat.sin() * lat.cos().powi(3) * (5. - lat.tan().powi(2) + 9. * eta2) /
+    let I = M + N0;
+    let II = nu * F0 * lat.sin() * lat.cos() / 2.;
+    let III = nu * F0 * lat.sin() * lat.cos().powi(3) * (5. - lat.tan().powi(2) + 9. * eta2) /
                    24.;
-    let IIIA: f64 = nu * F0 * lat.sin() * lat.cos().powi(5) *
+    let IIIA = nu * F0 * lat.sin() * lat.cos().powi(5) *
                     (61. - 58. * lat.tan().powi(2) + lat.tan().powi(4)) / 720.;
-    let IV: f64 = nu * F0 * lat.cos();
-    let V: f64 = nu * F0 * lat.cos().powi(3) * (nu / rho - lat.tan().powi(2)) / 6.;
-    let VI: f64 = nu * F0 * lat.cos().powi(5) *
+    let IV = nu * F0 * lat.cos();
+    let V = nu * F0 * lat.cos().powi(3) * (nu / rho - lat.tan().powi(2)) / 6.;
+    let VI = nu * F0 * lat.cos().powi(5) *
                   (5. - 18. * lat.tan().powi(2) + lat.tan().powi(4) + 14. * eta2 -
                    58. * eta2 * lat.tan().powi(2)) / 120.;
-    let N: f64 = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
+    let N = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
                  IIIA * (lon - lon0).powi(6);
-    let E: f64 = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
+    let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
     (E.round() as i32, N.round() as i32)
 }
 
