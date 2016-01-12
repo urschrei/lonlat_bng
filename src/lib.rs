@@ -65,7 +65,9 @@ pub struct Array {
 /// and reconstituting it
 #[no_mangle]
 pub extern "C" fn drop_int_array(arr: Array) {
-    if arr.data.is_null() { return }
+    if arr.data.is_null() {
+        return;
+    }
     unsafe { Vec::from_raw_parts(arr.data as *mut i32, arr.len, arr.len) };
 }
 
@@ -73,7 +75,9 @@ pub extern "C" fn drop_int_array(arr: Array) {
 /// and reconstituting it
 #[no_mangle]
 pub extern "C" fn drop_float_array(arr: Array) {
-    if arr.data.is_null() { return }
+    if arr.data.is_null() {
+        return;
+    }
     unsafe { Vec::from_raw_parts(arr.data as *mut f32, arr.len, arr.len) };
 }
 
