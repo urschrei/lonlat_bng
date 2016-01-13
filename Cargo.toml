@@ -12,6 +12,7 @@ readme = "README.md"
 libc = "0.2.4"
 rand = "0.3.12"
 crossbeam = "0.2.0"
+num_cpus = "0.2.10"
 
 [lib]
 name = "lonlat_bng"

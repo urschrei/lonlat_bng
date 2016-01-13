@@ -23,7 +23,7 @@ extern crate rand;
 extern crate crossbeam;
 use crossbeam::scope;
 
-const NUMTHREADS: usize = 4;
+extern crate num_cpus;
 
 // Constants used for coordinate conversions
 //
@@ -368,13 +368,14 @@ pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
 /// A threaded, FFI-compatible wrapper for convert_bng()
 #[no_mangle]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> Array {
+    let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&f32, &f32)> = unsafe { longitudes.as_f32_slice() }
                                       .iter()
                                       .zip(unsafe { latitudes.as_f32_slice() }.iter())
                                       .collect();
     let mut result = vec![(1, 1); orig.len()];
-    let mut size = orig.len() / NUMTHREADS;
-    if orig.len() % NUMTHREADS > 0 {
+    let mut size = orig.len() / numthreads;
+    if orig.len() % numthreads > 0 {
         size += 1;
     }
     size = std::cmp::max(1, size);
@@ -393,13 +394,14 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
 /// A threaded, FFI-compatible wrapper for convert_lonlat()
 #[no_mangle]
 pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> Array {
+    let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&i32, &i32)> = unsafe { eastings.as_i32_slice() }
                                       .iter()
                                       .zip(unsafe { northings.as_i32_slice() }.iter())
                                       .collect();
     let mut result: Vec<(f32, f32)> = vec![(1.0, 1.0); orig.len()];
-    let mut size = orig.len() / NUMTHREADS;
-    if orig.len() % NUMTHREADS > 0 {
+    let mut size = orig.len() / numthreads;
+    if orig.len() % numthreads > 0 {
         size += 1;
     }
     size = std::cmp::max(1, size);
