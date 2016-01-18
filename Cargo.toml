@@ -10,13 +10,20 @@ readme = "README.md"
 
 [dependencies]
 libc = "0.2.4"
-rand = "0.3.12"
+rand = "0.3.13"
 crossbeam = "0.2.0"
 num_cpus = "0.2.10"
 
 [lib]
 name = "lonlat_bng"
-crate-type = ["dylib", "staticlib"]
+crate-type = ["rlib", "dylib"]
 test = true
-doctest = true
+doctest = false
 doc = true
+
+[profile.release]
+debug = true
+
+[[bin]]
+name = "lonlat_bin"
+doc = false

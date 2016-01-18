@@ -62,8 +62,8 @@ pub struct FloatTuple {
 
 #[repr(C)]
 pub struct Array {
-    data: *const c_void,
-    len: libc::size_t,
+    pub data: *const c_void,
+    pub len: libc::size_t,
 }
 
 /// Free memory "leaked" by rust by sending it back across the FFI boundary
