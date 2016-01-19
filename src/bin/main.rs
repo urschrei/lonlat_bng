@@ -1,8 +1,4 @@
 // this is just a test binary that can be hooked up to Instruments
-
-#![feature(alloc_system)]
-extern crate alloc_system;
-
 extern crate lonlat_bng;
 use lonlat_bng::{convert_to_bng_threaded, Array};
 

@@ -21,8 +21,8 @@ test = true
 doctest = false
 doc = true
 
-[profile.release]
-debug = true
+# [profile.release]
+# debug = true
 
 [[bin]]
 name = "lonlat_bin"
