@@ -1,6 +1,6 @@
 // this is just a test binary that can be hooked up to Instruments
 extern crate lonlat_bng;
-use lonlat_bng::{convert_to_bng_threaded, Array};
+use lonlat_bng::{convert_to_bng_threaded, convert_vec_c, Array};
 
 extern crate rand;
 use rand::distributions::{IndependentSample, Range};
@@ -23,5 +23,6 @@ fn main() {
         len: lat_vec.len() as libc::size_t,
     };
 
+    // convert_vec_c(lon_arr, lat_arr);
     convert_to_bng_threaded(lon_arr, lat_arr); 
 }
