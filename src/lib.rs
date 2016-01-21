@@ -7,7 +7,7 @@
 //! assert_eq!((516276, 173141), lonlat_bng::convert_bng(&-0.32824866, &51.44533267));
 //! ```
 //! ```
-//! assert_eq!((-0.328248, 51.44534), lonlat_bng::convert_lonlat(&516276, &173141)));
+//! assert_eq!((-0.328248, 51.44534), lonlat_bng::convert_lonlat(&516276, &173141));
 //! ```
 //! The crate also provides threaded versions of each function, which accept Arrays of values. These are intended for use with FFI.
 //! An example implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng).
