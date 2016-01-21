@@ -24,5 +24,5 @@ fn main() {
     };
 
     // convert_vec_c(lon_arr, lat_arr);
-    convert_to_bng_threaded(lon_arr, lat_arr); 
+    convert_to_bng_threaded(lon_arr, lat_arr);
 }
