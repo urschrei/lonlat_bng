@@ -227,25 +227,24 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
 
     let M1 = (1. + n + (5. / 4.) * n.powi(2) + (5. / 4.) * n.powi(3)) * (lat - lat0);
     let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) * (lat - lat0).sin() *
-                  (lat + lat0).cos();
+             (lat + lat0).cos();
     let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3)) * (2. * (lat - lat0)).sin() *
-                  (2. * (lat + lat0)).cos();
+             (2. * (lat + lat0)).cos();
     let M4 = (35. / 24.) * n.powi(3) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
     let M = b * F0 * (M1 - M2 + M3 - M4);
 
     let I = M + N0;
     let II = nu * F0 * lat.sin() * lat.cos() / 2.;
-    let III = nu * F0 * lat.sin() * lat.cos().powi(3) * (5. - lat.tan().powi(2) + 9. * eta2) /
-                   24.;
+    let III = nu * F0 * lat.sin() * lat.cos().powi(3) * (5. - lat.tan().powi(2) + 9. * eta2) / 24.;
     let IIIA = nu * F0 * lat.sin() * lat.cos().powi(5) *
-                    (61. - 58. * lat.tan().powi(2) + lat.tan().powi(4)) / 720.;
+               (61. - 58. * lat.tan().powi(2) + lat.tan().powi(4)) / 720.;
     let IV = nu * F0 * lat.cos();
     let V = nu * F0 * lat.cos().powi(3) * (nu / rho - lat.tan().powi(2)) / 6.;
     let VI = nu * F0 * lat.cos().powi(5) *
-                  (5. - 18. * lat.tan().powi(2) + lat.tan().powi(4) + 14. * eta2 -
-                   58. * eta2 * lat.tan().powi(2)) / 120.;
+             (5. - 18. * lat.tan().powi(2) + lat.tan().powi(4) + 14. * eta2 -
+              58. * eta2 * lat.tan().powi(2)) / 120.;
     let N = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
-                 IIIA * (lon - lon0).powi(6);
+            IIIA * (lon - lon0).powi(6);
     let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
     (E.round() as i32, N.round() as i32)
 }
