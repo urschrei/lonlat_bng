@@ -9,9 +9,9 @@ repository = "https://github.com/urschrei/rust_bng"
 readme = "README.md"
 
 [dependencies]
-libc = "0.2.4"
+libc = "0.2.5"
 rand = "0.3.13"
-crossbeam = "0.2.0"
+crossbeam = "0.2.1"
 num_cpus = "0.2.10"
 
 [lib]
