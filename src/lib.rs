@@ -72,6 +72,7 @@ pub struct Array {
 /// Examples
 ///
 /// ```
+/// # extern crate libc;
 /// let lon_vec: Vec<f32> = vec![-2.0183041005533306];
 /// let lat_vec: Vec<f32> = vec![54.589097162646141];
 /// let lon_arr = Array {
@@ -84,7 +85,7 @@ pub struct Array {
 /// };
 /// let converted = convert_to_bng_threaded(lon_arr, lat_arr);
 /// drop_int_array(converted);
-///
+/// ```
 /// # Safety
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
@@ -256,7 +257,7 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
 ///
 /// ```
 /// use lonlat_bng::convert_lonlat;
-/// assert_eq!((-0.328248, 51.44534), convert_lonlat(&516276, &173141)));
+/// assert_eq!((-0.328248, 51.44534), convert_lonlat(&516276, &173141));
 #[allow(non_snake_case)]
 pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
@@ -391,6 +392,7 @@ pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
 /// Examples
 ///
 /// ```
+/// extern crate libc;
 /// let lon_vec: Vec<f32> = vec![-2.0183041005533306,
 ///                              0.95511887434519682,
 ///                              0.44975855518383501,
@@ -412,7 +414,7 @@ pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
 ///     len: lat_vec.len() as libc::size_t,
 /// };
 /// let converted = convert_to_bng_threaded(lon_arr, lat_arr);
-///
+/// ```
 /// # Safety
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
