@@ -40,19 +40,29 @@ Using multithreading, we can get much closer (pyproj is now only 65% faster). No
 ## Accuracy
 The Helmert transform used is accurate to within 4 – 5 metres, so this library is **not suitable** for calculations used in e.g. surveying. If higher accuracy is required, please use a product which incorporates the OSTN02 calculations, which adjust for local variation within the Terrestrial Reference Frame. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.
 
-## As a Rust library
+## Library Use
+### As a Rust Library
 Add the following to your `Cargo.toml` (You'll have to look up the latest version on [crates.io](https://crates.io/crates/lonlat_bng/))
 
     lonlat_bng = "0.1.8"
 
-The functions exposed by the library are:
+The native functions exposed by the library are:
 
-`lonlat_bng::convert_to_bng`  
-`lonlat_bng::convert_to_lonlat`
+`lonlat_bng::convert_bng(&f32, &f32) -> (i32, i32)`  
+`lonlat_bng::convert_lonlat(&i21 &i32) -> (f32, f32)`  
 
-Both functions accept two `Array`s of lon, lat coordinates or BNG Eastings and Northings, respectively. Converting vectors to `Array` is trivial (see the tests for examples).
+`lonlat_bng::convert_to_bng_threaded_vec(Vec<(&f32, &f32)>) -> Vec<(i32, i32)>`  
+`lonlat_bng::convert_to_lonlat_threaded_vec(Vec<(&i32, &i32)>) -> Vec<(f32, f32)>`  
 
-## As a Python Package
+### As an FFI Library
+The FFI C-compatible functions exposed by the library are:
+
+`convert_to_bng_threaded(Array, Array) -> Array`  
+`convert_to_bng_threaded(Array, Array) -> Array`  
+
+The `Array`s must contain 32-bit `Float`s and 32-bit `Int`s, respectively. For examples, see the `Array` struct and tests in [lib.rs](src/lib.rs), and the `_BNG_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py)
+
+### As a Python Package
 `convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI for OSX and *nix:  
 `pip install convertbng`  
 More information is available in its [repository](https://github.com/urschrei/rust_bng)

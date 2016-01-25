@@ -9,7 +9,7 @@
 //! ```
 //! assert_eq!((-0.328248, 51.44534), lonlat_bng::convert_lonlat(&516276, &173141));
 //! ```
-//! The crate also provides threaded versions of each function, which accept Arrays of values. These are intended for use with FFI.
+//! The crate also provides threaded versions of each function, which accept vectors of values, and wrapper functions for these, which are intended for use with FFI.
 //! An example implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng).
 use std::f64;
 use std::mem;
@@ -420,11 +420,16 @@ pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> Array {
+    let lons = unsafe { longitudes.as_f32_slice().to_vec() };
+    let lats = unsafe { latitudes.as_f32_slice().to_vec() };
+    let result = convert_to_bng_threaded_vec(&lons, &lats);
+    Array::from_vec(result)
+}
+
+/// A threaded wrapper for convert_bng()
+pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>, latitudes: &Vec<f32>) -> Vec<(i32, i32)> {
     let numthreads = num_cpus::get() as usize;
-    let orig: Vec<(&f32, &f32)> = unsafe { longitudes.as_f32_slice() }
-                                      .iter()
-                                      .zip(unsafe { latitudes.as_f32_slice() }.iter())
-                                      .collect();
+    let orig: Vec<(&f32, &f32)> = longitudes.iter().zip(latitudes.iter()).collect();
     let mut result = vec![(1, 1); orig.len()];
     let mut size = orig.len() / numthreads;
     if orig.len() % numthreads > 0 {
@@ -440,7 +445,7 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
             });
         }
     });
-    Array::from_vec(result)
+    result
 }
 
 /// A threaded, FFI-compatible wrapper for convert_lonlat()
@@ -450,11 +455,16 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> Array {
+    let eastings_vec = unsafe { eastings.as_i32_slice().to_vec() };
+    let northings_vec = unsafe { northings.as_i32_slice().to_vec() };
+    let result = convert_to_lonlat_threaded_vec(&eastings_vec, &northings_vec);
+    Array::from_vec(result)
+}
+
+/// A threaded wrapper for convert_lonlat()
+pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>, northings: &Vec<i32>) -> Vec<(f32, f32)> {
     let numthreads = num_cpus::get() as usize;
-    let orig: Vec<(&i32, &i32)> = unsafe { eastings.as_i32_slice() }
-                                      .iter()
-                                      .zip(unsafe { northings.as_i32_slice() }.iter())
-                                      .collect();
+    let orig: Vec<(&i32, &i32)> = eastings.iter().zip(northings.iter()).collect();
     let mut result: Vec<(f32, f32)> = vec![(1.0, 1.0); orig.len()];
     let mut size = orig.len() / numthreads;
     if orig.len() % numthreads > 0 {
@@ -470,7 +480,7 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
             });
         }
     });
-    Array::from_vec(result)
+    result
 }
 
 #[cfg(test)]
