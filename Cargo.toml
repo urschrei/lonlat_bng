@@ -5,7 +5,7 @@ version = "0.1.9"
 authors = ["Stephan Hügel <urschrei@gmail.com>"]
 license = "MIT"
 keywords = ["BNG", "OSGB36", "Geo", "FFI"]
-repository = "https://github.com/urschrei/rust_bng"
+repository = "https://github.com/urschrei/lonlat_bng"
 readme = "README.md"
 
 [dependencies]
