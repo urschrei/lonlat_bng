@@ -74,8 +74,7 @@ pub struct Array {
     pub len: libc::size_t,
 }
 
-/// Free memory "leaked" by rust by sending it back across the FFI boundary
-/// and reconstituting it (i32 values).
+/// Free memory which Rust has allocated across the FFI boundary (i32 values)
 ///
 /// # Examples
 ///
@@ -104,8 +103,7 @@ pub extern "C" fn drop_int_array(arr: Array) {
     unsafe { Vec::from_raw_parts(arr.data as *mut i32, arr.len, arr.len) };
 }
 
-/// Free memory "leaked" by rust by sending it back across the FFI boundary
-/// and reconstituting it (f32 values).
+/// Free memory which Rust has allocated across the FFI boundary (f32 values)
 ///
 /// # Safety
 ///
