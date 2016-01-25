@@ -106,7 +106,9 @@ pub extern "C" fn drop_int_array(arr: Array) {
 
 /// Free memory "leaked" by rust by sending it back across the FFI boundary
 /// and reconstituting it (f32 values).
+///
 /// # Safety
+///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn drop_float_array(arr: Array) {
@@ -374,7 +376,9 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
 }
 
 /// A C-compatible wrapper for `lonlat_bng::convert_bng`
+///
 /// # Safety
+///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
@@ -398,6 +402,7 @@ pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
 }
 
 /// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_bng`
+///
 /// # Examples
 ///
 /// ```
@@ -424,7 +429,9 @@ pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
 /// };
 /// let converted = convert_to_bng_threaded(lon_arr, lat_arr);
 /// ```
+///
 /// # Safety
+///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> Array {
@@ -457,9 +464,13 @@ pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>, latitudes: &Vec<f32>) 
 }
 
 /// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_lonlat`
+///
 /// # Examples
+///
 /// See `lonlat_bng::convert_to_bng_threaded` for examples, substituting i32 vectors
+///
 /// # Safety
+///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> Array {
