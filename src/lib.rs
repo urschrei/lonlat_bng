@@ -226,7 +226,8 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
     let eta2 = nu * F0 / rho - 1.;
 
     let M1 = (1. + n + (5. / 4.) * n.powi(2) + (5. / 4.) * n.powi(3)) * (lat - lat0);
-    let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) * (lat - lat0).sin() *
+    let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) *
+             ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin())).ln_1p().exp_m1() *
              (lat + lat0).cos();
     let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3)) * (2. * (lat - lat0)).sin() *
              (2. * (lat + lat0)).cos();
@@ -280,7 +281,8 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
     while (*northing as f64 - N0 - M) >= 0.00001 {
         lat = (*northing as f64 - N0 - M) / (a * F0) + lat;
         let M1 = (1. + n + (5. / 4.) * n.powi(3) + (5. / 4.) * n.powi(3)) * (lat - lat0);
-        let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) * (lat - lat0).sin() *
+        let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) *
+                 ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin())).ln_1p().exp_m1() *
                  (lat + lat0).cos();
         let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3)) * (2. * (lat - lat0)).sin() *
                  (2. * (lat + lat0)).cos();
