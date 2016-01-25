@@ -616,9 +616,11 @@ mod tests {
         let res = convert_lonlat(&516276, &173141);
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
+        // epsilon is .000001 here, because BNG coords are 6 digits, so
+        // we should be fine if the error is in the 7th digit (i.e. < epsilon)
         // http://floating-point-gui.de/errors/comparison/
-        assert!((res.0 - -0.32824799370716407).abs() / -0.32824799370716407 < 0.0000000001);
-        assert!((res.1 - 51.44534026616287).abs() / 51.44534026616287 < 0.0000000001)
+        assert!(((res.0 - -0.328248269313) / -0.328248269313).abs() < 0.000001);
+        assert!(((res.1 - 51.4453318435) / 51.4453318435).abs() < 0.000001);
     }
 
     #[test]
