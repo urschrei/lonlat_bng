@@ -1,4 +1,5 @@
 #![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
+
 //! The `lonlat_bng` crate provides functions that convert decimal longitude
 //! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.
 //!
