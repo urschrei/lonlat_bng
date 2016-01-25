@@ -69,7 +69,7 @@ pub struct Array {
 /// Free memory "leaked" by rust by sending it back across the FFI boundary
 /// and reconstituting it (i32 values).
 ///
-/// Examples
+/// # Examples
 ///
 /// ```
 /// # extern crate libc;
@@ -144,7 +144,7 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
 
 /// This function performs lon, lat to BNG conversion
 ///
-/// Examples
+/// # Examples
 ///
 /// ```
 /// use lonlat_bng::convert_bng;
@@ -253,7 +253,7 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
 
 /// This function performs BNG Eastings, Northings to lon, lat conversion
 ///
-/// Examples
+/// # Examples
 ///
 /// ```
 /// use lonlat_bng::convert_lonlat;
@@ -365,7 +365,7 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
     (lon as f32, lat as f32)
 }
 
-/// A C-compatible wrapper for convert_bng()
+/// A C-compatible wrapper for `lonlat_bng::convert_bng`
 /// # Safety
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
@@ -389,8 +389,8 @@ pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
     Array::from_vec(nvec)
 }
 
-/// A threaded, FFI-compatible wrapper for convert_bng()
-/// Examples
+/// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_bng`
+/// # Examples
 ///
 /// ```
 /// extern crate libc;
@@ -426,7 +426,7 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
     Array::from_vec(result)
 }
 
-/// A threaded wrapper for convert_bng()
+/// A threaded wrapper for `lonlat_bng::convert_bng`
 pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>, latitudes: &Vec<f32>) -> Vec<(i32, i32)> {
     let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&f32, &f32)> = longitudes.iter().zip(latitudes.iter()).collect();
@@ -448,9 +448,9 @@ pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>, latitudes: &Vec<f32>) 
     result
 }
 
-/// A threaded, FFI-compatible wrapper for convert_lonlat()
-///
-/// See `convert_to_bng_threaded()` for example, substituting i32 vectors
+/// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_lonlat`
+/// # Examples
+/// See `lonlat_bng::convert_to_bng_threaded` for examples, substituting i32 vectors
 /// # Safety
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
@@ -461,7 +461,7 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
     Array::from_vec(result)
 }
 
-/// A threaded wrapper for convert_lonlat()
+/// A threaded wrapper for `lonlat_bng::convert_lonlat`
 pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>, northings: &Vec<i32>) -> Vec<(f32, f32)> {
     let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&i32, &i32)> = eastings.iter().zip(northings.iter()).collect();
