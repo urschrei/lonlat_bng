@@ -16,7 +16,7 @@ use std::mem;
 use std::slice;
 
 extern crate libc;
-use libc::{size_t, c_void, c_float, uint32_t};
+use libc::{c_void, c_float, uint32_t};
 
 extern crate rand;
 
@@ -139,8 +139,7 @@ impl Array {
 /// Calculate the meridional radius of curvature
 #[allow(non_snake_case)]
 fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
-    let rho: f64 = a * F0 * (1. - e2) * (1. - e2 * lat.sin().powi(2)).powf(-1.5);
-    rho
+    a * F0 * (1. - e2) * (1. - e2 * lat.sin().powi(2)).powf(-1.5)
 }
 
 /// This function performs lon, lat to BNG conversion
@@ -361,7 +360,7 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
     let mut lon = y_2.atan2(x_2);
     lat = lat * 180. / PI;
     lon = lon * 180. / PI;
-    return (lon as f32, lat as f32);
+    (lon as f32, lat as f32)
 }
 
 /// A C-compatible wrapper for convert_bng()
@@ -483,7 +482,6 @@ mod tests {
     use super::Array;
 
     extern crate libc;
-    use libc::size_t;
 
     #[test]
     fn test_threaded_bng_conversion() {
