@@ -152,7 +152,7 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
     a * F0 * (1. - e2) * (1. - e2 * lat.sin().powi(2)).powf(-1.5)
 }
 
-/// This function performs lon, lat to BNG conversion
+/// Perform Longitude, Latitude to British National Grid conversion
 ///
 /// # Examples
 ///
@@ -261,7 +261,7 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
 }
 
 
-/// This function performs BNG Eastings, Northings to lon, lat conversion
+/// Perform British National Grid Eastings, Northings to Longitude, Latitude conversion
 ///
 /// # Examples
 ///
