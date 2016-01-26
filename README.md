@@ -57,23 +57,27 @@ An IPython (sorry, *Jupyter*) notebook with some benchmarks is [here](rust_BNG.i
 - run `ipython notebook`, and open `rust_BNG`.
 
 ### Results
-#### Simple Test
-Python: 10000 loops, best of 10: **31 µs** per loop  
-Rust: 100000 loops, best of 10: **2.04 µs** per loop* 💅  
-Pyproj: 100000 loops, best of 10: **11.8 µs** per loop<sup>†</sup>  
-<sup>*</sup>Test warns that intermediate results may have been cached  
+Test machine:  
+- Late-2012 27" iMac
+- 3.4 GHz Intel Core i7
+- 4 cores (8 logical CPUs)
+- 16GB 1600 MHz DDR3 RAM  
 
-#### Real-world Test
-Convert 10,000000 sets of random coordinates  
+| Coordinates | Method | Time (ms) | Speedup |
+|:------------|:------:|:---------:|--------:|
+| 100k        | Python | 539       | N/A     |
+|             |**Rust**| 104       |**5.2x** |
+|             | Pyproj | 61.1      | 8.8x    |
+| 1mm         | Python | 5430      | N/A     |
+|             |**Rust**| 1070      |**5.1x** |
+|             | Pyproj | 479       | 11.3    |
+| 10mm        | Python | 54500     | N/A     |
+|             |**Rust**| 10800     |**5.1x** |
+|             | Pyproj | 4710      | 11.5    | 
 
-Python: 1 loops, best of 10: **804 ms** per loop  
-Rust: 1 loops, best of 10: **204 ms** per loop  
-Pyproj: 10 loops, best of 10: **99.5 ms** per loop 💅  
-Rust (threaded): 10 loops, best of 10: **162.5 ms** per loop  
 
-
-## Conclusion
-Using multithreading, we can get much closer (pyproj is now only 65% faster). Not bad, considering the relative youth of Rust *as a language* (let alone this library), and the maturity of the [PROJ.4](https://en.wikipedia.org/wiki/PROJ.4) project.
+### Conclusion
+Using multithreading gives excellent performance (Pyproj – which is a compiled [Cython](http://cython.org) binary – is now only around 130% faster, on average). Not bad, considering the relative youth of Rust *as a language* (let alone this library), and the maturity of the [PROJ.4](https://en.wikipedia.org/wiki/PROJ.4) project.
 
 ## Accuracy
 The Helmert transform used is accurate to within 7 metres on average, so this library is **not suitable** for calculations used in e.g. surveying. If higher accuracy is required, please use a product which incorporates the OSTN02 calculations, which adjust for local variation within the Terrestrial Reference Frame. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.
