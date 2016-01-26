@@ -9,7 +9,7 @@ Python is relatively slow; this type of conversion is usually carried out in bul
 ### As a Rust Library
 Add the following to your `Cargo.toml` (You'll have to look up the latest version on [crates.io](https://crates.io/crates/lonlat_bng/))  
 
-    lonlat_bng = "0.1.8"
+    lonlat_bng = "0.1.10"
 
 Full library documentation is available [here](http://urschrei.github.io/lonlat_bng/)  
 
@@ -24,14 +24,18 @@ The native functions exposed by the library are:
 ### As an FFI Library
 The FFI C-compatible functions exposed by the library are:  
 `convert_to_bng_threaded(Array, Array) -> Array`  
-`convert_to_bng_threaded(Array, Array) -> Array`  
+`convert_to_lonlat_threaded(Array, Array) -> Array`  
 
 And for freeing the memory allocated by the above  
 `drop_int_array(Array) -> Null`  
 `drop_float_array(Array) -> Null`  
 
-The `Array`s must contain 32-bit `Float`s and 32-bit `Int`s, respectively. For examples, see the `Array` struct and tests in [lib.rs](src/lib.rs), and the `_BNG_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py)
+The `Array`s must contain 32-bit `Float`s and 32-bit `Int`s, respectively. For examples, see the `Array` struct and tests in [lib.rs](src/lib.rs), and the `_BNG_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).  
 
+#### FFI and Memory Management
+If your FFI library implements `convert_to_bng_threaded`, it **must** also implement `drop_int_array`, and if it implements `convert_to_lonlat_threaded`, it **must** implement `drop_float_array`. **Failing to do so will result in memory leaks**. 
+
+#### Building the Shared Library
 Running `cargo build --release` will build an artefact called `liblonlat_bng.dylib` on OSX, and `liblonlat_bng.a` on `*nix` systems. Note that you'll have to generate `liblonlat_bng.so` for `*nix` hosts using the following steps:
 
 - `ar -x target/release/liblonlat_bng.a`
