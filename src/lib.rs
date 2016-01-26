@@ -1,7 +1,8 @@
 #![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
-
 //! The `lonlat_bng` crate provides functions that convert decimal longitude
-//! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.
+//! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.  
+//! Please note that this library does not make use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations, and should not be used for surveying work
+//! or other applications requiring accuracy greater than ~5m.
 //!
 //! # Examples
 //!
@@ -375,32 +376,6 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
     (lon as f32, lat as f32)
 }
 
-/// A C-compatible wrapper for `lonlat_bng::convert_bng`
-///
-/// # Safety
-///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
-#[no_mangle]
-pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
-    // we're receiving floats
-    let lon = unsafe { longitudes.as_f32_slice() };
-    let lat = unsafe { latitudes.as_f32_slice() };
-    // copy values and combine
-    let orig = lon.iter()
-                  .zip(lat.iter());
-    // carry out the conversion
-    let result = orig.map(|elem| convert_bng(elem.0, elem.1));
-    // convert back to vector of unsigned integer Tuples
-    let nvec = result.map(|ints| {
-                         IntTuple {
-                             a: ints.0 as u32,
-                             b: ints.1 as u32,
-                         }
-                     })
-                     .collect();
-    Array::from_vec(nvec)
-}
-
 /// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_bng`
 ///
 /// # Examples
@@ -429,6 +404,7 @@ pub extern "C" fn convert_vec_c(longitudes: Array, latitudes: Array) -> Array {
 /// };
 /// let converted = convert_to_bng_threaded(lon_arr, lat_arr);
 /// ```
+/// For an FFI implementation, see the code at [Convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).
 ///
 /// # Safety
 ///
