@@ -29,6 +29,11 @@ The FFI C-compatible functions exposed by the library are:
 
 The `Array`s must contain 32-bit `Float`s and 32-bit `Int`s, respectively. For examples, see the `Array` struct and tests in [lib.rs](src/lib.rs), and the `_BNG_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py)
 
+Running `cargo build --release` will build an artefact called `liblonlat_bng.dylib` on OSX, and `liblonlat_bng.a` on `*nix` systems. Note that you'll have to generate `liblonlat_bng.so` for `*nix` hosts using the following steps:
+
+- `ar -x target/release/liblonlat_bng.a`
+- `gcc -shared *.o -o target/release/liblonlat_bng.so -lrt` 
+
 ### As a Python Package
 `convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI for OSX and *nix:  
 `pip install convertbng`  
