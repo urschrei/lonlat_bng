@@ -8,7 +8,7 @@ use rand::distributions::{IndependentSample, Range};
 extern crate libc;
 
 fn main() {
-    let num_coords = 1000;
+    let num_coords = 1000000;
     let between_lon = Range::new(-6.379880, 1.768960);
     let between_lat = Range::new(49.871159, 55.811741);
     let mut rng = rand::thread_rng();
