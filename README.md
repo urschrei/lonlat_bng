@@ -82,16 +82,6 @@ Using multithreading gives excellent performance (Pyproj – which is a compiled
 ## Accuracy
 The Helmert transform used is accurate to within 7 metres on average, so this library is **not suitable** for calculations used in e.g. surveying. If higher accuracy is required, please use a product which incorporates the OSTN02 calculations, which adjust for local variation within the Terrestrial Reference Frame. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.
 
-## Benchmark machine spec:
-- Mid-2011 Macbook Air
-- 1.8 GHz Intel Core i7
-- OSX 10.10
-- Rust 1.0 (installed using Homebrew)
-- Python 2.7.9
-- Numpy 1.9.2
-- Pandas 0.16.2
-- Pyproj 1.9.4
-
 ## License
 MIT
 
