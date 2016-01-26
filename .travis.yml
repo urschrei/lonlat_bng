@@ -1,4 +1,11 @@
 language: rust
+rust:
+  - stable
+  - beta
+  - nightly
+matrix:
+  allow failures:
+    - rust: nightly
 branches:
   only:
   - master
