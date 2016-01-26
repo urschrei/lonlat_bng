@@ -99,11 +99,15 @@ pub struct Array {
 /// # Safety
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
-pub extern "C" fn drop_int_array(arr: Array) {
-    if arr.data.is_null() {
+pub extern "C" fn drop_int_array(eastings: Array, northings: Array) {
+    if eastings.data.is_null() {
         return;
     }
-    unsafe { Vec::from_raw_parts(arr.data as *mut i32, arr.len, arr.len) };
+    if northings.data.is_null() {
+        return;
+    }
+    unsafe { Vec::from_raw_parts(eastings.data as *mut i32, eastings.len, eastings.len) };
+    unsafe { Vec::from_raw_parts(northings.data as *mut i32,northings.len, northings.len) };
 }
 
 /// Free memory which Rust has allocated across the FFI boundary (f32 values)
@@ -410,15 +414,15 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
-pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> Array {
+pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
     let lons = unsafe { longitudes.as_f32_slice().to_vec() };
     let lats = unsafe { latitudes.as_f32_slice().to_vec() };
-    let result = convert_to_bng_threaded_vec(&lons, &lats);
-    Array::from_vec(result)
+    let (eastings, northings): (Vec<i32>, Vec<i32>) = convert_to_bng_threaded_vec(&lons, &lats);
+    (Array::from_vec(eastings), Array::from_vec(northings))
 }
 
 /// A threaded wrapper for `lonlat_bng::convert_bng`
-pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>, latitudes: &Vec<f32>) -> Vec<(i32, i32)> {
+pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>, latitudes: &Vec<f32>) -> (Vec<i32>, Vec<i32>) {
     let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&f32, &f32)> = longitudes.iter().zip(latitudes.iter()).collect();
     let mut result = vec![(1, 1); orig.len()];
@@ -436,7 +440,8 @@ pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>, latitudes: &Vec<f32>) 
             });
         }
     });
-    result
+    let (eastings, northings): (Vec<i32>, Vec<i32>) = result.into_iter().unzip();
+    (eastings, northings)
 }
 
 /// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_lonlat`
@@ -513,11 +518,12 @@ mod tests {
             data: lat_vec.as_ptr() as *const libc::c_void,
             len: lat_vec.len() as libc::size_t,
         };
-        let converted = convert_to_bng_threaded(lon_arr, lat_arr);
-        let retval = unsafe { converted.as_i32_slice() };
+        let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
+        let retval = unsafe { eastings.as_i32_slice() };
+        let retval2 = unsafe { northings.as_i32_slice() };
         // the value's incorrect, but let's worry about that later
         assert_eq!(398915, retval[0]);
-        assert_eq!(521545, retval[1]);
+        assert_eq!(521545, retval2[0]);
     }
 
     #[test]
@@ -533,8 +539,8 @@ mod tests {
             data: lat_vec.as_ptr() as *const libc::c_void,
             len: lat_vec.len() as libc::size_t,
         };
-        let converted = convert_to_bng_threaded(lon_arr, lat_arr);
-        let retval = unsafe { converted.as_i32_slice() };
+        let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
+        let retval = unsafe { eastings.as_i32_slice() };
         assert_eq!(398915, retval[0]);
     }
 
@@ -573,8 +579,8 @@ mod tests {
             data: lat_vec.as_ptr() as *const libc::c_void,
             len: lat_vec.len() as libc::size_t,
         };
-        let converted = convert_to_bng_threaded(lon_arr, lat_arr);
-        drop_int_array(converted);
+        let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
+        drop_int_array(eastings, northings);
     }
 
     #[test]
