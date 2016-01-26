@@ -1,6 +1,6 @@
 #![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
 //! The `lonlat_bng` crate provides functions that convert decimal longitude
-//! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.  
+//! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.
 //! Please note that this library does not make use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations, and should not be used for surveying work
 //! or other applications requiring accuracy greater than ~5m.
 //!
@@ -457,7 +457,9 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
 }
 
 /// A threaded wrapper for `lonlat_bng::convert_lonlat`
-pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>, northings: &Vec<i32>) -> Vec<(f32, f32)> {
+pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
+                                      northings: &Vec<i32>)
+                                      -> Vec<(f32, f32)> {
     let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&i32, &i32)> = eastings.iter().zip(northings.iter()).collect();
     let mut result: Vec<(f32, f32)> = vec![(1.0, 1.0); orig.len()];
