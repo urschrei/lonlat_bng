@@ -22,10 +22,13 @@ The native functions exposed by the library are:
 `lonlat_bng::convert_to_lonlat_threaded_vec(Vec<(&i32, &i32)>) -> Vec<(f32, f32)>`  
 
 ### As an FFI Library
-The FFI C-compatible functions exposed by the library are:
+The FFI C-compatible functions exposed by the library are:  
+`convert_to_bng_threaded(Array, Array) -> Array`  
+`convert_to_bng_threaded(Array, Array) -> Array`  
 
-`convert_to_bng_threaded(Array, Array) -> Array`  
-`convert_to_bng_threaded(Array, Array) -> Array`  
+And for freeing the memory allocated by the above  
+`drop_int_array(Array) -> Null`  
+`drop_float_array(Array) -> Null`  
 
 The `Array`s must contain 32-bit `Float`s and 32-bit `Int`s, respectively. For examples, see the `Array` struct and tests in [lib.rs](src/lib.rs), and the `_BNG_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py)
 
