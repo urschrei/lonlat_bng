@@ -42,9 +42,11 @@ The Helmert transform used is accurate to within 4 – 5 metres, so this library
 
 ## Library Use
 ### As a Rust Library
-Add the following to your `Cargo.toml` (You'll have to look up the latest version on [crates.io](https://crates.io/crates/lonlat_bng/))
+Add the following to your `Cargo.toml` (You'll have to look up the latest version on [crates.io](https://crates.io/crates/lonlat_bng/))  
 
     lonlat_bng = "0.1.8"
+
+Full library documentation is available [here](http://urschrei.github.io/lonlat_bng/)  
 
 The native functions exposed by the library are:
 
