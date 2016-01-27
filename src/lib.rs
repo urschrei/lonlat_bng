@@ -544,7 +544,7 @@ mod tests {
             data: lat_vec.as_ptr() as *const libc::c_void,
             len: lat_vec.len() as libc::size_t,
         };
-        let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
+        let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
         let retval = unsafe { eastings.as_i32_slice() };
         assert_eq!(398915, retval[0]);
     }
