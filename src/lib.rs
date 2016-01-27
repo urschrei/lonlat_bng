@@ -116,11 +116,15 @@ pub extern "C" fn drop_int_array(eastings: Array, northings: Array) {
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
-pub extern "C" fn drop_float_array(arr: Array) {
-    if arr.data.is_null() {
+pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
+    if lons.data.is_null() {
         return;
     }
-    unsafe { Vec::from_raw_parts(arr.data as *mut f32, arr.len, arr.len) };
+    if lats.data.is_null() {
+        return;
+    }
+    unsafe { Vec::from_raw_parts(lons.data as *mut i32, lons.len, lons.len) };
+    unsafe { Vec::from_raw_parts(lats.data as *mut i32, lats.len, lats.len) };
 }
 
 impl Array {
@@ -454,17 +458,17 @@ pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>, latitudes: &Vec<f32>) 
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
-pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> Array {
+pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> (Array, Array) {
     let eastings_vec = unsafe { eastings.as_i32_slice().to_vec() };
     let northings_vec = unsafe { northings.as_i32_slice().to_vec() };
-    let result = convert_to_lonlat_threaded_vec(&eastings_vec, &northings_vec);
-    Array::from_vec(result)
+    let (lons, lats) = convert_to_lonlat_threaded_vec(&eastings_vec, &northings_vec);
+    (Array::from_vec(lons), Array::from_vec(lats)) 
 }
 
 /// A threaded wrapper for `lonlat_bng::convert_lonlat`
 pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
                                       northings: &Vec<i32>)
-                                      -> Vec<(f32, f32)> {
+                                      -> (Vec<f32>, Vec<f32>) {
     let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&i32, &i32)> = eastings.iter().zip(northings.iter()).collect();
     let mut result: Vec<(f32, f32)> = vec![(1.0, 1.0); orig.len()];
@@ -482,7 +486,8 @@ pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
             });
         }
     });
-    result
+    let (lons, lats): (Vec<f32>, Vec<f32>) = result.into_iter().unzip();
+    (lons, lats)
 }
 
 #[cfg(test)]
@@ -558,8 +563,8 @@ mod tests {
             data: northing_vec.as_ptr() as *const libc::c_void,
             len: northing_vec.len() as libc::size_t,
         };
-        let converted = convert_to_lonlat_threaded(easting_arr, northing_arr);
-        let retval = unsafe { converted.as_f32_slice() };
+        let (lons, _) = convert_to_lonlat_threaded(easting_arr, northing_arr);
+        let retval = unsafe { lons.as_f32_slice() };
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
         // http://floating-point-gui.de/errors/comparison/

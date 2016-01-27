@@ -69,15 +69,15 @@ Test machine:
 |             |**Rust**| 110       |**5x** |
 |             | Pyproj | 57.2      | 9.5x    |
 | 1mm (10 runs)| Python | 5560      | N/A     |
-|             |**Rust**| 1260      |**4.4x** |
-|             | Pyproj | 721       | 7.7x    |
+|             |**Rust**| 624      |**8.9x** |
+|             | Pyproj | 510       | 10.9x    |
 | 10mm        | Python | 54500     | N/A     |
 |             |**Rust**| 10800     |**5.1x** |
 |             | Pyproj | 4710      | 11.5    | 
 
 
 ### Conclusion
-Using multithreading gives excellent performance (Pyproj – which is a compiled [Cython](http://cython.org) binary – is now only around 70% faster than Rust, on average). Not bad, considering the relative youth of Rust *as a language* (let alone this library), and the maturity of the [PROJ.4](https://en.wikipedia.org/wiki/PROJ.4) project.
+Using multithreading gives excellent performance (Pyproj – which is a compiled [Cython](http://cython.org) binary – is now less than 20% faster than Rust, on average). Not bad, considering the relative youth of Rust *as a language* (let alone this library), and the maturity of the [PROJ.4](https://en.wikipedia.org/wiki/PROJ.4) project.
 
 ## Accuracy
 The Helmert transform used is accurate to within 7 metres on average, so this library is **not suitable** for calculations used in e.g. surveying. If higher accuracy is required, please use a product which incorporates the OSTN02 calculations, which adjust for local variation within the Terrestrial Reference Frame. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.
