@@ -406,7 +406,7 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
 ///     data: lat_vec.as_ptr() as *const libc::c_void,
 ///     len: lat_vec.len() as libc::size_t,
 /// };
-/// let converted = convert_to_bng_threaded(lon_arr, lat_arr);
+/// let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
 /// ```
 /// For an FFI implementation, see the code at [Convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).
 ///
