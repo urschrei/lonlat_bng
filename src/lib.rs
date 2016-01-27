@@ -93,8 +93,8 @@ pub struct Array {
 ///     data: lat_vec.as_ptr() as *const libc::c_void,
 ///     len: lat_vec.len() as libc::size_t,
 /// };
-/// let converted = convert_to_bng_threaded(lon_arr, lat_arr);
-/// drop_int_array(converted);
+/// let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
+/// drop_int_array(eastings, northings);
 /// ```
 /// # Safety
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
@@ -107,7 +107,7 @@ pub extern "C" fn drop_int_array(eastings: Array, northings: Array) {
         return;
     }
     unsafe { Vec::from_raw_parts(eastings.data as *mut i32, eastings.len, eastings.len) };
-    unsafe { Vec::from_raw_parts(northings.data as *mut i32,northings.len, northings.len) };
+    unsafe { Vec::from_raw_parts(northings.data as *mut i32, northings.len, northings.len) };
 }
 
 /// Free memory which Rust has allocated across the FFI boundary (f32 values)
