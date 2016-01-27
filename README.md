@@ -63,17 +63,17 @@ Test machine:
 - 4 cores (8 logical CPUs)
 - 16GB 1600 MHz DDR3 RAM  
 
-| Coordinates | Method | Time (ms) | Speedup |
-|:------------|:------:|:---------:|--------:|
-| 100k (10 runs)| Python | 547       | N/A     |
-|             |**Rust**| 110       |**5x** |
-|             | Pyproj | 57.2      | 9.5x    |
-| 1mm (10 runs)| Python | 5560      | N/A     |
-|             |**Rust**| 624      |**8.9x** |
-|             | Pyproj | 510       | 10.9x    |
-| 10mm        | Python | 54500     | N/A     |
-|             |**Rust**| 10800     |**5.1x** |
-|             | Pyproj | 4710      | 11.5    | 
+| Coordinates    | Method | Time (ms) | Speedup |
+|:---------------|:------:|:---------:|--------:|
+| 100k (50 runs) | Python | 547       | N/A     |
+|                |**Rust**| 73.9      |**7.4x** |
+|                | Pyproj | 57.2      | 9.5x    |
+| 1mm (50 runs)  | Python | 5560      | N/A     |
+|                |**Rust**| 624       |**8.9x** |
+|                | Pyproj | 510       | 10.9x   |
+| 10mm (50 runs) | Python | 54500     | N/A     |
+|                |**Rust**| 6360      |**8.6x** |
+|                | Pyproj | 4710      | 11.5    | 
 
 
 ### Conclusion
