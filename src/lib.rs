@@ -27,7 +27,7 @@ use std::mem;
 use std::slice;
 
 extern crate libc;
-use libc::{c_void, c_float, uint32_t};
+use libc::{c_void, c_float};
 
 extern crate rand;
 
@@ -58,12 +58,6 @@ const RZS: f64 = -0.8421;
 // etc
 const PI: f64 = f64::consts::PI;
 //
-
-#[repr(C)]
-pub struct IntTuple {
-    a: uint32_t,
-    b: uint32_t,
-}
 
 #[repr(C)]
 pub struct FloatTuple {
