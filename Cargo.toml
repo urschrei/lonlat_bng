@@ -1,7 +1,7 @@
 [package]
 name = "lonlat_bng"
 description = "Convert longitude and latitude coordinates to BNG coordinates, and vice versa"
-version = "0.1.9"
+version = "0.1.10"
 authors = ["Stephan Hügel <urschrei@gmail.com>"]
 license = "MIT"
 keywords = ["BNG", "OSGB36", "Geo", "FFI"]
@@ -17,7 +17,7 @@ num_cpus = "0.2.10"
 
 [lib]
 name = "lonlat_bng"
-crate-type = ["rlib", "dylib"]
+crate-type = ["rlib", "dylib", "staticlib"]
 test = true
 doctest = false
 doc = true
