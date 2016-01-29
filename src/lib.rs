@@ -25,6 +25,7 @@
 use std::f64;
 use std::mem;
 use std::slice;
+use std::fmt;
 
 extern crate libc;
 use libc::{c_void, c_float};
@@ -155,6 +156,18 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
     a * F0 * (1. - e2) * (1. - e2 * lat.sin().powi(2)).powf(-1.5)
 }
 
+/// Bounds checking for input values
+// TODO: implement returning a Result type for this so we can return a meaningful
+// but type-correct value in case of input outside the BNG bounding box
+fn check<T>(to_check: &T, bounds: (&T, &T))
+    where T: std::cmp::PartialOrd + fmt::Display
+{
+    assert!(*bounds.0 <= *to_check && *to_check <= *bounds.1,
+            "Input outside UK bounding box! Value must be between {} and {}.",
+            *bounds.0,
+            *bounds.1);
+}
+
 /// Perform Longitude, Latitude to British National Grid conversion
 ///
 /// # Examples
@@ -165,12 +178,8 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
 #[allow(non_snake_case)]
 pub fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
     // input is restricted to the UK bounding box
-    assert!(-6.379880 <= *longitude && *longitude <= 1.768960,
-            "Out of bounds! Longitude must be between -6.379880 and 1.768960: {}",
-            longitude);
-    assert!(49.871159 <= *latitude && *latitude <= 55.811741,
-            "Out of bounds! Latitude must be between 49.871159 and 55.811741: {}",
-            latitude);
+    check(longitude, (&-6.379880, &1.768960));
+    check(latitude, (&49.871159, &55.811741));
     // Convert input to degrees
     let lat_1: f64 = *latitude as f64 * PI / 180.;
     let lon_1: f64 = *longitude as f64 * PI / 180.;
@@ -420,7 +429,9 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
 }
 
 /// A threaded wrapper for `lonlat_bng::convert_bng`
-pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>, latitudes: &Vec<f32>) -> (Vec<i32>, Vec<i32>) {
+pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>,
+                                   latitudes: &Vec<f32>)
+                                   -> (Vec<i32>, Vec<i32>) {
     let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&f32, &f32)> = longitudes.iter().zip(latitudes.iter()).collect();
     let mut result = vec![(1, 1); orig.len()];
@@ -456,7 +467,7 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
     let eastings_vec = unsafe { eastings.as_i32_slice().to_vec() };
     let northings_vec = unsafe { northings.as_i32_slice().to_vec() };
     let (lons, lats) = convert_to_lonlat_threaded_vec(&eastings_vec, &northings_vec);
-    (Array::from_vec(lons), Array::from_vec(lats)) 
+    (Array::from_vec(lons), Array::from_vec(lats))
 }
 
 /// A threaded wrapper for `lonlat_bng::convert_lonlat`
