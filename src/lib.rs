@@ -172,7 +172,7 @@ fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, T>
 ///
 /// ```
 /// use lonlat_bng::convert_bng;
-/// assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267));
+/// assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267).unwrap());
 #[allow(non_snake_case)]
 pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(i32, i32), f32> {
     // input is restricted to the UK bounding box
