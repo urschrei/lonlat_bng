@@ -4,7 +4,7 @@
 //! Please note that this library does not make use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations, and should not be used for surveying work
 //! or other applications requiring accuracy greater than ~5m.
 //!
-//! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.** 
+//! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.**
 //!
 //! # Examples
 //!
@@ -60,13 +60,7 @@ const RYS: f64 = -0.2470;
 const RZS: f64 = -0.8421;
 // etc
 const PI: f64 = f64::consts::PI;
-//
 
-#[repr(C)]
-pub struct FloatTuple {
-    a: c_float,
-    b: c_float,
-}
 
 #[repr(C)]
 pub struct Array {
