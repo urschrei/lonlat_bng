@@ -10,9 +10,9 @@ documentation = "https://urschrei.github.io/lonlat_bng/"
 readme = "README.md"
 
 [dependencies]
-libc = "0.2.5"
+libc = "0.2.6"
 rand = "0.3.13"
-crossbeam = "0.2.1"
+crossbeam = "0.2.4"
 num_cpus = "0.2.10"
 
 [lib]
