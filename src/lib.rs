@@ -157,16 +157,12 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
 }
 
 /// Bounds checking for input values
-// TODO: implement returning a Result type for this so we can return a meaningful
-// but type-correct value in case of input outside the BNG bounding box
-fn check<T>(to_check: &T, bounds: (&T, &T)) -> Result<T, T>
+fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, T>
     where T: std::cmp::PartialOrd + fmt::Display + Copy
 {
-    let (a, b) = bounds;
-    match *to_check {
-        to_check if a <= &to_check && to_check <= *b => Ok(to_check),
-        _ => Err(*to_check),
-
+    match to_check {
+        to_check if bounds.0 <= to_check && to_check <= bounds.1 => Ok(to_check),
+        _ => Err(to_check),
     }
 }
 
@@ -182,14 +178,11 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(i32, i32), f32> {
     // input is restricted to the UK bounding box
     let max_lon = 1.768960;
     let min_lon = -6.379880;
-    
     let max_lat = 55.811741;
     let min_lat = 49.871159;
-    try!(check(longitude, (&min_lon, &max_lon)).map_err(|e| e));
-    try!(check(latitude, (&min_lat, &max_lat)).map_err(|e| e));
-    // Convert input to degrees
-    let lat_1: f64 = *latitude as f64 * PI / 180.;
-    let lon_1: f64 = *longitude as f64 * PI / 180.;
+    // Convert bounds-checked input to degrees, or return an Err
+    let lon_1: f64 = try!(check(*longitude, (min_lon, max_lon)).map_err(|e| e)) as f64 * PI / 180.;
+    let lat_1: f64 = try!(check(*latitude, (min_lat, max_lat)).map_err(|e| e)) as f64 * PI / 180.;
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1 = GRS80_SEMI_MAJOR;
     let b_1 = GRS80_SEMI_MINOR;
@@ -608,7 +601,8 @@ mod tests {
     #[test]
     fn test_bng_conversion() {
         // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-        assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267).unwrap());
+        assert_eq!((516276, 173141),
+                   convert_bng(&-0.32824866, &51.44533267).unwrap());
     }
 
     #[test]
@@ -632,7 +626,8 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_bad_lat() {
-        assert_eq!((516276, 173141), convert_bng(&-0.32824866, &-90.01).unwrap());
+        assert_eq!((516276, 173141),
+                   convert_bng(&-0.32824866, &-90.01).unwrap());
     }
 
     #[test]
@@ -655,7 +650,7 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn test_check_lon_extents() {
+    fn test_min_lon_extents() {
         let max_lon = 1.768960;
         let min_lon = -6.379880;
         // below min_lon
@@ -664,7 +659,25 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn test_check_lat_extents() {
+    fn test_min_lat_extents() {
+        let max_lat = 55.811741;
+        let min_lat = 49.871159;
+        // below min lat
+        check(&49.871158, (&min_lat, &max_lat)).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_max_lon_extents() {
+        let max_lon = 1.768960;
+        let min_lon = -6.379880;
+        // above max lon
+        check(&1.768961, (&min_lon, &max_lon)).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_max_lat_extents() {
         let max_lat = 55.811741;
         let min_lat = 49.871159;
         // above max lat
