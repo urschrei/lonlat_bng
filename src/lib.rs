@@ -10,7 +10,7 @@
 //!
 //! ```
 //! // Convert single values
-//! assert_eq!((516276, 173141), lonlat_bng::convert_bng(&-0.32824866, &51.44533267));
+//! assert_eq!((516276, 173141), lonlat_bng::convert_bng(&-0.32824866, &51.44533267).unwrap());
 //! ```
 //! ```
 //! assert_eq!((-0.328248, 51.44534), lonlat_bng::convert_lonlat(&516276, &173141));
@@ -22,7 +22,7 @@
 //! ```
 //! lonlat_bng::convert_to_lonlat_threaded_vec(vec![&516276], vec![&173141]);
 //! ```
-//! The crate also provides threaded versions of each function, which accept vectors of values, and wrapper functions for these, which are intended for use with FFI.
+//! The crate also provides C-compatible wrapper functions, which are intended for use with FFI.
 //! An example implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng).
 use std::f64;
 use std::mem;
