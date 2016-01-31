@@ -159,13 +159,15 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
 /// Bounds checking for input values
 // TODO: implement returning a Result type for this so we can return a meaningful
 // but type-correct value in case of input outside the BNG bounding box
-fn check<T>(to_check: &T, bounds: (&T, &T))
-    where T: std::cmp::PartialOrd + fmt::Display
+fn check<T>(to_check: &T, bounds: (&T, &T)) -> Result<T, T>
+    where T: std::cmp::PartialOrd + fmt::Display + Copy
 {
-    assert!(*bounds.0 <= *to_check && *to_check <= *bounds.1,
-            "Input outside UK bounding box! Value must be between {} and {}.",
-            *bounds.0,
-            *bounds.1);
+    let (a, b) = bounds;
+    match *to_check {
+        to_check if a <= &to_check && to_check <= *b => Ok(to_check),
+        _ => Err(*to_check),
+
+    }
 }
 
 /// Perform Longitude, Latitude to British National Grid conversion
@@ -176,10 +178,15 @@ fn check<T>(to_check: &T, bounds: (&T, &T))
 /// use lonlat_bng::convert_bng;
 /// assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267));
 #[allow(non_snake_case)]
-pub fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
+pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(i32, i32), f32> {
     // input is restricted to the UK bounding box
-    check(longitude, (&-6.379880, &1.768960));
-    check(latitude, (&49.871159, &55.811741));
+    let max_lon = 1.768960;
+    let min_lon = -6.379880;
+    
+    let max_lat = 55.811741;
+    let min_lat = 49.871159;
+    try!(check(longitude, (&min_lon, &max_lon)).map_err(|e| e));
+    try!(check(latitude, (&min_lat, &max_lat)).map_err(|e| e));
     // Convert input to degrees
     let lat_1: f64 = *latitude as f64 * PI / 180.;
     let lon_1: f64 = *longitude as f64 * PI / 180.;
@@ -269,7 +276,7 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> (i32, i32) {
     let N = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
             IIIA * (lon - lon0).powi(6);
     let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
-    (E.round() as i32, N.round() as i32)
+    Ok((E.round() as i32, N.round() as i32))
 }
 
 
@@ -444,7 +451,11 @@ pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>,
         for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
             scope.spawn(move || {
                 for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
-                    *res_elem = convert_bng(orig_elem.0, orig_elem.1);
+                    match convert_bng(orig_elem.0, orig_elem.1) {
+                        Ok(res) => *res_elem = res,
+                        // we don't care about the return value as such
+                        Err(_) => *res_elem = (-1, -1),
+                    };
                 }
             });
         }
@@ -502,6 +513,7 @@ mod tests {
     use super::convert_lonlat;
     use super::convert_to_bng_threaded;
     use super::convert_to_lonlat_threaded;
+    use super::check;
     use super::Array;
 
     extern crate libc;
@@ -596,7 +608,7 @@ mod tests {
     #[test]
     fn test_bng_conversion() {
         // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-        assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267));
+        assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267).unwrap());
     }
 
     #[test]
@@ -614,12 +626,48 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_bad_lon() {
-        assert_eq!((516276, 173141), convert_bng(&181., &51.44533267));
+        assert_eq!((516276, 173141), convert_bng(&181., &51.44533267).unwrap());
     }
 
     #[test]
     #[should_panic]
     fn test_bad_lat() {
-        assert_eq!((516276, 173141), convert_bng(&-0.32824866, &-90.01));
+        assert_eq!((516276, 173141), convert_bng(&-0.32824866, &-90.01).unwrap());
+    }
+
+    #[test]
+    fn test_bad_threaded_conversion() {
+        // above maximum longitude
+        let lon_vec: Vec<f32> = vec![-6.379881];
+        let lat_vec: Vec<f32> = vec![55.811741];
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t,
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t,
+        };
+        let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
+        let retval = unsafe { eastings.as_i32_slice() };
+        assert_eq!(-1, retval[0]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_check_lon_extents() {
+        let max_lon = 1.768960;
+        let min_lon = -6.379880;
+        // below min_lon
+        check(&-6.379881, (&min_lon, &max_lon)).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_check_lat_extents() {
+        let max_lat = 55.811741;
+        let min_lat = 49.871159;
+        // above max lat
+        check(&55.811742, (&min_lat, &max_lat)).unwrap();
     }
 }
