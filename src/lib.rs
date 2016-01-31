@@ -447,7 +447,7 @@ pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>,
                     match convert_bng(orig_elem.0, orig_elem.1) {
                         Ok(res) => *res_elem = res,
                         // we don't care about the return value as such
-                        Err(_) => *res_elem = (-1, -1),
+                        Err(_) => *res_elem = (9999, 9999),
                     };
                 }
             });
@@ -645,7 +645,7 @@ mod tests {
         };
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
         let retval = unsafe { eastings.as_i32_slice() };
-        assert_eq!(-1, retval[0]);
+        assert_eq!(9999, retval[0]);
     }
 
     #[test]
