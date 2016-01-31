@@ -4,6 +4,8 @@
 //! Please note that this library does not make use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations, and should not be used for surveying work
 //! or other applications requiring accuracy greater than ~5m.
 //!
+//! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.** 
+//!
 //! # Examples
 //!
 //! ```
@@ -28,7 +30,7 @@ use std::slice;
 use std::fmt;
 
 extern crate libc;
-use libc::{c_void, c_float};
+use libc::{c_void, c_float, c_int};
 
 extern crate rand;
 
@@ -101,8 +103,8 @@ pub extern "C" fn drop_int_array(eastings: Array, northings: Array) {
     if northings.data.is_null() {
         return;
     }
-    unsafe { Vec::from_raw_parts(eastings.data as *mut i32, eastings.len, eastings.len) };
-    unsafe { Vec::from_raw_parts(northings.data as *mut i32, northings.len, northings.len) };
+    unsafe { Vec::from_raw_parts(eastings.data as *mut c_int, eastings.len, eastings.len) };
+    unsafe { Vec::from_raw_parts(northings.data as *mut c_int, northings.len, northings.len) };
 }
 
 /// Free memory which Rust has allocated across the FFI boundary (f32 values)
@@ -118,8 +120,8 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
     if lats.data.is_null() {
         return;
     }
-    unsafe { Vec::from_raw_parts(lons.data as *mut i32, lons.len, lons.len) };
-    unsafe { Vec::from_raw_parts(lats.data as *mut i32, lats.len, lats.len) };
+    unsafe { Vec::from_raw_parts(lons.data as *mut c_float, lons.len, lons.len) };
+    unsafe { Vec::from_raw_parts(lats.data as *mut c_float, lats.len, lats.len) };
 }
 
 impl Array {
@@ -174,7 +176,7 @@ fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, T>
 /// use lonlat_bng::convert_bng;
 /// assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(i32, i32), f32> {
+pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), f32> {
     // input is restricted to the UK bounding box
     let max_lon = 1.768960;
     let min_lon = -6.379880;
@@ -269,7 +271,7 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(i32, i32), f32> {
     let N = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
             IIIA * (lon - lon0).powi(6);
     let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
-    Ok((E.round() as i32, N.round() as i32))
+    Ok((E.round() as c_int, N.round() as c_int))
 }
 
 
@@ -281,7 +283,7 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(i32, i32), f32> {
 /// use lonlat_bng::convert_lonlat;
 /// assert_eq!((-0.328248, 51.44534), convert_lonlat(&516276, &173141));
 #[allow(non_snake_case)]
-pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
+pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a = AIRY_1830_SEMI_MAJOR;
     let b = AIRY_1830_SEMI_MINOR;
@@ -384,7 +386,7 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (f32, f32) {
     let mut lon = y_2.atan2(x_2);
     lat = lat * 180. / PI;
     lon = lon * 180. / PI;
-    (lon as f32, lat as f32)
+    (lon as c_float, lat as c_float)
 }
 
 /// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_bng`

@@ -13,6 +13,8 @@ Add the following to your `Cargo.toml` (You'll have to look up the latest versio
 
 Full library documentation is available [here](http://urschrei.github.io/lonlat_bng/)  
 
+**Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.**  
+
 The native functions exposed by the library are:
 
 `lonlat_bng::convert_bng(&f32, &f32) -> (i32, i32)`  
