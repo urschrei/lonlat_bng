@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/urschrei/lonlat_bng.png?branch=master)](https://travis-ci.org/urschrei/lonlat_bng)  
+[![Build Status](https://travis-ci.org/urschrei/lonlat_bng.png?branch=master)](https://travis-ci.org/urschrei/lonlat_bng)
+[![](http://meritbadge.herokuapp.com/lonlat_bng)](https://crates.io/crates/lonlat_bng)[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt)  
+
 ## Introduction
 An attempt at speeding up the conversion between decimal longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using an external Rust binary and Python FFI.
 
@@ -7,9 +9,9 @@ Python is relatively slow; this type of conversion is usually carried out in bul
 
 ## Library Use
 ### As a Rust Library
-Add the following to your `Cargo.toml` (You'll have to look up the latest version on [crates.io](https://crates.io/crates/lonlat_bng/))  
+Add the following to your `Cargo.toml` (the latest version is displayed on the second badge at the top of this screen)  
 
-    lonlat_bng = "0.1.9"
+    lonlat_bng = "x.x.x"
 
 Full library documentation is available [here](http://urschrei.github.io/lonlat_bng/)  
 
