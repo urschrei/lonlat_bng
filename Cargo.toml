@@ -12,8 +12,9 @@ readme = "README.md"
 [dependencies]
 libc = "0.2.6"
 rand = "0.3.13"
-crossbeam = "0.2.4"
+crossbeam = "0.2.5"
 num_cpus = "0.2.10"
+nalgebra = "0.5.1"
 
 [lib]
 name = "lonlat_bng"
