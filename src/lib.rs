@@ -207,6 +207,8 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), f3
     let rx = rxs * PI / (180. * 3600.);
     let ry = rys * PI / (180. * 3600.);
     let rz = rzs * PI / (180. * 3600.);
+
+    // TODO solve this for all lat and lon using matrices in an intermediate step?
     let x_2 = tx + (1. + s) * x_1 + -rz * y_1 + ry * z_1;
     let y_2 = ty + rz * x_1 + (1. + s) * y_1 + -rx * z_1;
     let z_2 = tz + -ry * x_1 + rx * y_1 + (1. + s) * z_1;
