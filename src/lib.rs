@@ -39,6 +39,9 @@ use crossbeam::scope;
 
 extern crate num_cpus;
 
+extern crate nalgebra;
+use nalgebra::{Vec3, Mat3, DMat};
+
 // Constants used for coordinate conversions
 //
 // Ellipsoids
@@ -58,6 +61,8 @@ const TZ: f64 = -542.060;
 const RXS: f64 = -0.1502;
 const RYS: f64 = -0.2470;
 const RZS: f64 = -0.8421;
+
+const s: f64 = 20.4894 * 0.000001;
 // etc
 const PI: f64 = f64::consts::PI;
 
@@ -66,6 +71,21 @@ const PI: f64 = f64::consts::PI;
 pub struct Array {
     pub data: *const c_void,
     pub len: libc::size_t,
+}
+
+
+fn helmert(lon_vec: Vec<&f32>, lat_vec: Vec<&f32>) -> (Vec<f32>, Vec<f32>) {
+    let t_array = Vec3::new(TX, TY, TZ);
+    let params = Mat3::new(1. + s, RZS, -RYS, -RZS, 1. + s, RXS, RYS, -RXS, 1. + s);
+    // let zeros: Vec<&f32> = vec![&1.; lon_vec.len()];
+    let test = vec![1, 2, 3, 4, 5, 6];
+    // let mut combined: Vec<&f32> = lon_vec.extend(lat_vec.iter()).collect();
+    // combined.extend(zeros.iter().cloned());
+    // let tmat = DMat::from_row_vec(3, zeros.len(), &combined);
+    let tmat = DMat::from_row_vec(3, 2, &test);
+    // build input vector of x, y, and z columns
+    // let inp = DMat::from_row_vec(3, 1, vec![lon_vec, lat_vec, h_vec]);
+    (vec![1.], vec![2.])
 }
 
 /// Free memory which Rust has allocated across the FFI boundary (i32 values)
@@ -193,8 +213,6 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), f3
     let z_1 = ((1. - e2_1) * nu_1 + H) * lat_1.sin();
 
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
-    let cst: f64 = 20.4894;
-    let s = cst * (10 as f64).powi(-6);
     // The translations along x, y, z axes respectively
     let tx = TX;
     let ty = TY;
@@ -342,7 +360,7 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
     let z_1 = ((1. - e2) * nu / F0 + H) * lat_1.sin();
 
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
-    let s = -20.4894 * (10. as f64).powi(-6); // The scale factor -1
+    let minus_s = -s; // The scale factor -1
     // The translations along x, y, z axes respectively
     let tx = TX.abs();
     let ty = TY * -1.;
@@ -355,9 +373,9 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
     let rx = rxs * PI / (180. * 3600.);
     let ry = rys * PI / (180. * 3600.);
     let rz = rzs * PI / (180. * 3600.); // In radians
-    let x_2 = tx + (1. + s) * x_1 + (-rz) * y_1 + (ry) * z_1;
-    let y_2 = ty + (rz) * x_1 + (1. + s) * y_1 + (-rx) * z_1;
-    let z_2 = tz + (-ry) * x_1 + (rx) * y_1 + (1. + s) * z_1;
+    let x_2 = tx + (1. + minus_s) * x_1 + (-rz) * y_1 + (ry) * z_1;
+    let y_2 = ty + (rz) * x_1 + (1. + minus_s) * y_1 + (-rx) * z_1;
+    let z_2 = tz + (-ry) * x_1 + (rx) * y_1 + (1. + minus_s) * z_1;
 
     // Back to spherical polar coordinates from cartesian
     // Need some of the characteristics of the new ellipsoid
