@@ -421,17 +421,14 @@ fn ostn02_shifts(x: &i32, y :&i32) -> (f64, f64, f64) {
     let s1_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 0));
     let s2_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 0), &(n_index + 1));
     let s3_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 1));
-
     // only continue if we get Results for the above
 
     let x0 = e_index * 1000;
     let y0 = n_index * 1000;
     // offset within square
-    // this seems like a no-op, considering what we do to x and y to get e_index
     let dx = *x - x0;
     let dy = *y - y0;
 
-    // this seems like a no-op too
     let t = dx / 1000;
     let u = dy / 1000;
 
@@ -451,11 +448,10 @@ fn ostn02_shifts(x: &i32, y :&i32) -> (f64, f64, f64) {
 fn get_ostn_ref(x: &i32, y: &i32) -> (f64, f64, f64) {
 
     // TODO populate ostn02 with the full OSTN02 data
-    let mut keys = vec!["1fb13e", "1fb13d", "287146"];
-    let mut values:Vec<(_, _, _)> = vec![(9435, 12302, 9174), (9408, 12297, 9166), (9959, 17480, 9016)];
+    let mut keys = vec!["0a0266", "09f266", "09f267", "0a0267"];
+    let mut values:Vec<(_, _, _)> = vec![(14192, 1769, 643), (14197, 1737, 641), (14247, 1732, 627), (14249, 1759, 628)];
     let ostn02 = keys.drain(..).zip(values.drain(..)).collect::<HashMap<_, (_, _, _)>>();
-
-    let key = format!("{:03x}{:03x}", x, y);
+    let key = format!("{:03x}{:03x}", y, x);
     // some or None, so try! this
     let result = ostn02.get(&*key).unwrap();
     // if we get a hit
@@ -577,6 +573,8 @@ pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
 
 #[cfg(test)]
 mod tests {
+    use super::get_ostn_ref;
+    use super::ostn02_shifts;
     use super::drop_int_array;
     use super::convert_bng;
     use super::convert_lonlat;
@@ -586,6 +584,26 @@ mod tests {
     use super::Array;
 
     extern crate libc;
+
+    #[test]
+    // original coordinates are 614300, 159900
+    fn test_ostn_hashmap_retrieval() {
+        let eastings = 614;
+        let northings = 160;
+        let expected = (100.46700000000001, -79.83399999999999, 44.625);
+        assert_eq!(expected, get_ostn_ref(&eastings, &northings));
+
+    }
+
+    #[test]
+    fn test_ostn02_shift_incorporation() {
+        let eastings = 614300;
+        let northings = 159900;
+        // The offsets result in the following hex values for the E and N above:
+        // "0a0266", "09f266", "09f267", "0a0267" (00, 10, 01, 11)
+        let expected = (100.47200000000001, -79.866, 44.623);
+        assert_eq!(expected, ostn02_shifts(&eastings, &northings));
+    }
 
     #[test]
     fn test_threaded_bng_conversion() {
