@@ -189,6 +189,14 @@ fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, T>
     }
 }
 
+// Herbie's going to have a field day with this
+fn round_to_nearest_mm(x: &f64,  y: &f64,  z: &f64) -> (f64, f64, f64) {
+    let new_x = (*x * 1000.).round() as f64 / 1000.;
+    let new_y = (*y * 1000.).round() as f64 / 1000.;
+    let new_z = (*z * 1000.).round() as f64 / 1000.;
+    (new_x, new_y, new_z)
+}
+
 /// Perform Longitude, Latitude to British National Grid conversion
 ///
 /// # Examples
