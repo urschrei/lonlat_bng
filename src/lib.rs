@@ -190,10 +190,10 @@ fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, T>
 }
 
 // Herbie's going to have a field day with this
-fn round_to_nearest_mm(x: &f64,  y: &f64,  z: &f64) -> (f64, f64, f64) {
-    let new_x = (*x * 1000.).round() as f64 / 1000.;
-    let new_y = (*y * 1000.).round() as f64 / 1000.;
-    let new_z = (*z * 1000.).round() as f64 / 1000.;
+fn round_to_nearest_mm(x: f64,  y: f64,  z: f64) -> (f64, f64, f64) {
+    let new_x = (x * 1000.).round() as f64 / 1000.;
+    let new_y = (y * 1000.).round() as f64 / 1000.;
+    let new_z = (z * 1000.).round() as f64 / 1000.;
     (new_x, new_y, new_z)
 }
 
@@ -300,6 +300,23 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), f3
     let N = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
             IIIA * (lon - lon0).powi(6);
     let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
+    // now retrieve OSTN02 shifts for E N results
+    // let mut (dx, dy, dz) = ostn02_shifts(&E, &N);
+    // let mut (x, y, z) = (E - dx, N - dy, 0 + dz);
+    // let mut (last_dx, last_dy) = (dx.clone(), dy.clone());
+    // some sort of iterative procedure here
+    //     while 1:
+    // while  (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
+    //     (dx, dy, dz) = ostn_shifts(&x ,&y);
+    //     (x, y) = (x0 - dx, y0 - dy);
+    //     (last_dx, last_dy) = (dx, dy)
+    // }
+    // (x, y, z) = round_to_nearest_mm(x0 - dx, y0 - dy, z0 + dz)
+    // (x, y)
+
+
+
+
     Ok((E.round() as c_int, N.round() as c_int))
 }
 
