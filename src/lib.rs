@@ -28,6 +28,7 @@ use std::f64;
 use std::mem;
 use std::slice;
 use std::fmt;
+use std::collections::HashMap;
 
 extern crate libc;
 use libc::{c_void, c_float, c_int};
@@ -66,6 +67,12 @@ const s: f64 = 20.4894 * 0.000001;
 // etc
 const PI: f64 = f64::consts::PI;
 
+const MAX_EASTING: i32  =  700000;
+const MAX_NORTHING: i32 = 1250000;
+
+const MIN_X_SHIFT: f64 =  86.275;
+const MIN_Y_SHIFT: f64 = -81.603;
+const MIN_Z_SHIFT: f64 =  43.982;
 
 #[repr(C)]
 pub struct Array {
@@ -401,6 +408,57 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
     lat = lat * 180. / PI;
     lon = lon * 180. / PI;
     (lon as c_float, lat as c_float)
+}
+
+
+// Input values should be valid ETRS89 grid references
+fn ostn02_shifts(x: &f32, y :&f32) -> (f64, f64, f64) {
+    let e_index = *x as f64 / 1000.;
+    let n_index = *y as f64 / 1000.;
+
+    // any of these could be Err, so use try!
+    let s0_ref = get_ostn_ref(&(e_index + 0 as f64), &(n_index + 0 as f64));
+    let s1_ref = get_ostn_ref(&(e_index + 1 as f64), &(n_index + 0 as f64));
+    let s2_ref = get_ostn_ref(&(e_index + 0 as f64), &(n_index + 1 as f64));
+    let s3_ref = get_ostn_ref(&(e_index + 1 as f64), &(n_index + 1 as f64));
+
+    // only continue if we get Results for the above
+
+    let x0 = e_index * 1000.;
+    let y0 = n_index * 1000.;
+    // offset within square
+    let dx = *x as f64 - x0;
+    let dy = *y as f64 - y0;
+
+    let t = dx / 1000.;
+    let u = dy / 1000.;
+
+    let f0 = (1 as f64 - t) * (1 as f64 - u);
+    let f1 = t * (1 as f64 - u);
+    let f2 = (1 as f64 - t) * u;
+    let f3 = t * u;
+
+    let se = f0 * s0_ref.0 + f1 * s1_ref.0 + f2 * s2_ref.0 + f3 * s3_ref.0;
+    let sn = f0 * s0_ref.1 + f1 * s1_ref.1 + f2 * s2_ref.1 + f3 * s3_ref.1;
+    let sg = f0 * s0_ref.2 + f1 * s1_ref.2 + f2 * s2_ref.2 + f3 * s3_ref.2;
+
+    (se, sn, sg)
+
+}
+
+fn get_ostn_ref(x: &f64, y: &f64) -> (f64, f64, f64) {
+
+    // TODO populate ostn02 with the full OSTN02 data
+    let mut keys = vec!["1fb13e", "1fb13d", "287146"];
+    let mut values:Vec<(f64, f64, f64)> = vec![(9435.0, 12302.0, 9174.0), (9408.0, 12297.0, 9166.0), (9959.0, 17480.0, 9016.0)];
+    let ostn02 = keys.drain(..).zip(values.drain(..)).collect::<HashMap<_, (f64, f64, f64)>>();
+
+    let key = format!("{}03x{}03x", x, y);
+    // some or None, so try! this
+    let result = ostn02.get(&*key).unwrap();
+    // if we get a hit
+    let data2 = (result.0  / 1000. + MIN_X_SHIFT, result.1 / 1000. + MIN_Y_SHIFT, result.2 / 1000. + MIN_Z_SHIFT);
+    data2
 }
 
 /// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_bng`
