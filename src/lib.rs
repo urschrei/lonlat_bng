@@ -412,31 +412,33 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
 
 
 // Input values should be valid ETRS89 grid references
-fn ostn02_shifts(x: &f32, y :&f32) -> (f64, f64, f64) {
-    let e_index = *x as f64 / 1000.;
-    let n_index = *y as f64 / 1000.;
+fn ostn02_shifts(x: &i32, y :&i32) -> (f64, f64, f64) {
+    let e_index: i32 = *x / 1000;
+    let n_index: i32 = *y / 1000;
 
     // any of these could be Err, so use try!
-    let s0_ref = get_ostn_ref(&(e_index + 0 as f64), &(n_index + 0 as f64));
-    let s1_ref = get_ostn_ref(&(e_index + 1 as f64), &(n_index + 0 as f64));
-    let s2_ref = get_ostn_ref(&(e_index + 0 as f64), &(n_index + 1 as f64));
-    let s3_ref = get_ostn_ref(&(e_index + 1 as f64), &(n_index + 1 as f64));
+    let s0_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 0), &(n_index + 0));
+    let s1_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 0));
+    let s2_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 0), &(n_index + 1));
+    let s3_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 1));
 
     // only continue if we get Results for the above
 
-    let x0 = e_index * 1000.;
-    let y0 = n_index * 1000.;
+    let x0 = e_index * 1000;
+    let y0 = n_index * 1000;
     // offset within square
-    let dx = *x as f64 - x0;
-    let dy = *y as f64 - y0;
+    // this seems like a no-op, considering what we do to x and y to get e_index
+    let dx = *x - x0;
+    let dy = *y - y0;
 
-    let t = dx / 1000.;
-    let u = dy / 1000.;
+    // this seems like a no-op too
+    let t = dx / 1000;
+    let u = dy / 1000;
 
-    let f0 = (1 as f64 - t) * (1 as f64 - u);
-    let f1 = t * (1 as f64 - u);
-    let f2 = (1 as f64 - t) * u;
-    let f3 = t * u;
+    let f0 = (1. - t as f64) * (1. - u as f64);
+    let f1 = t as f64 * (1. - u as f64);
+    let f2 = (1. - t as f64) * u as f64;
+    let f3 = t as f64 * u as f64;
 
     let se = f0 * s0_ref.0 + f1 * s1_ref.0 + f2 * s2_ref.0 + f3 * s3_ref.0;
     let sn = f0 * s0_ref.1 + f1 * s1_ref.1 + f2 * s2_ref.1 + f3 * s3_ref.1;
@@ -446,18 +448,18 @@ fn ostn02_shifts(x: &f32, y :&f32) -> (f64, f64, f64) {
 
 }
 
-fn get_ostn_ref(x: &f64, y: &f64) -> (f64, f64, f64) {
+fn get_ostn_ref(x: &i32, y: &i32) -> (f64, f64, f64) {
 
     // TODO populate ostn02 with the full OSTN02 data
     let mut keys = vec!["1fb13e", "1fb13d", "287146"];
-    let mut values:Vec<(f64, f64, f64)> = vec![(9435.0, 12302.0, 9174.0), (9408.0, 12297.0, 9166.0), (9959.0, 17480.0, 9016.0)];
-    let ostn02 = keys.drain(..).zip(values.drain(..)).collect::<HashMap<_, (f64, f64, f64)>>();
+    let mut values:Vec<(_, _, _)> = vec![(9435, 12302, 9174), (9408, 12297, 9166), (9959, 17480, 9016)];
+    let ostn02 = keys.drain(..).zip(values.drain(..)).collect::<HashMap<_, (_, _, _)>>();
 
-    let key = format!("{}03x{}03x", x, y);
+    let key = format!("{:03x}{:03x}", x, y);
     // some or None, so try! this
     let result = ostn02.get(&*key).unwrap();
     // if we get a hit
-    let data2 = (result.0  / 1000. + MIN_X_SHIFT, result.1 / 1000. + MIN_Y_SHIFT, result.2 / 1000. + MIN_Z_SHIFT);
+    let data2 = (result.0 as f64  / 1000. + MIN_X_SHIFT, result.1 as f64 / 1000. + MIN_Y_SHIFT, result.2 as f64 / 1000. + MIN_Z_SHIFT);
     data2
 }
 
