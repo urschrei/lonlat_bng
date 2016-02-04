@@ -40,8 +40,8 @@ use crossbeam::scope;
 
 extern crate num_cpus;
 
-extern crate nalgebra;
-use nalgebra::{Vec3, Mat3, DMat};
+// extern crate nalgebra;
+// use nalgebra::{Vec3, Mat3, DMat};
 
 // Constants used for coordinate conversions
 //
@@ -81,19 +81,19 @@ pub struct Array {
 }
 
 
-fn helmert(lon_vec: Vec<&f32>, lat_vec: Vec<&f32>) -> (Vec<f32>, Vec<f32>) {
-    let t_array = Vec3::new(TX, TY, TZ);
-    let params = Mat3::new(1. + s, RZS, -RYS, -RZS, 1. + s, RXS, RYS, -RXS, 1. + s);
-    // let zeros: Vec<&f32> = vec![&1.; lon_vec.len()];
-    let test = vec![1, 2, 3, 4, 5, 6];
-    // let mut combined: Vec<&f32> = lon_vec.extend(lat_vec.iter()).collect();
-    // combined.extend(zeros.iter().cloned());
-    // let tmat = DMat::from_row_vec(3, zeros.len(), &combined);
-    let tmat = DMat::from_row_vec(3, 2, &test);
-    // build input vector of x, y, and z columns
-    // let inp = DMat::from_row_vec(3, 1, vec![lon_vec, lat_vec, h_vec]);
-    (vec![1.], vec![2.])
-}
+// fn helmert(lon_vec: Vec<&f32>, lat_vec: Vec<&f32>) -> (Vec<f32>, Vec<f32>) {
+//     let t_array = Vec3::new(TX, TY, TZ);
+//     let params = Mat3::new(1. + s, RZS, -RYS, -RZS, 1. + s, RXS, RYS, -RXS, 1. + s);
+//     // let zeros: Vec<&f32> = vec![&1.; lon_vec.len()];
+//     let test = vec![1, 2, 3, 4, 5, 6];
+//     // let mut combined: Vec<&f32> = lon_vec.extend(lat_vec.iter()).collect();
+//     // combined.extend(zeros.iter().cloned());
+//     // let tmat = DMat::from_row_vec(3, zeros.len(), &combined);
+//     let tmat = DMat::from_row_vec(3, 2, &test);
+//     // build input vector of x, y, and z columns
+//     // let inp = DMat::from_row_vec(3, 1, vec![lon_vec, lat_vec, h_vec]);
+//     (vec![1.], vec![2.])
+// }
 
 /// Free memory which Rust has allocated across the FFI boundary (i32 values)
 ///
