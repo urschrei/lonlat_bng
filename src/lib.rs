@@ -448,8 +448,8 @@ fn ostn02_shifts(x: &i32, y :&i32) -> (f64, f64, f64) {
 fn get_ostn_ref(x: &i32, y: &i32) -> (f64, f64, f64) {
 
     // TODO populate ostn02 with the full OSTN02 data
-    let mut keys = vec!["0a0266", "09f266", "09f267", "0a0267"];
-    let mut values:Vec<(_, _, _)> = vec![(14192, 1769, 643), (14197, 1737, 641), (14247, 1732, 627), (14249, 1759, 628)];
+    let mut keys = vec!["20918f", "20a18e", "20a18f", "20918e"];
+    let mut values:Vec<(_, _, _)> = vec![(12094, 12383, 6975), (12057, 12423, 7027), (12101, 12421, 6970), (12050, 12386, 7030)];
     let ostn02 = keys.drain(..).zip(values.drain(..)).collect::<HashMap<_, (_, _, _)>>();
     let key = format!("{:03x}{:03x}", y, x);
     // some or None, so try! this
@@ -588,20 +588,20 @@ mod tests {
     #[test]
     // original coordinates are 614300, 159900
     fn test_ostn_hashmap_retrieval() {
-        let eastings = 614;
-        let northings = 160;
-        let expected = (100.46700000000001, -79.83399999999999, 44.625);
+        let eastings = 398;
+        let northings = 521;
+        let expected = (98.325, -69.217, 51.012);
         assert_eq!(expected, get_ostn_ref(&eastings, &northings));
 
     }
 
     #[test]
     fn test_ostn02_shift_incorporation() {
-        let eastings = 614300;
-        let northings = 159900;
+        // these are the correct values for 2.0183041005533306, 54.589097162646141
+        let eastings = 398915;
+        let northings = 521545;
         // The offsets result in the following hex values for the E and N above:
-        // "0a0266", "09f266", "09f267", "0a0267" (00, 10, 01, 11)
-        let expected = (100.47200000000001, -79.866, 44.623);
+        let expected = (98.325, -69.217, 51.012);
         assert_eq!(expected, ostn02_shifts(&eastings, &northings));
     }
 
