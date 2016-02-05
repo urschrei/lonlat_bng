@@ -305,7 +305,6 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), f3
     // let mut (x, y, z) = (E - dx, N - dy, 0 + dz);
     // let mut (last_dx, last_dy) = (dx.clone(), dy.clone());
     // some sort of iterative procedure here
-    //     while 1:
     // while  (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
     //     (dx, dy, dz) = ostn_shifts(&x ,&y);
     //     (x, y) = (x0 - dx, y0 - dy);
@@ -313,10 +312,6 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), f3
     // }
     // (x, y, z) = round_to_nearest_mm(x0 - dx, y0 - dy, z0 + dz)
     // (x, y)
-
-
-
-
     Ok((E.round() as c_int, N.round() as c_int))
 }
 
@@ -437,10 +432,17 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
 
 
 // Input values should be valid ETRS89 grid references
+// See page 20 of the transformation guide at
+// https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
 fn ostn02_shifts(x: &f64, y :&f64) -> (f64, f64, f64) {
     let e_index = (*x / 1000.) as i32;
     let n_index = (*y / 1000.) as i32;
+    
+    // eastings and northings of the south-west corner of the cell
+    let x0 = e_index * 1000;
+    let y0 = n_index * 1000;
 
+    // The easting, northing and geoid shifts for the four corners of the cell
     // any of these could be Err, so use try!
     let s0_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 0), &(n_index + 0));
     let s1_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 0));
@@ -448,8 +450,6 @@ fn ostn02_shifts(x: &f64, y :&f64) -> (f64, f64, f64) {
     let s3_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 1));
     // only continue if we get Results for the above
 
-    let x0 = e_index * 1000;
-    let y0 = n_index * 1000;
     // offset within square
     let dx = *x - (x0 as f64);
     let dy = *y - (y0 as f64);
@@ -463,6 +463,7 @@ fn ostn02_shifts(x: &f64, y :&f64) -> (f64, f64, f64) {
     let f2 = (1. - t as f64) * u as f64;
     let f3 = t as f64 * u as f64;
 
+    // bilinear interpolation, to obtain the actual shifts
     let se = f0 * s0_ref.0 + f1 * s1_ref.0 + f2 * s2_ref.0 + f3 * s3_ref.0;
     let sn = f0 * s0_ref.1 + f1 * s1_ref.1 + f2 * s2_ref.1 + f3 * s3_ref.1;
     let sg = f0 * s0_ref.2 + f1 * s1_ref.2 + f2 * s2_ref.2 + f3 * s3_ref.2;
