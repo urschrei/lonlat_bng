@@ -300,18 +300,6 @@ pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), f3
     let N = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
             IIIA * (lon - lon0).powi(6);
     let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
-    // now retrieve OSTN02 shifts for E N results
-    // let mut (dx, dy, dz) = ostn02_shifts(&E, &N);
-    // let mut (x, y, z) = (E - dx, N - dy, 0 + dz);
-    // let mut (last_dx, last_dy) = (dx.clone(), dy.clone());
-    // some sort of iterative procedure here
-    // while  (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
-    //     (dx, dy, dz) = ostn_shifts(&x ,&y);
-    //     (x, y) = (x0 - dx, y0 - dy);
-    //     (last_dx, last_dy) = (dx, dy)
-    // }
-    // (x, y, z) = round_to_nearest_mm(x0 - dx, y0 - dy, z0 + dz)
-    // (x, y)
     Ok((E.round() as c_int, N.round() as c_int))
 }
 
@@ -489,6 +477,22 @@ fn get_ostn_ref(x: &i32, y: &i32) -> (f64, f64, f64) {
                  result.1 as f64 / 1000. + MIN_Y_SHIFT,
                  result.2 as f64 / 1000. + MIN_Z_SHIFT);
     data2
+}
+
+// Convert OSGB36 coordinates to ETRS89 using OSTN02 shifts
+fn shift_osgb36_to_etrs89(E: &f64, N: &f64) -> (f64, f64) {
+    let z0 = 0.000;
+    let epsilon = 0.00001;
+    let (mut dx, mut dy, mut dz) = ostn02_shifts(&E, &N);
+    let (mut x, mut y, mut z) = (E - dx, N - dy, dz);
+    let (mut last_dx, mut last_dy) = (dx.clone(), dy.clone());
+    while (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
+        let (dx, dy, dz) = ostn02_shifts(&x, &y);
+        let (x, y) = (E - dx, N - dy);
+        let (last_dx, last_dy) = (dx, dy);
+    }
+    let (x, y, z) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
+    (x, y)
 }
 
 /// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_bng`
