@@ -67,12 +67,12 @@ const s: f64 = 20.4894 * 0.000001;
 // etc
 const PI: f64 = f64::consts::PI;
 
-const MAX_EASTING: i32  =  700000;
+const MAX_EASTING: i32 = 700000;
 const MAX_NORTHING: i32 = 1250000;
 
-const MIN_X_SHIFT: f64 =  86.275;
+const MIN_X_SHIFT: f64 = 86.275;
 const MIN_Y_SHIFT: f64 = -81.603;
-const MIN_Z_SHIFT: f64 =  43.982;
+const MIN_Z_SHIFT: f64 = 43.982;
 
 #[repr(C)]
 pub struct Array {
@@ -190,7 +190,7 @@ fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, T>
 }
 
 // Herbie's going to have a field day with this
-fn round_to_nearest_mm(x: f64,  y: f64,  z: f64) -> (f64, f64, f64) {
+fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
     let new_x = (x * 1000.).round() as f64 / 1000.;
     let new_y = (y * 1000.).round() as f64 / 1000.;
     let new_z = (z * 1000.).round() as f64 / 1000.;
@@ -434,10 +434,10 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
 // Input values should be valid ETRS89 grid references
 // See page 20 of the transformation guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
-fn ostn02_shifts(x: &f64, y :&f64) -> (f64, f64, f64) {
+fn ostn02_shifts(x: &f64, y: &f64) -> (f64, f64, f64) {
     let e_index = (*x / 1000.) as i32;
     let n_index = (*y / 1000.) as i32;
-    
+
     // eastings and northings of the south-west corner of the cell
     let x0 = e_index * 1000;
     let y0 = n_index * 1000;
@@ -474,16 +474,20 @@ fn ostn02_shifts(x: &f64, y :&f64) -> (f64, f64, f64) {
 }
 
 fn get_ostn_ref(x: &i32, y: &i32) -> (f64, f64, f64) {
-
     // TODO populate ostn02 with the full OSTN02 data
     let mut keys = vec!["13928b", "13928c", "13a28b", "13a28c"];
-    let mut values:Vec<(_, _, _)> = vec![(16500, 3359, 270), (16538, 3357, 254), (16508, 3387, 258), (16547, 3376, 242)];
+    let mut values: Vec<(_, _, _)> = vec![(16500, 3359, 270),
+                                          (16538, 3357, 254),
+                                          (16508, 3387, 258),
+                                          (16547, 3376, 242)];
     let ostn02 = keys.drain(..).zip(values.drain(..)).collect::<HashMap<_, (_, _, _)>>();
     let key = format!("{:03x}{:03x}", y, x);
     // some or None, so try! this
     let result = ostn02.get(&*key).unwrap();
     // if we get a hit
-    let data2 = (result.0 as f64  / 1000. + MIN_X_SHIFT, result.1 as f64 / 1000. + MIN_Y_SHIFT, result.2 as f64 / 1000. + MIN_Z_SHIFT);
+    let data2 = (result.0 as f64 / 1000. + MIN_X_SHIFT,
+                 result.1 as f64 / 1000. + MIN_Y_SHIFT,
+                 result.2 as f64 / 1000. + MIN_Z_SHIFT);
     data2
 }
 
