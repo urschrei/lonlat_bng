@@ -54,7 +54,7 @@ pub fn get_ostn_ref(x: &i32, y: &i32) -> (f64, f64, f64) {
 }
 
 // Input values must be valid ETRS89 grid references
-// See page 20 of the transformation guide at
+// See p20 of the transformation user guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
 pub fn ostn02_shifts(x: &f64, y: &f64) -> (f64, f64, f64) {
     let e_index = (*x / 1000.) as i32;
@@ -95,6 +95,7 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> (f64, f64, f64) {
 
 }
 
+// See Annexe B (p23) of the transformation user guide for instructions
 pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> (f64, f64) {
     let alt = 0.0;
     // ellipsoid squared eccentricity constant
