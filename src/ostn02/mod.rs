@@ -102,9 +102,8 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> (f64, f64) {
     let n = (WGS84_A - WGS84_B) / (WGS84_A + WGS84_B);
     let phi = RAD * *latitude;
     let lambda = RAD * *longitude;
-    // this should be e2 * sin^2 * phi
-    let sp2 = phi.sin().powf(2.);
 
+    let sp2 = phi.sin().powf(2.);
     let nu = WGS84_A * F0 * (1. - e2 * sp2).powf(-0.5); // v
     let rho = WGS84_A * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
     let eta2 = nu / rho - 1.;
@@ -114,8 +113,8 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> (f64, f64) {
     let cp = phi.cos();
     let sp = phi.sin();
     let tp = phi.tan();
-    let tp2 = tp.powf(2.); // tp * tp originally
-    let tp4 = tp2.powf(2.);
+    let tp2 = tp.powf(2.);
+    let tp4 = tp.powf(4.);
 
     let I = m + N0;
     let II = nu / 2. * sp * cp;
