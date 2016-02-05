@@ -437,9 +437,9 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
 
 
 // Input values should be valid ETRS89 grid references
-fn ostn02_shifts(x: &i32, y :&i32) -> (f64, f64, f64) {
-    let e_index: i32 = *x / 1000;
-    let n_index: i32 = *y / 1000;
+fn ostn02_shifts(x: &f64, y :&f64) -> (f64, f64, f64) {
+    let e_index = (*x / 1000.) as i32;
+    let n_index = (*y / 1000.) as i32;
 
     // any of these could be Err, so use try!
     let s0_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 0), &(n_index + 0));
@@ -451,11 +451,12 @@ fn ostn02_shifts(x: &i32, y :&i32) -> (f64, f64, f64) {
     let x0 = e_index * 1000;
     let y0 = n_index * 1000;
     // offset within square
-    let dx = *x - x0;
-    let dy = *y - y0;
+    let dx = *x - (x0 as f64);
+    let dy = *y - (y0 as f64);
 
-    let t = dx / 1000;
-    let u = dy / 1000;
+    // the python script divides by an int here, which = 0 (e.g. 300 / 1000)
+    let t = dx / 1000.;
+    let u = dy / 1000.;
 
     let f0 = (1. - t as f64) * (1. - u as f64);
     let f1 = t as f64 * (1. - u as f64);
@@ -623,10 +624,10 @@ mod tests {
     #[test]
     fn test_ostn02_shift_incorporation() {
         // these are the correct values for 2.0183041005533306, 54.589097162646141
-        let eastings = 398915;
-        let northings = 521545;
+        let eastings = 398915.00;
+        let northings = 521545.00;
         // The offsets result in the following hex values for the E and N above:
-        let expected = (98.325, -69.217, 51.012);
+        let expected = (98.36907500000001, -69.199081325, 50.95904265);
         assert_eq!(expected, ostn02_shifts(&eastings, &northings));
     }
 
