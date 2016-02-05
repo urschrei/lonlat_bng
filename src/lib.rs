@@ -45,29 +45,29 @@ mod ostn02;
 // Constants used for coordinate conversions
 //
 // Ellipsoids
-const AIRY_1830_SEMI_MAJOR: f64 = 6377563.396;
-const AIRY_1830_SEMI_MINOR: f64 = 6356256.909;
-const GRS80_SEMI_MAJOR: f64 = 6378137.000;
-const GRS80_SEMI_MINOR: f64 = 6356752.3141;
+pub const AIRY_1830_SEMI_MAJOR: f64 = 6377563.396;
+pub const AIRY_1830_SEMI_MINOR: f64 = 6356256.909;
+pub const GRS80_SEMI_MAJOR: f64 = 6378137.000;
+pub const GRS80_SEMI_MINOR: f64 = 6356752.3141;
 // Northing & easting of true origin (m)
-const TRUE_ORIGIN_NORTHING: f64 = -100000.;
-const TRUE_ORIGIN_EASTING: f64 = 400000.;
+pub const TRUE_ORIGIN_NORTHING: f64 = -100000.;
+pub const TRUE_ORIGIN_EASTING: f64 = 400000.;
 // For Helmert Transform to OSGB36, translations along the x, y, z axes
 // When transforming to WGS84, reverse the signs
-const TX: f64 = -446.448;
-const TY: f64 = 125.157;
-const TZ: f64 = -542.060;
+pub const TX: f64 = -446.448;
+pub const TY: f64 = 125.157;
+pub const TZ: f64 = -542.060;
 // Rotations along the x, y, z axes, in seconds
-const RXS: f64 = -0.1502;
-const RYS: f64 = -0.2470;
-const RZS: f64 = -0.8421;
+pub const RXS: f64 = -0.1502;
+pub const RYS: f64 = -0.2470;
+pub const RZS: f64 = -0.8421;
 
-const s: f64 = 20.4894 * 0.000001;
+pub const s: f64 = 20.4894 * 0.000001;
 // etc
-const PI: f64 = f64::consts::PI;
+pub const PI: f64 = f64::consts::PI;
 
-const MAX_EASTING: i32 = 700000;
-const MAX_NORTHING: i32 = 1250000;
+pub const MAX_EASTING: i32 = 700000;
+pub const MAX_NORTHING: i32 = 1250000;
 
 #[repr(C)]
 pub struct Array {
@@ -525,6 +525,7 @@ pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
 mod tests {
     use ostn02::get_ostn_ref;
     use ostn02::ostn02_shifts;
+    use ostn02::convert_etrs89;
     use super::drop_int_array;
     use super::convert_bng;
     use super::convert_lonlat;
@@ -536,13 +537,20 @@ mod tests {
     extern crate libc;
 
     #[test]
+    fn test_etrs89_conversion() {
+        let longitude = 1.716073973;
+        let latitude = 52.658007833;
+        let expected = (651307.003, 313255.686);
+        assert_eq!(expected, convert_etrs89(&longitude, &latitude));
+    }
+
+    #[test]
     // original coordinates are 651307.003, 313255.686
     fn test_ostn_hashmap_retrieval() {
         let eastings = 651;
         let northings = 313;
         let expected = (102.775, -78.244, 44.252);
         assert_eq!(expected, get_ostn_ref(&eastings, &northings));
-
     }
 
     #[test]
