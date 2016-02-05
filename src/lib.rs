@@ -468,15 +468,16 @@ fn ostn02_shifts(x: &f64, y :&f64) -> (f64, f64, f64) {
     let sn = f0 * s0_ref.1 + f1 * s1_ref.1 + f2 * s2_ref.1 + f3 * s3_ref.1;
     let sg = f0 * s0_ref.2 + f1 * s1_ref.2 + f2 * s2_ref.2 + f3 * s3_ref.2;
 
-    (se, sn, sg)
+    let (r_se, r_sn, r_sg) = round_to_nearest_mm(se, sn, sg);
+    (r_se, r_sn, r_sg)
 
 }
 
 fn get_ostn_ref(x: &i32, y: &i32) -> (f64, f64, f64) {
 
     // TODO populate ostn02 with the full OSTN02 data
-    let mut keys = vec!["20918f", "20a18e", "20a18f", "20918e"];
-    let mut values:Vec<(_, _, _)> = vec![(12094, 12383, 6975), (12057, 12423, 7027), (12101, 12421, 6970), (12050, 12386, 7030)];
+    let mut keys = vec!["13928b", "13928c", "13a28b", "13a28c"];
+    let mut values:Vec<(_, _, _)> = vec![(16500, 3359, 270), (16538, 3357, 254), (16508, 3387, 258), (16547, 3376, 242)];
     let ostn02 = keys.drain(..).zip(values.drain(..)).collect::<HashMap<_, (_, _, _)>>();
     let key = format!("{:03x}{:03x}", y, x);
     // some or None, so try! this
@@ -613,22 +614,22 @@ mod tests {
     extern crate libc;
 
     #[test]
-    // original coordinates are 614300, 159900
+    // original coordinates are 651307.003, 313255.686
     fn test_ostn_hashmap_retrieval() {
-        let eastings = 398;
-        let northings = 521;
-        let expected = (98.325, -69.217, 51.012);
+        let eastings = 651;
+        let northings = 313;
+        let expected = (102.775, -78.244, 44.252);
         assert_eq!(expected, get_ostn_ref(&eastings, &northings));
 
     }
 
     #[test]
     fn test_ostn02_shift_incorporation() {
-        // these are the correct values for 2.0183041005533306, 54.589097162646141
-        let eastings = 398915.00;
-        let northings = 521545.00;
+        // These are the input values in the official example
+        let eastings = 651307.003;
+        let northings = 313255.686;
         // The offsets result in the following hex values for the E and N above:
-        let expected = (98.36907500000001, -69.199081325, 50.95904265);
+        let expected = (102.789, -78.238, 44.244);
         assert_eq!(expected, ostn02_shifts(&eastings, &northings));
     }
 
