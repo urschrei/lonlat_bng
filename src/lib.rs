@@ -32,6 +32,8 @@ use std::fmt;
 extern crate libc;
 use libc::{c_void, c_float, c_int};
 
+extern crate ostn02_phf;
+
 extern crate rand;
 
 extern crate crossbeam;

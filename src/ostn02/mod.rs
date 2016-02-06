@@ -25,6 +25,7 @@ const MIN_Y_SHIFT: f64 = -81.603;
 const MIN_Z_SHIFT: f64 = 43.982;
 
 use std::collections::HashMap;
+use ostn02_phf::ostn02_lookup;
 
 // Herbie's going to have a field day with this
 pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
@@ -35,17 +36,9 @@ pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
 }
 
 pub fn get_ostn_ref(x: &i32, y: &i32) -> (f64, f64, f64) {
-    // TODO populate ostn02 with the full OSTN02 data
-    // let shifts = get_shifts_hashmap();
-    let mut keys = vec!["13928b", "13928c", "13a28b", "13a28c"];
-    let mut values: Vec<(_, _, _)> = vec![(16500, 3359, 270),
-                                          (16538, 3357, 254),
-                                          (16508, 3387, 258),
-                                          (16547, 3376, 242)];
-    let ostn02 = keys.drain(..).zip(values.drain(..)).collect::<HashMap<_, (_, _, _)>>();
     let key = format!("{:03x}{:03x}", y, x);
     // some or None, so try! this
-    let result = ostn02.get(&*key).unwrap();
+    let result = ostn02_lookup(&*key).unwrap();
     // if we get a hit
     let data2 = (result.0 as f64 / 1000. + MIN_X_SHIFT,
                  result.1 as f64 / 1000. + MIN_Y_SHIFT,

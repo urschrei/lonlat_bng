@@ -15,6 +15,7 @@ rand = "0.3.13"
 crossbeam = "0.2.5"
 num_cpus = "0.2.10"
 nalgebra = "0.5.1"
+ostn02_phf = "0.1.0"
 
 [lib]
 name = "lonlat_bng"
