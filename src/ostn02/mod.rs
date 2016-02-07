@@ -43,11 +43,17 @@ pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
 pub fn get_ostn_ref(x: &i32, y: &i32) -> (f64, f64, f64) {
     let key = format!("{:03x}{:03x}", y, x);
     // some or None, so try! this
-    let result = ostn02_lookup(&*key).unwrap();
-    // if we get a hit
-    let data2 = (result.0 as f64 / 1000. + MIN_X_SHIFT,
-                 result.1 as f64 / 1000. + MIN_Y_SHIFT,
-                 result.2 as f64 / 1000. + MIN_Z_SHIFT);
+    let result = ostn02_lookup(&*key);
+    // The implication here is that all valid kilometer-grid references return corrections
+    // and that a transformation is valid even if we apply (0.0, 0.0, 0.0)
+    let data2 = match result {
+        Some(result) => {
+            (result.0 as f64 / 1000. + MIN_X_SHIFT,
+             result.1 as f64 / 1000. + MIN_Y_SHIFT,
+             result.2 as f64 / 1000. + MIN_Z_SHIFT)
+        }
+        _ => (0.0, 0.0, 0.0),
+    };
     data2
 }
 
@@ -105,8 +111,10 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> (f64, f64, f64) {
 pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), f64> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude as f32, (MIN_LONGITUDE, MAX_LONGITUDE)).map_err(|e| e)) as f64 * RAD;
-    let lat_1: f64 = try!(check(*latitude as f32, (MIN_LATITUDE, MAX_LATITUDE)).map_err(|e| e)) as f64 * RAD;
+    let lon_1: f64 = try!(check(*longitude as f32, (MIN_LONGITUDE, MAX_LONGITUDE))
+                              .map_err(|e| e)) as f64 * RAD;
+    let lat_1: f64 = try!(check(*latitude as f32, (MIN_LATITUDE, MAX_LATITUDE))
+                              .map_err(|e| e)) as f64 * RAD;
     let alt = 0.0;
     // ellipsoid squared eccentricity constant
     let e2 = (WGS84_A.powf(2.) - WGS84_B.powf(2.)) / WGS84_A.powf(2.);
@@ -158,7 +166,7 @@ pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), f64
     // obtain OSTN02 corrections, and incorporate
     let (e_shift, n_shift, _) = ostn02_shifts(&eastings, &northings);
     let (shifted_e, shifted_n) = (eastings + e_shift, northings + n_shift);
-    Ok((shifted_e, shifted_n)) 
+    Ok((shifted_e, shifted_n))
 }
 
 fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
