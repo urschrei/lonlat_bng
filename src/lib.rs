@@ -67,9 +67,15 @@ pub const RZS: f64 = -0.8421;
 pub const s: f64 = 20.4894 * 0.000001;
 // etc
 pub const PI: f64 = f64::consts::PI;
+pub const RAD: f64 = PI / 180.;
 
 pub const MAX_EASTING: i32 = 700000;
 pub const MAX_NORTHING: i32 = 1250000;
+
+pub const MIN_LONGITUDE: f32 = -6.379880;
+pub const MAX_LONGITUDE: f32 = 1.768960;
+pub const MIN_LATITUDE: f32 = 49.871159;
+pub const MAX_LATITUDE: f32 = 55.811741;
 
 #[repr(C)]
 pub struct Array {
@@ -196,13 +202,9 @@ fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, T>
 #[allow(non_snake_case)]
 pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), f32> {
     // input is restricted to the UK bounding box
-    let max_lon = 1.768960;
-    let min_lon = -6.379880;
-    let max_lat = 55.811741;
-    let min_lat = 49.871159;
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude, (min_lon, max_lon)).map_err(|e| e)) as f64 * PI / 180.;
-    let lat_1: f64 = try!(check(*latitude, (min_lat, max_lat)).map_err(|e| e)) as f64 * PI / 180.;
+    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE)).map_err(|e| e)) as f64 * RAD;
+    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE)).map_err(|e| e)) as f64 * RAD;
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1 = GRS80_SEMI_MAJOR;
     let b_1 = GRS80_SEMI_MINOR;
@@ -543,7 +545,7 @@ mod tests {
         let longitude = 1.716073973;
         let latitude = 52.658007833;
         let expected = (651307.003, 313255.686);
-        assert_eq!(expected, convert_etrs89(&longitude, &latitude));
+        assert_eq!(expected, convert_etrs89(&longitude, &latitude).unwrap());
     }
 
     #[test]

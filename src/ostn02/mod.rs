@@ -6,7 +6,12 @@ use super::AIRY_1830_SEMI_MINOR;
 use super::GRS80_SEMI_MAJOR;
 use super::GRS80_SEMI_MINOR;
 
-const RAD: f64 = PI / 180.;
+use super::RAD;
+use super::MIN_LONGITUDE;
+use super::MAX_LONGITUDE;
+use super::MIN_LATITUDE;
+use super::MAX_LATITUDE;
+
 const WGS84_A: f64 = GRS80_SEMI_MAJOR;
 const WGS84_B: f64 = GRS80_SEMI_MINOR;
 
@@ -26,6 +31,7 @@ const MIN_Z_SHIFT: f64 = 43.982;
 
 use std::collections::HashMap;
 use ostn02_phf::ostn02_lookup;
+use super::check;
 
 // Herbie's going to have a field day with this
 pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
@@ -89,7 +95,11 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> (f64, f64, f64) {
 }
 
 // See Annexe B (p23) of the transformation user guide for instructions
-pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> (f64, f64) {
+pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), f64> {
+    // input is restricted to the UK bounding box
+    // Convert bounds-checked input to degrees, or return an Err
+    let lon_1: f64 = try!(check(*longitude as f32, (MIN_LONGITUDE, MAX_LONGITUDE)).map_err(|e| e)) as f64 * RAD;
+    let lat_1: f64 = try!(check(*latitude as f32, (MIN_LATITUDE, MAX_LATITUDE)).map_err(|e| e)) as f64 * RAD;
     let alt = 0.0;
     // ellipsoid squared eccentricity constant
     let e2 = (WGS84_A.powf(2.) - WGS84_B.powf(2.)) / WGS84_A.powf(2.);
@@ -123,7 +133,7 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> (f64, f64) {
     let north = I + II * l.powf(2.) + III * l.powf(4.) + IIIA * l.powf(6.);
     let east = E0 + IV * l + V * l.powf(3.) + VI * l.powf(5.);
     let (rounded_eastings, rounded_northings, _) = round_to_nearest_mm(east, north, 1.00);
-    (rounded_eastings, rounded_northings)
+    Ok((rounded_eastings, rounded_northings))
 }
 
 fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
