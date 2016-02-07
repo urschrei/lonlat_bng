@@ -69,13 +69,11 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     let s1: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 1), &(n_index + 0)));
     let s2: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 0), &(n_index + 1)));
     let s3: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 1), &(n_index + 1)));
-    // only continue if we get Results for the above
 
     // offset within square
     let dx = *x - (x0 as f64);
     let dy = *y - (y0 as f64);
 
-    // the python script divides by an int here, which = 0 (e.g. 300 / 1000)
     let t = dx / 1000.;
     let u = dy / 1000.;
 

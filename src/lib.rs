@@ -1,13 +1,22 @@
 #![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
 //! The `lonlat_bng` crate provides functions that convert decimal longitude
 //! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.
-//! Please note that this library does not make use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations, and should not be used for surveying work
-//! or other applications requiring accuracy greater than ~5m.
+//! This library makes use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations
+//! for the following functions:
 //!
+//! - convert_osgb36
+//! - convert_to_osgb36_threaded
+//! - convert_to_osgb36_threaded
+//!
+//! These functions transform input longitude and latitude coordinates to OSGB36 Eastings and Northings with high accuracy, and are suitable for use in surveying and construction. Please run your own tests, though.
 //! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.**
 //!
 //! # Examples
 //!
+//! ```
+//! // Convert single values
+//! assert_eq!((651409.792, 313177.448), lonlat_bng::ostn02::convert_osgb36(&1.716073973, &52.658007833).unwrap());
+//! ```
 //! ```
 //! // Convert single values
 //! assert_eq!((516276, 173141), lonlat_bng::convert_bng(&-0.32824866, &51.44533267).unwrap());
