@@ -19,24 +19,27 @@ Full library documentation is available [here](http://urschrei.github.io/lonlat_
 The native functions exposed by the library are:
 
 `lonlat_bng::convert_bng(&f32, &f32) -> (i32, i32)`  
+`lonlat_bng::ostn02::convert_osgb36(&f64, &f64) -> (f64, f64)`  
 `lonlat_bng::convert_lonlat(&i21 &i32) -> (f32, f32)`  
 
 `lonlat_bng::convert_to_bng_threaded_vec(Vec<(&f32, &f32)>) -> Vec<(i32, i32)>`  
+`lonlat_bng::convert_to_osgb36_threaded_vec(Vec<(&f64, &f64)>) -> Vec<(f64, f64)>`  
 `lonlat_bng::convert_to_lonlat_threaded_vec(Vec<(&i32, &i32)>) -> Vec<(f32, f32)>`  
 
 ### As an FFI Library
 The FFI C-compatible functions exposed by the library are:  
 `convert_to_bng_threaded(Array, Array) -> Array`  
+`convert_to_osgb36_threaded(Array, Array) -> Array`  
 `convert_to_lonlat_threaded(Array, Array) -> Array`  
 
 And for freeing the memory allocated by the above  
 `drop_int_array(Array) -> Null`  
-`drop_float_array(Array) -> Null`  
+`drop_float_array(Array) -> Null` (for `convert_to_lonlat_threaded` and `convert_to_osgb36_threaded`)  
 
-The `Array`s must contain 32-bit `Float`s and 32-bit `Int`s, respectively. For examples, see the `Array` struct and tests in [lib.rs](src/lib.rs), and the `_BNG_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).  
+The `Array`s must contain 32-bit `Float`s and 32-bit `Int`s, respectively. `Arrays` used in `convert_osgb36_threaded` must contain 64-bit `Float`s. For examples, see the `Array` struct and tests in [lib.rs](src/lib.rs), and the `_BNG_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).  
 
 #### FFI and Memory Management
-If your FFI library implements `convert_to_bng_threaded`, it **must** also implement `drop_int_array`, and if it implements `convert_to_lonlat_threaded`, it **must** implement `drop_float_array`. **Failing to do so will result in memory leaks**. 
+If your FFI library implements `convert_to_bng_threaded`, it **must** also implement `drop_int_array`, and if it implements `convert_to_lonlat_threaded` or `convert_to_osgb36_threaded`, it **must** implement `drop_float_array`. **Failing to do so will result in memory leaks**. 
 
 #### Building the Shared Library
 Running `cargo build --release` will build an artefact called `liblonlat_bng.dylib` on OSX, and `liblonlat_bng.a` on `*nix` systems. Note that you'll have to generate `liblonlat_bng.so` for `*nix` hosts using the following steps:
@@ -83,10 +86,14 @@ Test machine:
 Using multithreading gives excellent performance (Pyproj – which is a compiled [Cython](http://cython.org) binary – is now only ~20% faster than Rust, on average). Not bad, considering the relative youth of Rust *as a language* (let alone this library), and the maturity of the [PROJ.4](https://en.wikipedia.org/wiki/PROJ.4) project.
 
 ## Accuracy
-The Helmert transform used is accurate to within 7 metres on average, so this library is **not suitable** for calculations used in e.g. surveying. If higher accuracy is required, please use a product which incorporates the OSTN02 calculations, which adjust for local variation within the Terrestrial Reference Frame. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.
+The Helmert transform used in `convert_bng` and its threaded and vectorised versions is accurate to within 7 metres on average, and is **not suitable** for calculations used in e.g. surveying.  
+
+**If higher accuracy is required, please use `convert_osgb36` and `convert_osgb36_threaded`, which adjust for local variation within the Terrestrial Reference Frame by incorporating OSTN02 data**. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.
 
 ## License
-MIT
+[MIT](license.txt)  
+
+This software makes use of OSTN02 data, which is © Crown copyright, Ordnance Survey and the Ministry of Defence (MOD) 2002. All rights reserved. Provided under the BSD 2-clause [license](OSTN02_license.txt).
 
 † Really, pyproj?  
 [![mediocre](mediocre.png)]( "MEDIOCRE")
