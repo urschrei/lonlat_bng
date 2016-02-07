@@ -85,6 +85,7 @@ pub const MIN_LONGITUDE: f32 = -6.379880;
 pub const MAX_LONGITUDE: f32 = 1.768960;
 pub const MIN_LATITUDE: f32 = 49.871159;
 pub const MAX_LATITUDE: f32 = 55.811741;
+// OSGB bounds according to Spatialreference: -6.2400, 1.7800, 49.9400, 58.6700
 
 #[repr(C)]
 pub struct Array {
@@ -467,7 +468,7 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
     (Array::from_vec(eastings), Array::from_vec(northings))
 }
 
-/// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.lonlat_bng::convert_bng.html)
+/// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
 pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>,
                                    latitudes: &Vec<f32>)
                                    -> (Vec<i32>, Vec<i32>) {
@@ -496,7 +497,7 @@ pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>,
     (eastings, northings)
 }
 
-/// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_lonlat`
+/// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
 ///
 /// # Examples
 ///
@@ -513,7 +514,7 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
     (Array::from_vec(lons), Array::from_vec(lats))
 }
 
-/// A threaded wrapper for `lonlat_bng::convert_lonlat`
+/// A threaded wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
 pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
                                       northings: &Vec<i32>)
                                       -> (Vec<f32>, Vec<f32>) {
@@ -538,7 +539,7 @@ pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
     (lons, lats)
 }
 
-/// A threaded, FFI-compatible wrapper for [`convert_osgb36`](fn.convert_osgb36.html)
+/// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
 ///
 /// # Examples
 ///
@@ -556,7 +557,7 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array, latitudes: Array
 }
 
 
-/// A threaded wrapper for [`convert_osgb36`](fn.convert_osgb36.html)
+/// A threaded wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
 pub fn convert_to_osgb36_threaded_vec(longitudes: &Vec<f64>,
                                    latitudes: &Vec<f64>)
                                    -> (Vec<f64>, Vec<f64>) {
@@ -585,7 +586,7 @@ pub fn convert_to_osgb36_threaded_vec(longitudes: &Vec<f64>,
     (eastings, northings)
 }
 
-/// A threaded, FFI-compatible wrapper for `lonlat_bng::ostn02::convert_etrs89`
+/// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
 ///
 /// # Examples
 ///
@@ -603,7 +604,7 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array, latitudes: Array
 }
 
 
-/// A threaded wrapper for `lonlat_bng::ostn02::convert_osgb36`
+/// A threaded wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
 pub fn convert_to_etrs89_threaded_vec(longitudes: &Vec<f64>,
                                    latitudes: &Vec<f64>)
                                    -> (Vec<f64>, Vec<f64>) {
