@@ -94,6 +94,14 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> (f64, f64, f64) {
 
 }
 
+/// Perform Longitude, Latitude to ETRS89 conversion
+///
+/// # Examples
+///
+/// ```
+/// use lonlat_bng::ostn02::convert_etrs89
+/// assert_eq!((651307.003, 313255.686), convert_etrs89(&1.716073973, &52.658007833).unwrap());
+#[allow(non_snake_case)]
 // See Annexe B (p23) of the transformation user guide for instructions
 pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), f64> {
     // input is restricted to the UK bounding box
