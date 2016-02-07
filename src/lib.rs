@@ -530,6 +530,7 @@ mod tests {
     use ostn02::get_ostn_ref;
     use ostn02::ostn02_shifts;
     use ostn02::convert_etrs89;
+    use ostn02::convert_osgb36;
     use super::drop_int_array;
     use super::convert_bng;
     use super::convert_lonlat;
@@ -542,10 +543,20 @@ mod tests {
 
     #[test]
     fn test_etrs89_conversion() {
+        // these are the input values and intermediate result in the example on p20–21
         let longitude = 1.716073973;
         let latitude = 52.658007833;
         let expected = (651307.003, 313255.686);
         assert_eq!(expected, convert_etrs89(&longitude, &latitude).unwrap());
+    }
+
+    #[test]
+    fn test_osgb36_conversion() {
+        // these are the input values and final result in the example on p20–21
+        let longitude = 1.716073973;
+        let latitude = 52.658007833;
+        let expected = (651409.792, 313177.448);
+        assert_eq!(expected, convert_osgb36(&longitude, &latitude).unwrap());
     }
 
     #[test]
@@ -559,10 +570,9 @@ mod tests {
 
     #[test]
     fn test_ostn02_shift_incorporation() {
-        // These are the input values in the official example
+        // these are the input values and corrections on p20-21
         let eastings = 651307.003;
         let northings = 313255.686;
-        // The offsets result in the following hex values for the E and N above:
         let expected = (102.789, -78.238, 44.244);
         assert_eq!(expected, ostn02_shifts(&eastings, &northings));
     }

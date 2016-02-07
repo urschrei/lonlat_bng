@@ -144,6 +144,24 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), f64
     Ok((rounded_eastings, rounded_northings))
 }
 
+/// Perform Longitude, Latitude to OSGB36 conversion
+///
+/// # Examples
+///
+/// ```
+/// use lonlat_bng::ostn02::convert_osgb36
+/// assert_eq!((651409.792, 313177.448), convert_etrs89(&1.716073973, &52.658007833).unwrap());
+#[allow(non_snake_case)]
+pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), f64> {
+    // convert input to ETRS89
+    let (eastings, northings) = try!(convert_etrs89(longitude, latitude).map_err(|e| e));
+    let alt = 0.0;
+    // obtain OSTN02 corrections, and incorporate
+    let (e_shift, n_shift, _) = ostn02_shifts(&eastings, &northings);
+    let (shifted_e, shifted_n) = (eastings + e_shift, northings + n_shift);
+    Ok((shifted_e, shifted_n)) 
+}
+
 fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
     let p_plus = *phi + PHI0;
     let p_minus = *phi - PHI0;
