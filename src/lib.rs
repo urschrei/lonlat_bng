@@ -40,7 +40,10 @@ extern crate crossbeam;
 use crossbeam::scope;
 
 extern crate num_cpus;
+
 mod ostn02;
+use ostn02::convert_etrs89;
+use ostn02::convert_osgb36;
 // extern crate nalgebra;
 // use nalgebra::{Vec3, Mat3, DMat};
 
@@ -149,6 +152,10 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
 }
 
 impl Array {
+    unsafe fn as_f64_slice(&self) -> &[f64] {
+        assert!(!self.data.is_null());
+        slice::from_raw_parts(self.data as *const f64, self.len as usize)
+    }
     unsafe fn as_f32_slice(&self) -> &[f32] {
         assert!(!self.data.is_null());
         slice::from_raw_parts(self.data as *const f32, self.len as usize)
@@ -525,6 +532,53 @@ pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
     (lons, lats)
 }
 
+/// A threaded, FFI-compatible wrapper for `lonlat_bng::ostn02::convert_osgb36`
+///
+/// # Examples
+///
+/// See `lonlat_bng::convert_to_bng_threaded` for examples, substituting f64 vectors
+///
+/// # Safety
+///
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+#[no_mangle]
+pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
+    let longitudes_vec = unsafe { longitudes.as_f64_slice().to_vec() };
+    let latitudes_vec = unsafe { latitudes.as_f64_slice().to_vec() };
+    let (eastings, northings) = convert_to_osgb36_threaded_vec(&longitudes_vec, &latitudes_vec);
+    (Array::from_vec(eastings), Array::from_vec(northings))
+}
+
+
+/// A threaded wrapper for `lonlat_bng::ostn02::convert_osgb36`
+pub fn convert_to_osgb36_threaded_vec(longitudes: &Vec<f64>,
+                                   latitudes: &Vec<f64>)
+                                   -> (Vec<f64>, Vec<f64>) {
+    let numthreads = num_cpus::get() as usize;
+    let orig: Vec<(&f64, &f64)> = longitudes.iter().zip(latitudes.iter()).collect();
+    let mut result = vec![(1.0, 1.0); orig.len()];
+    let mut size = orig.len() / numthreads;
+    if orig.len() % numthreads > 0 {
+        size += 1;
+    }
+    size = std::cmp::max(1, size);
+    crossbeam::scope(|scope| {
+        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
+            scope.spawn(move || {
+                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
+                    match convert_osgb36(orig_elem.0, orig_elem.1) {
+                        Ok(res) => *res_elem = res,
+                        // we don't care about the return value as such
+                        Err(_) => *res_elem = (9999.000, 9999.000),
+                    };
+                }
+            });
+        }
+    });
+    let (eastings, northings): (Vec<f64>, Vec<f64>) = result.into_iter().unzip();
+    (eastings, northings)
+}
+
 #[cfg(test)]
 mod tests {
     use ostn02::get_ostn_ref;
@@ -536,6 +590,7 @@ mod tests {
     use super::convert_lonlat;
     use super::convert_to_bng_threaded;
     use super::convert_to_lonlat_threaded;
+    use super::convert_to_osgb36_threaded;
     use super::check;
     use super::Array;
 
@@ -557,6 +612,23 @@ mod tests {
         let latitude = 52.658007833;
         let expected = (651409.792, 313177.448);
         assert_eq!(expected, convert_osgb36(&longitude, &latitude).unwrap());
+    }
+
+    #[test]
+    fn test_threaded_osgb36_conversion_single() {
+        let lon_vec: Vec<f64> = vec![1.716073973];
+        let lat_vec: Vec<f64> = vec![52.65800783];
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t,
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t,
+        };
+        let (eastings, _) = convert_to_osgb36_threaded(lon_arr, lat_arr);
+        let retval = unsafe { eastings.as_f64_slice() };
+        assert_eq!(651409.792, retval[0]);
     }
 
     #[test]
