@@ -82,10 +82,10 @@ pub const RAD: f64 = PI / 180.;
 pub const MAX_EASTING: i32 = 700000;
 pub const MAX_NORTHING: i32 = 1250000;
 
-pub const MIN_LONGITUDE: f32 = -6.379880;
-pub const MAX_LONGITUDE: f32 = 1.768960;
-pub const MIN_LATITUDE: f32 = 49.871159;
-pub const MAX_LATITUDE: f32 = 55.811741;
+pub const MIN_LONGITUDE: f64 = -6.379880;
+pub const MAX_LONGITUDE: f64 = 1.768960;
+pub const MIN_LATITUDE: f64 = 49.871159;
+pub const MAX_LATITUDE: f64 = 55.811741;
 // OSGB bounds according to Spatialreference: -6.2400, 1.7800, 49.9400, 58.6700
 
 #[repr(C)]
@@ -215,7 +215,7 @@ fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
 /// use lonlat_bng::convert_bng;
 /// assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), ()> {
+pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_int, c_int), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
     let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) as f64 * RAD;
@@ -463,18 +463,18 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
-    let lons = unsafe { longitudes.as_f32_slice().to_vec() };
-    let lats = unsafe { latitudes.as_f32_slice().to_vec() };
+    let lons = unsafe { longitudes.as_f64_slice().to_vec() };
+    let lats = unsafe { latitudes.as_f64_slice().to_vec() };
     let (eastings, northings): (Vec<i32>, Vec<i32>) = convert_to_bng_threaded_vec(&lons, &lats);
     (Array::from_vec(eastings), Array::from_vec(northings))
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
-pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>,
-                                   latitudes: &Vec<f32>)
+pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f64>,
+                                   latitudes: &Vec<f64>)
                                    -> (Vec<i32>, Vec<i32>) {
     let numthreads = num_cpus::get() as usize;
-    let orig: Vec<(&f32, &f32)> = longitudes.iter().zip(latitudes.iter()).collect();
+    let orig: Vec<(&f64, &f64)> = longitudes.iter().zip(latitudes.iter()).collect();
     let mut result = vec![(1, 1); orig.len()];
     let mut size = orig.len() / numthreads;
     if orig.len() % numthreads > 0 {
@@ -654,13 +654,13 @@ mod tests {
 
     #[test]
     fn test_threaded_bng_conversion() {
-        let lon_vec: Vec<f32> = vec![-2.0183041005533306,
+        let lon_vec: Vec<f64> = vec![-2.0183041005533306,
                                      0.95511887434519682,
                                      0.44975855518383501,
                                      -0.096813621191803811,
                                      -0.36807065656416427,
                                      0.63486335458665621];
-        let lat_vec: Vec<f32> = vec![54.589097162646141,
+        let lat_vec: Vec<f64> = vec![54.589097162646141,
                                      51.560873800587828,
                                      50.431429161121699,
                                      54.535021436247419,
@@ -685,8 +685,8 @@ mod tests {
     #[test]
     fn test_threaded_bng_conversion_single() {
         // I spent 8 hours confused cos I didn't catch that chunks(0) is invalid
-        let lon_vec: Vec<f32> = vec![-2.0183041005533306];
-        let lat_vec: Vec<f32> = vec![54.589097162646141];
+        let lon_vec: Vec<f64> = vec![-2.0183041005533306];
+        let lat_vec: Vec<f64> = vec![54.589097162646141];
         let lon_arr = Array {
             data: lon_vec.as_ptr() as *const libc::c_void,
             len: lon_vec.len() as libc::size_t,
