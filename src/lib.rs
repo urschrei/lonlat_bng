@@ -4,9 +4,9 @@
 //! This library makes use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations
 //! for the following functions:
 //!
-//! - convert_osgb36
-//! - convert_to_osgb36_threaded
-//! - convert_to_osgb36_threaded
+//! - [`convert_osgb36`](fn.convert_osgb36.html)
+//! - [`convert_to_osgb36_threaded`](fn.convert_to_osgb36_threaded.html)
+//! - [`convert_to_osgb36_threaded_vec`](fn.convert_to_osgb_threaded_vec.html)
 //!
 //! These functions transform input longitude and latitude coordinates to OSGB36 Eastings and Northings with high accuracy, and are suitable for use in surveying and construction. Please run your own tests, though.
 //! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.**
@@ -51,11 +51,8 @@ use crossbeam::scope;
 extern crate num_cpus;
 
 mod ostn02;
-use ostn02::convert_etrs89;
-use ostn02::convert_osgb36;
-// extern crate nalgebra;
-// use nalgebra::{Vec3, Mat3, DMat};
-
+pub use ostn02::convert_etrs89;
+pub use ostn02::convert_osgb36;
 // Constants used for coordinate conversions
 //
 // Ellipsoids
@@ -470,7 +467,7 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
     (Array::from_vec(eastings), Array::from_vec(northings))
 }
 
-/// A threaded wrapper for `lonlat_bng::convert_bng`
+/// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.lonlat_bng::convert_bng.html)
 pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>,
                                    latitudes: &Vec<f32>)
                                    -> (Vec<i32>, Vec<i32>) {
@@ -503,7 +500,7 @@ pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f32>,
 ///
 /// # Examples
 ///
-/// See `lonlat_bng::convert_to_bng_threaded` for examples, substituting i32 vectors
+/// See [`lonlat_bng::convert_to_bng_threaded`](fn.convert_to_bng_threaded.html) , substituting i32 vectors
 ///
 /// # Safety
 ///
@@ -541,11 +538,11 @@ pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
     (lons, lats)
 }
 
-/// A threaded, FFI-compatible wrapper for `lonlat_bng::ostn02::convert_osgb36`
+/// A threaded, FFI-compatible wrapper for [`convert_osgb36`](fn.convert_osgb36.html)
 ///
 /// # Examples
 ///
-/// See `lonlat_bng::convert_to_bng_threaded` for examples, substituting f64 vectors
+/// See [`lonlat_bng::convert_to_bng_threaded`](fn.convert_to_bng_threaded.html) for examples, substituting f64 vectors
 ///
 /// # Safety
 ///
@@ -559,7 +556,7 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array, latitudes: Array
 }
 
 
-/// A threaded wrapper for `lonlat_bng::ostn02::convert_osgb36`
+/// A threaded wrapper for [`convert_osgb36`](fn.convert_osgb36.html)
 pub fn convert_to_osgb36_threaded_vec(longitudes: &Vec<f64>,
                                    latitudes: &Vec<f64>)
                                    -> (Vec<f64>, Vec<f64>) {
@@ -588,6 +585,53 @@ pub fn convert_to_osgb36_threaded_vec(longitudes: &Vec<f64>,
     (eastings, northings)
 }
 
+/// A threaded, FFI-compatible wrapper for `lonlat_bng::ostn02::convert_etrs89`
+///
+/// # Examples
+///
+/// See `lonlat_bng::convert_to_bng_threaded` for examples, substituting f64 vectors
+///
+/// # Safety
+///
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+#[no_mangle]
+pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
+    let longitudes_vec = unsafe { longitudes.as_f64_slice().to_vec() };
+    let latitudes_vec = unsafe { latitudes.as_f64_slice().to_vec() };
+    let (eastings, northings) = convert_to_etrs89_threaded_vec(&longitudes_vec, &latitudes_vec);
+    (Array::from_vec(eastings), Array::from_vec(northings))
+}
+
+
+/// A threaded wrapper for `lonlat_bng::ostn02::convert_osgb36`
+pub fn convert_to_etrs89_threaded_vec(longitudes: &Vec<f64>,
+                                   latitudes: &Vec<f64>)
+                                   -> (Vec<f64>, Vec<f64>) {
+    let numthreads = num_cpus::get() as usize;
+    let orig: Vec<(&f64, &f64)> = longitudes.iter().zip(latitudes.iter()).collect();
+    let mut result = vec![(1.0, 1.0); orig.len()];
+    let mut size = orig.len() / numthreads;
+    if orig.len() % numthreads > 0 {
+        size += 1;
+    }
+    size = std::cmp::max(1, size);
+    crossbeam::scope(|scope| {
+        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
+            scope.spawn(move || {
+                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
+                    match convert_etrs89(orig_elem.0, orig_elem.1) {
+                        Ok(res) => *res_elem = res,
+                        // we don't care about the return value as such
+                        Err(_) => *res_elem = (9999.000, 9999.000),
+                    };
+                }
+            });
+        }
+    });
+    let (eastings, northings): (Vec<f64>, Vec<f64>) = result.into_iter().unzip();
+    (eastings, northings)
+}
+
 #[cfg(test)]
 mod tests {
     use ostn02::get_ostn_ref;
@@ -600,6 +644,7 @@ mod tests {
     use super::convert_to_bng_threaded;
     use super::convert_to_lonlat_threaded;
     use super::convert_to_osgb36_threaded;
+    use super::convert_to_etrs89_threaded;
     use super::check;
     use super::Array;
 
@@ -638,6 +683,23 @@ mod tests {
         let (eastings, _) = convert_to_osgb36_threaded(lon_arr, lat_arr);
         let retval = unsafe { eastings.as_f64_slice() };
         assert_eq!(651409.792, retval[0]);
+    }
+
+    #[test]
+    fn test_threaded_etrs89_conversion_single() {
+        let lon_vec: Vec<f64> = vec![1.716073973];
+        let lat_vec: Vec<f64> = vec![52.65800783];
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t,
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t,
+        };
+        let (eastings, _) = convert_to_etrs89_threaded(lon_arr, lat_arr);
+        let retval = unsafe { eastings.as_f64_slice() };
+        assert_eq!(651307.003, retval[0]);
     }
 
     #[test]

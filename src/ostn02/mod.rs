@@ -1,5 +1,11 @@
-// mod shifts;
-// use shifts::get_shifts_hashmap;
+#![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
+//! This module provides high-quality datum transforms using OSTN02 data
+//! As such, it should be suitable for use in surveying and construction applications
+//! 
+//! 
+//! 
+//! 
+//! 
 use super::GRS80_SEMI_MAJOR;
 use super::GRS80_SEMI_MINOR;
 
@@ -40,6 +46,7 @@ pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
     (new_x, new_y, new_z)
 }
 
+// Try to get OSTN02 shift parameters, and calculate offsets
 pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     let key = format!("{:03x}{:03x}", y, x);
     // some or None, so try! this
@@ -97,7 +104,7 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
 /// # Examples
 ///
 /// ```
-/// use lonlat_bng::ostn02::convert_etrs89
+/// use lonlat_bng::convert_etrs89
 /// assert_eq!((651307.003, 313255.686), convert_etrs89(&1.716073973, &52.658007833).unwrap());
 #[allow(non_snake_case)]
 // See Annexe B (p23) of the transformation user guide for instructions
@@ -142,12 +149,12 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     Ok((rounded_eastings, rounded_northings))
 }
 
-/// Perform Longitude, Latitude to OSGB36 conversion
+/// Perform Longitude, Latitude to OSGB36 conversion, using [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html) data
 ///
 /// # Examples
 ///
 /// ```
-/// use lonlat_bng::ostn02::convert_osgb36
+/// use lonlat_bng::convert_osgb36
 /// assert_eq!((651409.792, 313177.448), convert_etrs89(&1.716073973, &52.658007833).unwrap());
 #[allow(non_snake_case)]
 pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()> {
