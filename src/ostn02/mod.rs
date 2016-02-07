@@ -40,27 +40,22 @@ pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
     (new_x, new_y, new_z)
 }
 
-pub fn get_ostn_ref(x: &i32, y: &i32) -> (f64, f64, f64) {
+pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     let key = format!("{:03x}{:03x}", y, x);
     // some or None, so try! this
-    let result = ostn02_lookup(&*key);
-    // The implication here is that all valid kilometer-grid references return corrections
-    // and that a transformation is valid even if we apply (0.0, 0.0, 0.0)
-    let data2 = match result {
-        Some(result) => {
-            (result.0 as f64 / 1000. + MIN_X_SHIFT,
-             result.1 as f64 / 1000. + MIN_Y_SHIFT,
-             result.2 as f64 / 1000. + MIN_Z_SHIFT)
-        }
-        _ => (0.0, 0.0, 0.0),
-    };
-    data2
+    let lookup = ostn02_lookup(&*key);
+    let intermediate = lookup.ok_or(());
+    let result = intermediate.unwrap();
+    Ok((result.0 as f64 / 1000. + MIN_X_SHIFT,
+     result.1 as f64 / 1000. + MIN_Y_SHIFT,
+     result.2 as f64 / 1000. + MIN_Z_SHIFT))
+
 }
 
 // Input values must be valid ETRS89 grid references
 // See p20 of the transformation user guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
-pub fn ostn02_shifts(x: &f64, y: &f64) -> (f64, f64, f64) {
+pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     let e_index = (*x / 1000.) as i32;
     let n_index = (*y / 1000.) as i32;
 
@@ -70,10 +65,10 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> (f64, f64, f64) {
 
     // The easting, northing and geoid shifts for the four corners of the cell
     // any of these could be Err, so use try!
-    let s0_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 0), &(n_index + 0));
-    let s1_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 0));
-    let s2_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 0), &(n_index + 1));
-    let s3_ref: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 1));
+    let s0: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 0), &(n_index + 0)));
+    let s1: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 1), &(n_index + 0)));
+    let s2: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 0), &(n_index + 1)));
+    let s3: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 1), &(n_index + 1)));
     // only continue if we get Results for the above
 
     // offset within square
@@ -90,12 +85,12 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> (f64, f64, f64) {
     let f3 = t as f64 * u as f64;
 
     // bilinear interpolation, to obtain the actual shifts
-    let se = f0 * s0_ref.0 + f1 * s1_ref.0 + f2 * s2_ref.0 + f3 * s3_ref.0;
-    let sn = f0 * s0_ref.1 + f1 * s1_ref.1 + f2 * s2_ref.1 + f3 * s3_ref.1;
-    let sg = f0 * s0_ref.2 + f1 * s1_ref.2 + f2 * s2_ref.2 + f3 * s3_ref.2;
+    let se = f0 * s0.0 + f1 * s1.0 + f2 * s2.0 + f3 * s3.0;
+    let sn = f0 * s0.1 + f1 * s1.1 + f2 * s2.1 + f3 * s3.1;
+    let sg = f0 * s0.2 + f1 * s1.2 + f2 * s2.2 + f3 * s3.2;
 
     let (r_se, r_sn, r_sg) = round_to_nearest_mm(se, sn, sg);
-    (r_se, r_sn, r_sg)
+    Ok((r_se, r_sn, r_sg))
 
 }
 
@@ -108,13 +103,11 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> (f64, f64, f64) {
 /// assert_eq!((651307.003, 313255.686), convert_etrs89(&1.716073973, &52.658007833).unwrap());
 #[allow(non_snake_case)]
 // See Annexe B (p23) of the transformation user guide for instructions
-pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), f64> {
+pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude as f32, (MIN_LONGITUDE, MAX_LONGITUDE))
-                              .map_err(|e| e)) as f64 * RAD;
-    let lat_1: f64 = try!(check(*latitude as f32, (MIN_LATITUDE, MAX_LATITUDE))
-                              .map_err(|e| e)) as f64 * RAD;
+    let lon_1: f64 = try!(check(*longitude as f32, (MIN_LONGITUDE, MAX_LONGITUDE))) as f64 * RAD;
+    let lat_1: f64 = try!(check(*latitude as f32, (MIN_LATITUDE, MAX_LATITUDE))) as f64 * RAD;
     let alt = 0.0;
     // ellipsoid squared eccentricity constant
     let e2 = (WGS84_A.powf(2.) - WGS84_B.powf(2.)) / WGS84_A.powf(2.);
@@ -159,12 +152,12 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), f64
 /// use lonlat_bng::ostn02::convert_osgb36
 /// assert_eq!((651409.792, 313177.448), convert_etrs89(&1.716073973, &52.658007833).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), f64> {
+pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()> {
     // convert input to ETRS89
-    let (eastings, northings) = try!(convert_etrs89(longitude, latitude).map_err(|e| e));
+    let (eastings, northings) = try!(convert_etrs89(longitude, latitude));
     let alt = 0.0;
     // obtain OSTN02 corrections, and incorporate
-    let (e_shift, n_shift, _) = ostn02_shifts(&eastings, &northings);
+    let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
     let (shifted_e, shifted_n) = (eastings + e_shift, northings + n_shift);
     Ok((shifted_e, shifted_n))
 }

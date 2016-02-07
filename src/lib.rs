@@ -190,12 +190,12 @@ fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
 }
 
 /// Bounds checking for input values
-fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, T>
+fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
     where T: std::cmp::PartialOrd + fmt::Display + Copy
 {
     match to_check {
         to_check if bounds.0 <= to_check && to_check <= bounds.1 => Ok(to_check),
-        _ => Err(to_check),
+        _ => Err(()),
     }
 }
 
@@ -207,11 +207,11 @@ fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, T>
 /// use lonlat_bng::convert_bng;
 /// assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), f32> {
+pub fn convert_bng(longitude: &f32, latitude: &f32) -> Result<(c_int, c_int), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE)).map_err(|e| e)) as f64 * RAD;
-    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE)).map_err(|e| e)) as f64 * RAD;
+    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) as f64 * RAD;
+    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))) as f64 * RAD;
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1 = GRS80_SEMI_MAJOR;
     let b_1 = GRS80_SEMI_MINOR;
@@ -637,7 +637,7 @@ mod tests {
         let eastings = 651;
         let northings = 313;
         let expected = (102.775, -78.244, 44.252);
-        assert_eq!(expected, get_ostn_ref(&eastings, &northings));
+        assert_eq!(expected, get_ostn_ref(&eastings, &northings).unwrap());
     }
 
     #[test]
@@ -646,7 +646,7 @@ mod tests {
         let eastings = 651307.003;
         let northings = 313255.686;
         let expected = (102.789, -78.238, 44.244);
-        assert_eq!(expected, ostn02_shifts(&eastings, &northings));
+        assert_eq!(expected, ostn02_shifts(&eastings, &northings).unwrap());
     }
 
     #[test]
