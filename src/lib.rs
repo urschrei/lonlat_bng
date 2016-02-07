@@ -53,6 +53,7 @@ extern crate num_cpus;
 mod ostn02;
 pub use ostn02::convert_etrs89;
 pub use ostn02::convert_osgb36;
+pub use ostn02::convert_ETRS89_to_OSGB36;
 use ostn02::round_to_nearest_mm;
 // Constants used for coordinate conversions
 //

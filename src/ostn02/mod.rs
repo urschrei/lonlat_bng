@@ -94,8 +94,7 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     let sn = f0 * s0.1 + f1 * s1.1 + f2 * s2.1 + f3 * s3.1;
     let sg = f0 * s0.2 + f1 * s1.2 + f2 * s2.2 + f3 * s3.2;
 
-    let (r_se, r_sn, r_sg) = round_to_nearest_mm(se, sn, sg);
-    Ok((r_se, r_sn, r_sg))
+    Ok(round_to_nearest_mm(se, sn, sg))
 
 }
 
@@ -148,6 +147,22 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     Ok((rounded_eastings, rounded_northings))
 }
 
+/// Perform ETRS89 to OSGB36 conversion, using [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html) data
+///
+/// # Examples
+///
+/// ```
+/// use lonlat_bng::convert_ETRS89_to_OSGB36
+/// assert_eq!((651409.792, 313177.448), convert_ETRS89_to_OSGB36(&651307.003, &313255.686).unwrap());
+#[allow(non_snake_case)]
+pub fn convert_ETRS89_to_OSGB36(eastings: &f64, northings: &f64) -> Result<(f64, f64), ()> {
+    // obtain OSTN02 corrections, and incorporate
+    let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
+    let (shifted_e, shifted_n) = (eastings + e_shift, northings + n_shift);
+    Ok((shifted_e, shifted_n))
+
+}
+
 /// Perform Longitude, Latitude to OSGB36 conversion, using [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html) data
 ///
 /// # Examples
@@ -198,6 +213,7 @@ mod tests {
     use super::ostn02_shifts;
     use super::convert_etrs89;
     use super::convert_osgb36;
+    use super::convert_ETRS89_to_OSGB36;
 
     #[test]
     fn test_etrs89_conversion() {
@@ -215,6 +231,15 @@ mod tests {
         let latitude = 52.658007833;
         let expected = (651409.792, 313177.448);
         assert_eq!(expected, convert_osgb36(&longitude, &latitude).unwrap());
+    }
+
+    #[test]
+    fn test_etrs89_to_osgb36_conversion() {
+        // these are the input values and final result in the example on p20–21
+        let eastings = 651307.003;
+        let northings = 313255.686;
+        let expected = (651409.792, 313177.448);
+        assert_eq!(expected, convert_ETRS89_to_OSGB36(&eastings, &northings).unwrap());
     }
 
     #[test]
