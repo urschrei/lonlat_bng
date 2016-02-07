@@ -5,6 +5,7 @@
 //! for the following functions:
 //!
 //! - [`convert_osgb36`](fn.convert_osgb36.html)
+//! - [`convert_ETRS89_to_OSGB36`](fn.convert_ETRS89_to_OSGB36.html)
 //! - [`convert_to_osgb36_threaded`](fn.convert_to_osgb36_threaded.html)
 //! - [`convert_to_osgb36_threaded_vec`](fn.convert_to_osgb_threaded_vec.html)
 //!
