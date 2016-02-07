@@ -1,8 +1,5 @@
 // mod shifts;
 // use shifts::get_shifts_hashmap;
-use super::PI;
-use super::AIRY_1830_SEMI_MAJOR;
-use super::AIRY_1830_SEMI_MINOR;
 use super::GRS80_SEMI_MAJOR;
 use super::GRS80_SEMI_MINOR;
 
@@ -12,6 +9,9 @@ use super::MAX_LONGITUDE;
 use super::MIN_LATITUDE;
 use super::MAX_LATITUDE;
 
+use super::TRUE_ORIGIN_EASTING;
+use super::TRUE_ORIGIN_NORTHING;
+
 const WGS84_A: f64 = GRS80_SEMI_MAJOR;
 const WGS84_B: f64 = GRS80_SEMI_MINOR;
 
@@ -20,8 +20,8 @@ const LAM0: f64 = RAD * -2.0;
 const PHI0: f64 = RAD * 49.0;
 
 // Easting and Northing of origin
-const E0: f64 = 400000.;
-const N0: f64 = -100000.;
+const E0: f64 = TRUE_ORIGIN_EASTING;
+const N0: f64 = TRUE_ORIGIN_NORTHING;
 // convergence factor
 const F0: f64 = 0.9996012717;
 
@@ -29,7 +29,6 @@ const MIN_X_SHIFT: f64 = 86.275;
 const MIN_Y_SHIFT: f64 = -81.603;
 const MIN_Z_SHIFT: f64 = 43.982;
 
-use std::collections::HashMap;
 use ostn02_phf::ostn02_lookup;
 use super::check;
 
