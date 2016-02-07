@@ -53,6 +53,7 @@ extern crate num_cpus;
 mod ostn02;
 pub use ostn02::convert_etrs89;
 pub use ostn02::convert_osgb36;
+use ostn02::round_to_nearest_mm;
 // Constants used for coordinate conversions
 //
 // Ellipsoids
@@ -652,76 +653,6 @@ mod tests {
     extern crate libc;
 
     #[test]
-    fn test_etrs89_conversion() {
-        // these are the input values and intermediate result in the example on p20–21
-        let longitude = 1.716073973;
-        let latitude = 52.658007833;
-        let expected = (651307.003, 313255.686);
-        assert_eq!(expected, convert_etrs89(&longitude, &latitude).unwrap());
-    }
-
-    #[test]
-    fn test_osgb36_conversion() {
-        // these are the input values and final result in the example on p20–21
-        let longitude = 1.716073973;
-        let latitude = 52.658007833;
-        let expected = (651409.792, 313177.448);
-        assert_eq!(expected, convert_osgb36(&longitude, &latitude).unwrap());
-    }
-
-    #[test]
-    fn test_threaded_osgb36_conversion_single() {
-        let lon_vec: Vec<f64> = vec![1.716073973];
-        let lat_vec: Vec<f64> = vec![52.65800783];
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
-        let (eastings, _) = convert_to_osgb36_threaded(lon_arr, lat_arr);
-        let retval = unsafe { eastings.as_f64_slice() };
-        assert_eq!(651409.792, retval[0]);
-    }
-
-    #[test]
-    fn test_threaded_etrs89_conversion_single() {
-        let lon_vec: Vec<f64> = vec![1.716073973];
-        let lat_vec: Vec<f64> = vec![52.65800783];
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
-        let (eastings, _) = convert_to_etrs89_threaded(lon_arr, lat_arr);
-        let retval = unsafe { eastings.as_f64_slice() };
-        assert_eq!(651307.003, retval[0]);
-    }
-
-    #[test]
-    // original coordinates are 651307.003, 313255.686
-    fn test_ostn_hashmap_retrieval() {
-        let eastings = 651;
-        let northings = 313;
-        let expected = (102.775, -78.244, 44.252);
-        assert_eq!(expected, get_ostn_ref(&eastings, &northings).unwrap());
-    }
-
-    #[test]
-    fn test_ostn02_shift_incorporation() {
-        // these are the input values and corrections on p20-21
-        let eastings = 651307.003;
-        let northings = 313255.686;
-        let expected = (102.789, -78.238, 44.244);
-        assert_eq!(expected, ostn02_shifts(&eastings, &northings).unwrap());
-    }
-
-    #[test]
     fn test_threaded_bng_conversion() {
         let lon_vec: Vec<f32> = vec![-2.0183041005533306,
                                      0.95511887434519682,
@@ -790,6 +721,40 @@ mod tests {
         // http://floating-point-gui.de/errors/comparison/
         assert!((retval[0] - -0.32824799370716407).abs() / -0.32824799370716407 < 0.0000000001);
         // assert!((retval[1] - 51.44534026616287).abs() / 51.44534026616287 < 0.0000000001);
+    }
+
+    #[test]
+    fn test_threaded_osgb36_conversion_single() {
+        let lon_vec: Vec<f64> = vec![1.716073973];
+        let lat_vec: Vec<f64> = vec![52.65800783];
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t,
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t,
+        };
+        let (eastings, _) = convert_to_osgb36_threaded(lon_arr, lat_arr);
+        let retval = unsafe { eastings.as_f64_slice() };
+        assert_eq!(651409.792, retval[0]);
+    }
+
+    #[test]
+    fn test_threaded_etrs89_conversion_single() {
+        let lon_vec: Vec<f64> = vec![1.716073973];
+        let lat_vec: Vec<f64> = vec![52.65800783];
+        let lon_arr = Array {
+            data: lon_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t,
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t,
+        };
+        let (eastings, _) = convert_to_etrs89_threaded(lon_arr, lat_arr);
+        let retval = unsafe { eastings.as_f64_slice() };
+        assert_eq!(651307.003, retval[0]);
     }
 
     #[test]

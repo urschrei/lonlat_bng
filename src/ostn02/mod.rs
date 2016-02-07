@@ -1,11 +1,11 @@
 #![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
-//! This module provides high-quality datum transforms using OSTN02 data
+//! This module provides high-quality transforms to OSGB36 using OSTN02 data
 //! As such, it should be suitable for use in surveying and construction applications
-//! 
-//! 
-//! 
-//! 
-//! 
+//!
+//!
+//!
+//!
+//!
 use super::GRS80_SEMI_MAJOR;
 use super::GRS80_SEMI_MINOR;
 
@@ -54,8 +54,8 @@ pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     let intermediate = lookup.ok_or(());
     let result = intermediate.unwrap();
     Ok((result.0 as f64 / 1000. + MIN_X_SHIFT,
-     result.1 as f64 / 1000. + MIN_Y_SHIFT,
-     result.2 as f64 / 1000. + MIN_Z_SHIFT))
+        result.1 as f64 / 1000. + MIN_Y_SHIFT,
+        result.2 as f64 / 1000. + MIN_Z_SHIFT))
 
 }
 
@@ -193,3 +193,48 @@ fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
 //     let (x, y, z) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
 //     (x, y)
 // }
+
+#[cfg(test)]
+mod tests {
+    use super::get_ostn_ref;
+    use super::ostn02_shifts;
+    use super::convert_etrs89;
+    use super::convert_osgb36;
+
+    #[test]
+    fn test_etrs89_conversion() {
+        // these are the input values and intermediate result in the example on p20–21
+        let longitude = 1.716073973;
+        let latitude = 52.658007833;
+        let expected = (651307.003, 313255.686);
+        assert_eq!(expected, convert_etrs89(&longitude, &latitude).unwrap());
+    }
+
+    #[test]
+    fn test_osgb36_conversion() {
+        // these are the input values and final result in the example on p20–21
+        let longitude = 1.716073973;
+        let latitude = 52.658007833;
+        let expected = (651409.792, 313177.448);
+        assert_eq!(expected, convert_osgb36(&longitude, &latitude).unwrap());
+    }
+
+    #[test]
+    // original coordinates are 651307.003, 313255.686
+    fn test_ostn_hashmap_retrieval() {
+        let eastings = 651;
+        let northings = 313;
+        let expected = (102.775, -78.244, 44.252);
+        assert_eq!(expected, get_ostn_ref(&eastings, &northings).unwrap());
+    }
+
+    #[test]
+    fn test_ostn02_shift_incorporation() {
+        // these are the input values and corrections on p20-21
+        let eastings = 651307.003;
+        let northings = 313255.686;
+        let expected = (102.789, -78.238, 44.244);
+        assert_eq!(expected, ostn02_shifts(&eastings, &northings).unwrap());
+    }
+
+}
