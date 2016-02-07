@@ -1,6 +1,6 @@
 // this is just a test binary that can be hooked up to Instruments
 extern crate lonlat_bng;
-use lonlat_bng::{convert_to_bng_threaded, Array};
+use lonlat_bng::{convert_to_bng_threaded, convert_to_osgb36_threaded, Array};
 
 extern crate rand;
 use rand::distributions::{IndependentSample, Range};
@@ -24,4 +24,5 @@ fn main() {
     };
 
     convert_to_bng_threaded(lon_arr, lat_arr);
+    // convert_to_osgb36_threaded(lon_arr, lat_arr);
 }
