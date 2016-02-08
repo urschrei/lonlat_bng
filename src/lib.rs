@@ -117,8 +117,8 @@ pub struct Array {
 ///
 /// ```
 /// # extern crate libc;
-/// let lon_vec: Vec<f32> = vec![-2.0183041005533306];
-/// let lat_vec: Vec<f32> = vec![54.589097162646141];
+/// let lon_vec: Vec<f64> = vec![-2.0183041005533306];
+/// let lat_vec: Vec<f64> = vec![54.589097162646141];
 /// let lon_arr = Array {
 ///     data: lon_vec.as_ptr() as *const libc::c_void,
 ///     len: lon_vec.len() as libc::size_t,
@@ -432,13 +432,13 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
 ///
 /// ```
 /// extern crate libc;
-/// let lon_vec: Vec<f32> = vec![-2.0183041005533306,
+/// let lon_vec: Vec<f64> = vec![-2.0183041005533306,
 ///                              0.95511887434519682,
 ///                              0.44975855518383501,
 ///                              -0.096813621191803811,
 ///                              -0.36807065656416427,
 ///                              0.63486335458665621];
-/// let lat_vec: Vec<f32> = vec![54.589097162646141,
+/// let lat_vec: Vec<f64> = vec![54.589097162646141,
 ///                              51.560873800587828,
 ///                              50.431429161121699,
 ///                              54.535021436247419,
@@ -761,8 +761,8 @@ mod tests {
 
     #[test]
     fn test_drop_int_array() {
-        let lon_vec: Vec<f32> = vec![-2.0183041005533306];
-        let lat_vec: Vec<f32> = vec![54.589097162646141];
+        let lon_vec: Vec<f64> = vec![-2.0183041005533306];
+        let lat_vec: Vec<f64> = vec![54.589097162646141];
         let lon_arr = Array {
             data: lon_vec.as_ptr() as *const libc::c_void,
             len: lon_vec.len() as libc::size_t,
@@ -810,8 +810,8 @@ mod tests {
     #[test]
     fn test_bad_threaded_conversion() {
         // above maximum longitude
-        let lon_vec: Vec<f32> = vec![-6.379881];
-        let lat_vec: Vec<f32> = vec![55.811741];
+        let lon_vec: Vec<f64> = vec![-6.379881];
+        let lat_vec: Vec<f64> = vec![55.811741];
         let lon_arr = Array {
             data: lon_vec.as_ptr() as *const libc::c_void,
             len: lon_vec.len() as libc::size_t,
