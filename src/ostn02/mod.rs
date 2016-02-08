@@ -271,14 +271,14 @@ mod tests {
     use super::convert_osgb36;
     use super::convert_ETRS89_to_OSGB36;
     use super::convert_ETRS89_to_ll;
-    use super::shift_osgb36_to_etrs89;
+    // use super::shift_osgb36_to_etrs89;
 
-    #[test]
-    fn test_shift_osgb36_to_etrs89() {
-        let easting = 651409.792;
-        let northing = 313177.448;
-        assert_eq!((1.716074, 52.658008), shift_osgb36_to_etrs89(&easting, &northing).unwrap());
-    }
+    // #[test]
+    // fn test_shift_osgb36_to_etrs89() {
+    //     let easting = 651409.792;
+    //     let northing = 313177.448;
+    //     assert_eq!((1.716074, 52.658008), shift_osgb36_to_etrs89(&easting, &northing).unwrap());
+    // }
 
     #[test]
     fn test_convert_ETRS89_to_ll() {
