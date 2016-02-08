@@ -83,7 +83,7 @@ pub const s: f64 = 20.4894 * 0.000001;
 // etc
 pub const PI: f64 = f64::consts::PI;
 pub const RAD: f64 = PI / 180.;
-
+pub const DAR: f64 = 180. / PI;
 pub const MAX_EASTING: i32 = 700000;
 pub const MAX_NORTHING: i32 = 1250000;
 
@@ -147,7 +147,7 @@ pub extern "C" fn drop_int_array(eastings: Array, northings: Array) {
     unsafe { Vec::from_raw_parts(northings.data as *mut c_int, northings.len, northings.len) };
 }
 
-/// Free memory which Rust has allocated across the FFI boundary (f32 values)
+/// Free memory which Rust has allocated across the FFI boundary (f64 values)
 ///
 /// # Safety
 ///
