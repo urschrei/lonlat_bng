@@ -239,7 +239,8 @@ mod tests {
         let eastings = 651307.003;
         let northings = 313255.686;
         let expected = (651409.792, 313177.448);
-        assert_eq!(expected, convert_ETRS89_to_OSGB36(&eastings, &northings).unwrap());
+        assert_eq!(expected,
+                   convert_ETRS89_to_OSGB36(&eastings, &northings).unwrap());
     }
 
     #[test]

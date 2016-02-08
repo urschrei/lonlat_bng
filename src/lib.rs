@@ -166,10 +166,6 @@ impl Array {
         assert!(!self.data.is_null());
         slice::from_raw_parts(self.data as *const f64, self.len as usize)
     }
-    unsafe fn as_f32_slice(&self) -> &[f32] {
-        assert!(!self.data.is_null());
-        slice::from_raw_parts(self.data as *const f32, self.len as usize)
-    }
     unsafe fn as_i32_slice(&self) -> &[i32] {
         assert!(!self.data.is_null());
         slice::from_raw_parts(self.data as *const i32, self.len as usize)
@@ -465,12 +461,9 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
-    let lons = unsafe { longitudes.as_f32_slice().to_vec() };
-    let lats = unsafe { latitudes.as_f32_slice().to_vec() };
-    // FIXME this shouldn't be necessary once I figure out how to cast float to float64 on the Python side
-    let f64_lons = lons.iter().map(|elem| *elem as f64).collect();
-    let f64_lats = lats.iter().map(|elem| *elem as f64).collect();
-    let (eastings, northings): (Vec<i32>, Vec<i32>) = convert_to_bng_threaded_vec(&f64_lons, &f64_lats);
+    let lons = unsafe { longitudes.as_f64_slice().to_vec() };
+    let lats = unsafe { latitudes.as_f64_slice().to_vec() };
+    let (eastings, northings): (Vec<i32>, Vec<i32>) = convert_to_bng_threaded_vec(&lons, &lats);
     (Array::from_vec(eastings), Array::from_vec(northings))
 }
 
@@ -555,7 +548,9 @@ pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
-pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
+pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
+                                             latitudes: Array)
+                                             -> (Array, Array) {
     let longitudes_vec = unsafe { longitudes.as_f64_slice().to_vec() };
     let latitudes_vec = unsafe { latitudes.as_f64_slice().to_vec() };
     let (eastings, northings) = convert_to_osgb36_threaded_vec(&longitudes_vec, &latitudes_vec);
@@ -565,8 +560,8 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array, latitudes: Array
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
 pub fn convert_to_osgb36_threaded_vec(longitudes: &Vec<f64>,
-                                   latitudes: &Vec<f64>)
-                                   -> (Vec<f64>, Vec<f64>) {
+                                      latitudes: &Vec<f64>)
+                                      -> (Vec<f64>, Vec<f64>) {
     let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&f64, &f64)> = longitudes.iter().zip(latitudes.iter()).collect();
     let mut result = vec![(1.0, 1.0); orig.len()];
@@ -602,7 +597,9 @@ pub fn convert_to_osgb36_threaded_vec(longitudes: &Vec<f64>,
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
-pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
+pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
+                                             latitudes: Array)
+                                             -> (Array, Array) {
     let longitudes_vec = unsafe { longitudes.as_f64_slice().to_vec() };
     let latitudes_vec = unsafe { latitudes.as_f64_slice().to_vec() };
     let (eastings, northings) = convert_to_etrs89_threaded_vec(&longitudes_vec, &latitudes_vec);
@@ -612,8 +609,8 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array, latitudes: Array
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
 pub fn convert_to_etrs89_threaded_vec(longitudes: &Vec<f64>,
-                                   latitudes: &Vec<f64>)
-                                   -> (Vec<f64>, Vec<f64>) {
+                                      latitudes: &Vec<f64>)
+                                      -> (Vec<f64>, Vec<f64>) {
     let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&f64, &f64)> = longitudes.iter().zip(latitudes.iter()).collect();
     let mut result = vec![(1.0, 1.0); orig.len()];
@@ -659,13 +656,13 @@ mod tests {
 
     #[test]
     fn test_threaded_bng_conversion() {
-        let lon_vec: Vec<f32> = vec![-2.0183041005533306,
+        let lon_vec: Vec<f64> = vec![-2.0183041005533306,
                                      0.95511887434519682,
                                      0.44975855518383501,
                                      -0.096813621191803811,
                                      -0.36807065656416427,
                                      0.63486335458665621];
-        let lat_vec: Vec<f32> = vec![54.589097162646141,
+        let lat_vec: Vec<f64> = vec![54.589097162646141,
                                      51.560873800587828,
                                      50.431429161121699,
                                      54.535021436247419,
@@ -690,8 +687,8 @@ mod tests {
     #[test]
     fn test_threaded_bng_conversion_single() {
         // I spent 8 hours confused cos I didn't catch that chunks(0) is invalid
-        let lon_vec: Vec<f32> = vec![-2.0183041005533306];
-        let lat_vec: Vec<f32> = vec![54.589097162646141];
+        let lon_vec: Vec<f64> = vec![-2.0183041005533306];
+        let lat_vec: Vec<f64> = vec![54.589097162646141];
         let lon_arr = Array {
             data: lon_vec.as_ptr() as *const libc::c_void,
             len: lon_vec.len() as libc::size_t,
@@ -720,7 +717,7 @@ mod tests {
             len: northing_vec.len() as libc::size_t,
         };
         let (lons, _) = convert_to_lonlat_threaded(easting_arr, northing_arr);
-        let retval = unsafe { lons.as_f32_slice() };
+        let retval = unsafe { lons.as_f64_slice() };
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
         // http://floating-point-gui.de/errors/comparison/
