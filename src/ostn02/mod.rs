@@ -10,6 +10,7 @@ use super::GRS80_SEMI_MAJOR;
 use super::GRS80_SEMI_MINOR;
 
 use super::RAD;
+use super::DAR;
 use super::MIN_LONGITUDE;
 use super::MAX_LONGITUDE;
 use super::MIN_LATITUDE;
@@ -191,6 +192,51 @@ fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
                   35. / 24. * n.powf(3.) * (3. * p_minus).sin() * (3. * p_plus).cos());
     result
 }
+
+#[allow(non_snake_case)]
+fn convert_ETRS89_to_ll(eastings: &f64, northings: &f64) -> Result<(f64, f64), ()> {
+    // ellipsoid squared eccentricity constant
+    let e2 = (WGS84_A.powf(2.) - WGS84_B.powf(2.)) / WGS84_A.powf(2.);
+    let n = (WGS84_A - WGS84_B) / (WGS84_A + WGS84_B);
+
+    let dN = *northings - N0;
+    let mut phi = PHI0 + dN / (WGS84_A * F0);
+    let mut m = compute_m(&phi, &WGS84_B, &n);
+    while (dN - m) >= 0.001 {
+        phi = phi + (dN - m) / (WGS84_A * F0);
+        m = compute_m(&phi, &WGS84_B, &n);    
+    }
+    let sp2 = phi.sin().powf(2.);
+    let nu = WGS84_A * F0 * (1. - e2 * sp2).powf(-0.5);
+    let rho = WGS84_A * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
+    let eta2 = nu / rho - 1.;
+
+    let tp = phi.tan();
+    let tp2 = tp.powf(2.);
+    let tp4 = tp.powf(4.);
+
+    let VII = tp / (2. * rho * nu);
+    let VIII = tp / (24. * rho * nu.powf(3.)) * (5. + 3. * tp2 + eta2 - 9. * tp2 * eta2);
+    let IX = tp / (720. * rho * nu.powf(5.)) * (61. + 90. * tp2 + 45. * tp4);
+
+    let sp = 1.0 / phi.cos();
+    let tp6 = tp4 * tp2;
+
+    let X = sp / nu;
+    let XI = sp / (6. * nu.powf(3.)) * (nu / rho + 2. * tp2);
+    let XII = sp / ( 120. * nu.powf(5.)) * (5.+ 28. * tp2 + 24.*tp4);
+    let XIIA = sp / (5040. * nu.powf(7.)) * (61. + 662. * tp2 + 1320. * tp4 + 720. * tp6);
+
+    let e = *eastings - E0;
+
+    phi = phi - VII * e.powf(2.) + VIII * e.powf(4.) - IX * e.powf(6.);
+    let mut lambda = LAM0 + X  *e - XI * e.powf(3.) + XII * e.powf(5.) - XIIA * e.powf(7.);
+
+    phi = phi * DAR;
+    lambda = lambda * DAR;
+    Ok((lambda, phi))
+}
+
 // Convert OSGB36 coordinates to ETRS89 using OSTN02 shifts
 // pub fn shift_osgb36_to_etrs89(E: &f64, N: &f64) -> (f64, f64) {
 //     let z0 = 0.000;
@@ -214,6 +260,14 @@ mod tests {
     use super::convert_etrs89;
     use super::convert_osgb36;
     use super::convert_ETRS89_to_OSGB36;
+    use super::convert_ETRS89_to_ll;
+
+    #[test]
+    fn test_convert_ETRS89_to_ll() {
+        let easting = 651409.903;
+        let northing = 313177.270;
+        assert_eq!((1.717922, 52.65757), convert_ETRS89_to_ll(&easting, &northing).unwrap());
+    }
 
     #[test]
     fn test_etrs89_conversion() {
