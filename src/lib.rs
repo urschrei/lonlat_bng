@@ -636,6 +636,55 @@ pub fn convert_to_etrs89_threaded_vec(longitudes: &Vec<f64>,
     (eastings, northings)
 }
 
+/// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_ETRS89_to_OSGB36`](fn.convert_ETRS89_to_OSGB36.html)
+///
+/// # Examples
+///
+/// See `lonlat_bng::convert_to_bng_threaded` for examples
+///
+/// # Safety
+///
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+#[no_mangle]
+pub extern "C" fn convert_ETRS89_to_OSGB36_threaded(eastings: Array,
+                                             northings: Array)
+                                             -> (Array, Array) {
+    let eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
+    let northings_vec = unsafe { northings.as_f64_slice().to_vec() };
+    let (eastings_shifted, northings_shifted) = convert_ETRS89_to_OSGB36_threaded_vec(&eastings_vec, &northings_vec);
+    (Array::from_vec(eastings_shifted), Array::from_vec(northings_shifted))
+}
+
+
+/// A threaded wrapper for [`lonlat_bng::convert_ETRS89_to_OSGB36`](fn.convert_ETRS89_to_OSGB36.html)
+pub fn convert_ETRS89_to_OSGB36_threaded_vec(eastings: &Vec<f64>,
+                                      northings: &Vec<f64>)
+                                      -> (Vec<f64>, Vec<f64>) {
+    let numthreads = num_cpus::get() as usize;
+    let orig: Vec<(&f64, &f64)> = eastings.iter().zip(northings.iter()).collect();
+    let mut result = vec![(1.0, 1.0); orig.len()];
+    let mut size = orig.len() / numthreads;
+    if orig.len() % numthreads > 0 {
+        size += 1;
+    }
+    size = std::cmp::max(1, size);
+    crossbeam::scope(|scope| {
+        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
+            scope.spawn(move || {
+                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
+                    match convert_ETRS89_to_OSGB36(orig_elem.0, orig_elem.1) {
+                        Ok(res) => *res_elem = res,
+                        // we don't care about the return value as such
+                        Err(_) => *res_elem = (9999.000, 9999.000),
+                    };
+                }
+            });
+        }
+    });
+    let (eastings_shifted, northings_shifted): (Vec<f64>, Vec<f64>) = result.into_iter().unzip();
+    (eastings_shifted, northings_shifted)
+}
+
 #[cfg(test)]
 mod tests {
     use ostn02::get_ostn_ref;
@@ -649,6 +698,7 @@ mod tests {
     use super::convert_to_lonlat_threaded;
     use super::convert_to_osgb36_threaded;
     use super::convert_to_etrs89_threaded;
+    use super::convert_ETRS89_to_OSGB36_threaded;
     use super::check;
     use super::Array;
 
@@ -738,6 +788,23 @@ mod tests {
             len: lat_vec.len() as libc::size_t,
         };
         let (eastings, _) = convert_to_osgb36_threaded(lon_arr, lat_arr);
+        let retval = unsafe { eastings.as_f64_slice() };
+        assert_eq!(651409.792, retval[0]);
+    }
+
+    #[test]
+    fn test_threaded_ETRS89_to_OSGB36_conversion_single() {
+        let e_vec: Vec<f64> = vec![651307.003];
+        let n_vec: Vec<f64> = vec![313255.686];
+        let e_arr = Array {
+            data: e_vec.as_ptr() as *const libc::c_void,
+            len: e_vec.len() as libc::size_t,
+        };
+        let n_arr = Array {
+            data: n_vec.as_ptr() as *const libc::c_void,
+            len: n_vec.len() as libc::size_t,
+        };
+        let (eastings, _) = convert_ETRS89_to_OSGB36_threaded(e_arr, n_arr);
         let retval = unsafe { eastings.as_f64_slice() };
         assert_eq!(651409.792, retval[0]);
     }
