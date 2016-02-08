@@ -246,20 +246,21 @@ fn convert_ETRS89_to_ll(eastings: &f64, northings: &f64) -> Result<(f64, f64), (
     Ok(round_to_six(lambda, phi))
 }
 
-// Convert OSGB36 coordinates to ETRS89 using OSTN02 shifts
-// pub fn shift_osgb36_to_etrs89(E: &f64, N: &f64) -> (f64, f64) {
+/// Convert OSGB36 coordinates to Lon, Lat using OSTN02 shifts
+// pub fn shift_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 //     let z0 = 0.000;
 //     let epsilon = 0.00001;
-//     let (dx, dy, dz) = ostn02_shifts(&E, &N);
+//     let (dx, dy, dz) = try!(ostn02_shifts(&E, &N));
 //     let (x, y, z) = (E - dx, N - dy, dz);
 //     let (last_dx, last_dy) = (dx.clone(), dy.clone());
 //     while (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
-//         let (dx, dy, dz) = ostn02_shifts(&x, &y);
+//         let (dx, dy, dz) = try!(ostn02_shifts(&x, &y));
 //         let (x, y) = (E - dx, N - dy);
 //         let (last_dx, last_dy) = (dx, dy);
 //     }
-//     let (x, y, z) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
-//     (x, y)
+//     let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
+//     // this function returns a Result
+//     convert_ETRS89_to_ll(&x, &y)
 // }
 
 #[cfg(test)]
@@ -270,6 +271,14 @@ mod tests {
     use super::convert_osgb36;
     use super::convert_ETRS89_to_OSGB36;
     use super::convert_ETRS89_to_ll;
+    use super::shift_osgb36_to_etrs89;
+
+    #[test]
+    fn test_shift_osgb36_to_etrs89() {
+        let easting = 651409.792;
+        let northing = 313177.448;
+        assert_eq!((1.716074, 52.658008), shift_osgb36_to_etrs89(&easting, &northing).unwrap());
+    }
 
     #[test]
     fn test_convert_ETRS89_to_ll() {
