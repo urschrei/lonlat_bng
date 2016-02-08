@@ -39,12 +39,21 @@ const MIN_Z_SHIFT: f64 = 43.982;
 use ostn02_phf::ostn02_lookup;
 use super::check;
 
-// Herbie's going to have a field day with this
+// TODO Herbie's going to have a field day with this
+/// Round Easting, Northing, and Orthometric height to the nearest millimetre
 pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
     let new_x = (x * 1000.).round() as f64 / 1000.;
     let new_y = (y * 1000.).round() as f64 / 1000.;
     let new_z = (z * 1000.).round() as f64 / 1000.;
     (new_x, new_y, new_z)
+}
+
+// TODO Herbie's going to have a field day with this
+/// Round a float to six decimal places
+pub fn round_to_six(x: f64, y:f64) -> (f64, f64) {
+    let new_x = (x * 1000000.).round() as f64 / 1000000.;
+    let new_y = (y * 1000000.).round() as f64 / 1000000.;
+    (new_x, new_y)
 }
 
 // Try to get OSTN02 shift parameters, and calculate offsets
@@ -234,7 +243,7 @@ fn convert_ETRS89_to_ll(eastings: &f64, northings: &f64) -> Result<(f64, f64), (
 
     phi = phi * DAR;
     lambda = lambda * DAR;
-    Ok((lambda, phi))
+    Ok(round_to_six(lambda, phi))
 }
 
 // Convert OSGB36 coordinates to ETRS89 using OSTN02 shifts
@@ -264,9 +273,9 @@ mod tests {
 
     #[test]
     fn test_convert_ETRS89_to_ll() {
-        let easting = 651409.903;
-        let northing = 313177.270;
-        assert_eq!((1.717922, 52.65757), convert_ETRS89_to_ll(&easting, &northing).unwrap());
+        let easting = 651307.003;
+        let northing = 313255.686;
+        assert_eq!((1.716074, 52.658008), convert_ETRS89_to_ll(&easting, &northing).unwrap());
     }
 
     #[test]
