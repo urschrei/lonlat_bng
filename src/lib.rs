@@ -40,7 +40,7 @@ use std::slice;
 use std::fmt;
 
 extern crate libc;
-use libc::{c_void, c_float, c_int};
+use libc::{c_void, c_float, c_double, c_int};
 
 extern crate ostn02_phf;
 
@@ -157,8 +157,8 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
     if lats.data.is_null() {
         return;
     }
-    unsafe { Vec::from_raw_parts(lons.data as *mut c_float, lons.len, lons.len) };
-    unsafe { Vec::from_raw_parts(lats.data as *mut c_float, lats.len, lats.len) };
+    unsafe { Vec::from_raw_parts(lons.data as *mut c_double, lons.len, lons.len) };
+    unsafe { Vec::from_raw_parts(lats.data as *mut c_double, lats.len, lats.len) };
 }
 
 impl Array {
