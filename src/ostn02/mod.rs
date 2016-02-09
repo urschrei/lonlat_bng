@@ -8,6 +8,8 @@
 //!
 use super::GRS80_SEMI_MAJOR;
 use super::GRS80_SEMI_MINOR;
+use super::AIRY_1830_SEMI_MAJOR;
+use super::AIRY_1830_SEMI_MINOR;
 
 use super::RAD;
 use super::DAR;
@@ -21,6 +23,8 @@ use super::TRUE_ORIGIN_NORTHING;
 
 const WGS84_A: f64 = GRS80_SEMI_MAJOR;
 const WGS84_B: f64 = GRS80_SEMI_MINOR;
+const ETRS89_A: f64 = AIRY_1830_SEMI_MAJOR;
+const ETRS89_B: f64 = AIRY_1830_SEMI_MINOR;
 
 // lon and lat of true origin
 const LAM0: f64 = RAD * -2.0;
@@ -50,9 +54,9 @@ pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
 
 // TODO Herbie's going to have a field day with this
 /// Round a float to six decimal places
-pub fn round_to_nine(x: f64, y:f64) -> (f64, f64) {
-    let new_x = (x * 1000000000.).round() as f64 / 1000000000.;
-    let new_y = (y * 1000000000.).round() as f64 / 1000000000.;
+pub fn round_to_nine(x: f64, y: f64) -> (f64, f64) {
+    let new_x = (x * 10000000000.).round() as f64 / 10000000000.;
+    let new_y = (y * 10000000000.).round() as f64 / 10000000000.;
     (new_x, new_y)
 }
 
@@ -205,19 +209,19 @@ fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
 #[allow(non_snake_case)]
 fn convert_ETRS89_to_ll(eastings: &f64, northings: &f64) -> Result<(f64, f64), ()> {
     // ellipsoid squared eccentricity constant
-    let e2 = (WGS84_A.powf(2.) - WGS84_B.powf(2.)) / WGS84_A.powf(2.);
-    let n = (WGS84_A - WGS84_B) / (WGS84_A + WGS84_B);
+    let e2 = (ETRS89_A.powf(2.) - ETRS89_B.powf(2.)) / ETRS89_A.powf(2.);
+    let n = (ETRS89_A - ETRS89_B) / (ETRS89_A + ETRS89_B);
 
     let dN = *northings - N0;
-    let mut phi = PHI0 + dN / (WGS84_A * F0);
-    let mut m = compute_m(&phi, &WGS84_B, &n);
+    let mut phi = PHI0 + dN / (ETRS89_A * F0);
+    let mut m = compute_m(&phi, &ETRS89_B, &n);
     while (dN - m) >= 0.001 {
-        phi = phi + (dN - m) / (WGS84_A * F0);
-        m = compute_m(&phi, &WGS84_B, &n);    
+        phi = phi + (dN - m) / (ETRS89_A * F0);
+        m = compute_m(&phi, &ETRS89_B, &n);
     }
     let sp2 = phi.sin().powf(2.);
-    let nu = WGS84_A * F0 * (1. - e2 * sp2).powf(-0.5);
-    let rho = WGS84_A * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
+    let nu = ETRS89_A * F0 * (1. - e2 * sp2).powf(-0.5);
+    let rho = ETRS89_A * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
     let eta2 = nu / rho - 1.;
 
     let tp = phi.tan();
@@ -233,13 +237,13 @@ fn convert_ETRS89_to_ll(eastings: &f64, northings: &f64) -> Result<(f64, f64), (
 
     let X = sp / nu;
     let XI = sp / (6. * nu.powf(3.)) * (nu / rho + 2. * tp2);
-    let XII = sp / ( 120. * nu.powf(5.)) * (5.+ 28. * tp2 + 24.*tp4);
+    let XII = sp / (120. * nu.powf(5.)) * (5. + 28. * tp2 + 24. * tp4);
     let XIIA = sp / (5040. * nu.powf(7.)) * (61. + 662. * tp2 + 1320. * tp4 + 720. * tp6);
 
     let e = *eastings - E0;
 
     phi = phi - VII * e.powf(2.) + VIII * e.powf(4.) - IX * e.powf(6.);
-    let mut lambda = LAM0 + X  *e - XI * e.powf(3.) + XII * e.powf(5.) - XIIA * e.powf(7.);
+    let mut lambda = LAM0 + X * e - XI * e.powf(3.) + XII * e.powf(5.) - XIIA * e.powf(7.);
 
     phi = phi * DAR;
     lambda = lambda * DAR;
@@ -281,15 +285,16 @@ mod tests {
         // Final Lon, Lat rounded to six decimal places
         let easting = 651409.792;
         let northing = 313177.448;
-        assert_eq!((1.716073973, 52.658007833), convert_osgb36_to_ll(&easting, &northing).unwrap());
+        assert_eq!((1.716073973, 52.658007833),
+                   convert_osgb36_to_ll(&easting, &northing).unwrap());
     }
 
     #[test]
-    #[ignore]
     fn test_convert_ETRS89_to_ll() {
         let easting = 651409.903;
         let northing = 313177.270;
-        assert_eq!((1.7179215833, 52.65757030556), convert_ETRS89_to_ll(&easting, &northing).unwrap());
+        assert_eq!((1.7179215833, 52.65757030556),
+                   convert_ETRS89_to_ll(&easting, &northing).unwrap());
     }
 
     #[test]
