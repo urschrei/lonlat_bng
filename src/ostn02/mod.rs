@@ -208,6 +208,8 @@ fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
 
 #[allow(non_snake_case)]
 fn convert_ETRS89_to_ll(eastings: &f64, northings: &f64) -> Result<(f64, f64), ()> {
+    // FIXME: use WGS84 ellipsoid for conversions that originated in OSGB36
+    // FIXME: use Airy 1830 Ellipsoid for conversions that originate in ETRS89
     // ellipsoid squared eccentricity constant
     let e2 = (ETRS89_A.powf(2.) - ETRS89_B.powf(2.)) / ETRS89_A.powf(2.);
     let n = (ETRS89_A - ETRS89_B) / (ETRS89_A + ETRS89_B);
@@ -274,6 +276,7 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
     let result = round_to_nearest_mm(x, y, z + dz);
     // this function returns a Result
+    // FIXME: pass the WGS84 Ellipsoid for use in the conversion
     convert_ETRS89_to_ll(&x, &y)
 }
 
