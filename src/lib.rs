@@ -565,29 +565,7 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
 pub fn convert_to_osgb36_threaded_vec(longitudes: &Vec<f64>,
                                       latitudes: &Vec<f64>)
                                       -> (Vec<f64>, Vec<f64>) {
-    let numthreads = num_cpus::get() as usize;
-    let orig: Vec<(&f64, &f64)> = longitudes.iter().zip(latitudes.iter()).collect();
-    let mut result = vec![(1.0, 1.0); orig.len()];
-    let mut size = orig.len() / numthreads;
-    if orig.len() % numthreads > 0 {
-        size += 1;
-    }
-    size = std::cmp::max(1, size);
-    crossbeam::scope(|scope| {
-        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
-            scope.spawn(move || {
-                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
-                    match convert_osgb36(orig_elem.0, orig_elem.1) {
-                        Ok(res) => *res_elem = res,
-                        // we don't care about the return value as such
-                        Err(_) => *res_elem = (9999.000, 9999.000),
-                    };
-                }
-            });
-        }
-    });
-    let (eastings, northings): (Vec<f64>, Vec<f64>) = result.into_iter().unzip();
-    (eastings, northings)
+    convert_vec(longitudes, latitudes, convert_osgb36)
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
@@ -614,29 +592,7 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
 pub fn convert_to_etrs89_threaded_vec(longitudes: &Vec<f64>,
                                       latitudes: &Vec<f64>)
                                       -> (Vec<f64>, Vec<f64>) {
-    let numthreads = num_cpus::get() as usize;
-    let orig: Vec<(&f64, &f64)> = longitudes.iter().zip(latitudes.iter()).collect();
-    let mut result = vec![(1.0, 1.0); orig.len()];
-    let mut size = orig.len() / numthreads;
-    if orig.len() % numthreads > 0 {
-        size += 1;
-    }
-    size = std::cmp::max(1, size);
-    crossbeam::scope(|scope| {
-        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
-            scope.spawn(move || {
-                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
-                    match convert_etrs89(orig_elem.0, orig_elem.1) {
-                        Ok(res) => *res_elem = res,
-                        // we don't care about the return value as such
-                        Err(_) => *res_elem = (9999.000, 9999.000),
-                    };
-                }
-            });
-        }
-    });
-    let (eastings, northings): (Vec<f64>, Vec<f64>) = result.into_iter().unzip();
-    (eastings, northings)
+    convert_vec(longitudes, latitudes, convert_etrs89)
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_ETRS89_to_OSGB36`](fn.convert_ETRS89_to_OSGB36.html)
@@ -663,31 +619,9 @@ pub extern "C" fn convert_ETRS89_to_OSGB36_threaded(eastings: Array,
 
 /// A threaded wrapper for [`lonlat_bng::convert_ETRS89_to_OSGB36`](fn.convert_ETRS89_to_OSGB36.html)
 pub fn convert_ETRS89_to_OSGB36_threaded_vec(eastings: &Vec<f64>,
-                                             northings: &Vec<f64>)
-                                             -> (Vec<f64>, Vec<f64>) {
-    let numthreads = num_cpus::get() as usize;
-    let orig: Vec<(&f64, &f64)> = eastings.iter().zip(northings.iter()).collect();
-    let mut result = vec![(1.0, 1.0); orig.len()];
-    let mut size = orig.len() / numthreads;
-    if orig.len() % numthreads > 0 {
-        size += 1;
-    }
-    size = std::cmp::max(1, size);
-    crossbeam::scope(|scope| {
-        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
-            scope.spawn(move || {
-                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
-                    match convert_ETRS89_to_OSGB36(orig_elem.0, orig_elem.1) {
-                        Ok(res) => *res_elem = res,
-                        // we don't care about the return value as such
-                        Err(_) => *res_elem = (9999.000, 9999.000),
-                    };
-                }
-            });
-        }
-    });
-    let (eastings_shifted, northings_shifted): (Vec<f64>, Vec<f64>) = result.into_iter().unzip();
-    (eastings_shifted, northings_shifted)
+                                      northings: &Vec<f64>)
+                                      -> (Vec<f64>, Vec<f64>) {
+    convert_vec(eastings, northings, convert_ETRS89_to_OSGB36) 
 }
 
 /// Generic function for threaded processing of conversion functions
