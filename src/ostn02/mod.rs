@@ -55,8 +55,8 @@ pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
 // TODO Herbie's going to have a field day with this
 /// Round a float to six decimal places
 pub fn round_to_nine(x: f64, y: f64) -> (f64, f64) {
-    let new_x = (x * 10000000000.).round() as f64 / 10000000000.;
-    let new_y = (y * 10000000000.).round() as f64 / 10000000000.;
+    let new_x = (x * 10000000.).round() as f64 / 10000000.;
+    let new_y = (y * 10000000.).round() as f64 / 10000000.;
     (new_x, new_y)
 }
 
@@ -257,13 +257,15 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     let (mut dx, mut dy, mut dz) = try!(ostn02_shifts(&E, &N));
     let (mut x, mut y, mut z) = (E - dx, N - dy, dz);
     let (mut last_dx, mut last_dy) = (dx.clone(), dy.clone());
-    while (dx - last_dx).abs() >= epsilon && (dy - last_dy).abs() >= epsilon {
+    loop {
         let (dx, dy, dz) = try!(ostn02_shifts(&x, &y));
         let (x, y) = (E - dx, N - dy);
+        if (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
+            break;
+        }
         let (last_dx, last_dy) = (dx, dy);
     }
-    // let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
-    let (x, y, _) = (E - dx, N - dy, z0 + dz);
+    let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
     // this function returns a Result
     convert_ETRS89_to_ll(&x, &y)
 }
@@ -279,13 +281,12 @@ mod tests {
     use super::convert_osgb36_to_ll;
 
     #[test]
-    #[ignore]
     fn test_convert_osgb36_to_ll() {
         // Caister Water Tower
-        // Final Lon, Lat rounded to six decimal places
+        // Final Lon, Lat rounded to seven decimal places
         let easting = 651409.792;
         let northing = 313177.448;
-        assert_eq!((1.716073973, 52.658007833),
+        assert_eq!((1.716074, 52.6580079),
                    convert_osgb36_to_ll(&easting, &northing).unwrap());
     }
 
@@ -293,7 +294,10 @@ mod tests {
     fn test_convert_ETRS89_to_ll() {
         let easting = 651409.903;
         let northing = 313177.270;
-        assert_eq!((1.7179215833, 52.65757030556),
+        // from p27
+        // 1°   43' 4.5177" E -> 1.7179215833333334
+        // 52°  39' 27.2531" N -> 52.65757030555555
+        assert_eq!((1.7179216, 52.6575703),
                    convert_ETRS89_to_ll(&easting, &northing).unwrap());
     }
 
