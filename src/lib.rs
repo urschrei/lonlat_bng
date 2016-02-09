@@ -1,6 +1,6 @@
 #![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
 //! The `lonlat_bng` crate provides functions that convert decimal longitude
-//! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.  
+//! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.
 //! This library makes use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations
 //! for the following functions:
 //!
@@ -41,7 +41,7 @@ use std::f64;
 use std::mem;
 use std::slice;
 use std::fmt;
-
+use std::marker::Send;
 extern crate libc;
 use libc::{c_void, c_float, c_double, c_int};
 
@@ -650,19 +650,21 @@ pub fn convert_to_etrs89_threaded_vec(longitudes: &Vec<f64>,
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_ETRS89_to_OSGB36_threaded(eastings: Array,
-                                             northings: Array)
-                                             -> (Array, Array) {
+                                                    northings: Array)
+                                                    -> (Array, Array) {
     let eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let northings_vec = unsafe { northings.as_f64_slice().to_vec() };
-    let (eastings_shifted, northings_shifted) = convert_ETRS89_to_OSGB36_threaded_vec(&eastings_vec, &northings_vec);
-    (Array::from_vec(eastings_shifted), Array::from_vec(northings_shifted))
+    let (eastings_shifted, northings_shifted) =
+        convert_ETRS89_to_OSGB36_threaded_vec(&eastings_vec, &northings_vec);
+    (Array::from_vec(eastings_shifted),
+     Array::from_vec(northings_shifted))
 }
 
 
 /// A threaded wrapper for [`lonlat_bng::convert_ETRS89_to_OSGB36`](fn.convert_ETRS89_to_OSGB36.html)
 pub fn convert_ETRS89_to_OSGB36_threaded_vec(eastings: &Vec<f64>,
-                                      northings: &Vec<f64>)
-                                      -> (Vec<f64>, Vec<f64>) {
+                                             northings: &Vec<f64>)
+                                             -> (Vec<f64>, Vec<f64>) {
     let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&f64, &f64)> = eastings.iter().zip(northings.iter()).collect();
     let mut result = vec![(1.0, 1.0); orig.len()];
@@ -686,6 +688,35 @@ pub fn convert_ETRS89_to_OSGB36_threaded_vec(eastings: &Vec<f64>,
     });
     let (eastings_shifted, northings_shifted): (Vec<f64>, Vec<f64>) = result.into_iter().unzip();
     (eastings_shifted, northings_shifted)
+}
+
+/// Generic function for threaded processing of conversion functions
+fn convert_vec<F>(ex: &Vec<f64>, ny: &Vec<f64>, func: F) -> (Vec<f64>, Vec<f64>)
+    where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy
+{
+    let numthreads = 8 as usize;
+    let orig: Vec<(&f64, &f64)> = ex.iter().zip(ny.iter()).collect();
+    let mut result = vec![(1.0, 1.0); orig.len()];
+    let mut size = orig.len() / numthreads;
+    if orig.len() % numthreads > 0 {
+        size += 1;
+    }
+    size = std::cmp::max(1, size);
+    crossbeam::scope(|scope| {
+        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
+            scope.spawn(move || {
+                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
+                    match func(orig_elem.0, orig_elem.1) {
+                        Ok(res) => *res_elem = res,
+                        // we don't care about the return value as such
+                        Err(_) => *res_elem = (9999.000, 9999.000),
+                    };
+                }
+            });
+        }
+    });
+    let (ex_converted, ny_converted): (Vec<f64>, Vec<f64>) = result.into_iter().unzip();
+    (ex_converted, ny_converted)
 }
 
 #[cfg(test)]
