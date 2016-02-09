@@ -25,7 +25,7 @@
 //! assert_eq!((516276, 173141), lonlat_bng::convert_bng(&-0.32824866, &51.44533267).unwrap());
 //! ```
 //! ```
-//! Convert single BNG values to Longitude, Latitude (Fast, but only accurate within ~7m)
+//! // Convert single BNG values to Longitude, Latitude (Fast, but only accurate within ~7m)
 //! assert_eq!((-0.328248, 51.44534), lonlat_bng::convert_lonlat(&516276, &173141));
 //! ```
 //! ```
