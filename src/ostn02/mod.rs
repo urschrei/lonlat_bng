@@ -23,8 +23,8 @@ use super::TRUE_ORIGIN_NORTHING;
 
 const WGS84_A: f64 = GRS80_SEMI_MAJOR;
 const WGS84_B: f64 = GRS80_SEMI_MINOR;
-const ETRS89_A: f64 = AIRY_1830_SEMI_MAJOR;
-const ETRS89_B: f64 = AIRY_1830_SEMI_MINOR;
+const ETRS89_A: f64 = GRS80_SEMI_MAJOR;
+const ETRS89_B: f64 = GRS80_SEMI_MINOR;
 
 // lon and lat of true origin
 const LAM0: f64 = RAD * -2.0;
@@ -294,7 +294,7 @@ mod tests {
         let easting = 651409.792;
         let northing = 313177.448;
         // p20 gives the correct lon, lat as (1.716073973, 52.658007833)
-        assert_eq!((1.7160740, 52.658008),
+        assert_eq!((1.7160740, 52.6580078),
                    convert_osgb36_to_ll(&easting, &northing).unwrap());
     }
 
