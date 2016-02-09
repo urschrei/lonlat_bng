@@ -50,9 +50,9 @@ pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
 
 // TODO Herbie's going to have a field day with this
 /// Round a float to six decimal places
-pub fn round_to_six(x: f64, y:f64) -> (f64, f64) {
-    let new_x = (x * 1000000.).round() as f64 / 1000000.;
-    let new_y = (y * 1000000.).round() as f64 / 1000000.;
+pub fn round_to_nine(x: f64, y:f64) -> (f64, f64) {
+    let new_x = (x * 1000000000.).round() as f64 / 1000000000.;
+    let new_y = (y * 1000000000.).round() as f64 / 1000000000.;
     (new_x, new_y)
 }
 
@@ -243,25 +243,26 @@ fn convert_ETRS89_to_ll(eastings: &f64, northings: &f64) -> Result<(f64, f64), (
 
     phi = phi * DAR;
     lambda = lambda * DAR;
-    Ok(round_to_six(lambda, phi))
+    Ok(round_to_nine(lambda, phi))
 }
 
-/// Convert OSGB36 coordinates to Lon, Lat using OSTN02 shifts
-// pub fn shift_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
-//     let z0 = 0.000;
-//     let epsilon = 0.00001;
-//     let (dx, dy, dz) = try!(ostn02_shifts(&E, &N));
-//     let (x, y, z) = (E - dx, N - dy, dz);
-//     let (last_dx, last_dy) = (dx.clone(), dy.clone());
-//     while (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
-//         let (dx, dy, dz) = try!(ostn02_shifts(&x, &y));
-//         let (x, y) = (E - dx, N - dy);
-//         let (last_dx, last_dy) = (dx, dy);
-//     }
-//     let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
-//     // this function returns a Result
-//     convert_ETRS89_to_ll(&x, &y)
-// }
+// Convert OSGB36 coordinates to Lon, Lat using OSTN02 shifts
+pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
+    let z0 = 0.000;
+    let epsilon = 0.00001;
+    let (mut dx, mut dy, mut dz) = try!(ostn02_shifts(&E, &N));
+    let (mut x, mut y, mut z) = (E - dx, N - dy, dz);
+    let (mut last_dx, mut last_dy) = (dx.clone(), dy.clone());
+    while (dx - last_dx).abs() >= epsilon && (dy - last_dy).abs() >= epsilon {
+        let (dx, dy, dz) = try!(ostn02_shifts(&x, &y));
+        let (x, y) = (E - dx, N - dy);
+        let (last_dx, last_dy) = (dx, dy);
+    }
+    // let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
+    let (x, y, _) = (E - dx, N - dy, z0 + dz);
+    // this function returns a Result
+    convert_ETRS89_to_ll(&x, &y)
+}
 
 #[cfg(test)]
 mod tests {
@@ -271,20 +272,24 @@ mod tests {
     use super::convert_osgb36;
     use super::convert_ETRS89_to_OSGB36;
     use super::convert_ETRS89_to_ll;
-    // use super::shift_osgb36_to_etrs89;
-
-    // #[test]
-    // fn test_shift_osgb36_to_etrs89() {
-    //     let easting = 651409.792;
-    //     let northing = 313177.448;
-    //     assert_eq!((1.716074, 52.658008), shift_osgb36_to_etrs89(&easting, &northing).unwrap());
-    // }
+    use super::convert_osgb36_to_ll;
 
     #[test]
+    #[ignore]
+    fn test_convert_osgb36_to_ll() {
+        // Caister Water Tower
+        // Final Lon, Lat rounded to six decimal places
+        let easting = 651409.792;
+        let northing = 313177.448;
+        assert_eq!((1.716073973, 52.658007833), convert_osgb36_to_ll(&easting, &northing).unwrap());
+    }
+
+    #[test]
+    #[ignore]
     fn test_convert_ETRS89_to_ll() {
-        let easting = 651307.003;
-        let northing = 313255.686;
-        assert_eq!((1.716074, 52.658008), convert_ETRS89_to_ll(&easting, &northing).unwrap());
+        let easting = 651409.903;
+        let northing = 313177.270;
+        assert_eq!((1.7179215833, 52.65757030556), convert_ETRS89_to_ll(&easting, &northing).unwrap());
     }
 
     #[test]
