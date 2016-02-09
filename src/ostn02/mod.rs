@@ -257,15 +257,22 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     let (mut dx, mut dy, mut dz) = try!(ostn02_shifts(&E, &N));
     let (mut x, mut y, mut z) = (E - dx, N - dy, dz);
     let (mut last_dx, mut last_dy) = (dx.clone(), dy.clone());
+    let mut res: (_, _, _) = (1., 1., 1.,);
     loop {
-        let (dx, dy, dz) = try!(ostn02_shifts(&x, &y));
-        let (x, y) = (E - dx, N - dy);
+        res = try!(ostn02_shifts(&x, &y));
+        dx = res.0;
+        dy = res.1;
+        dz = res.2;
+        x = E - dx;
+        y = N - dy;
         if (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
             break;
         }
-        let (last_dx, last_dy) = (dx, dy);
+        last_dx = dx;
+        last_dy = dy;
     }
     let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
+    let result = round_to_nearest_mm(x, y, z + dz);
     // this function returns a Result
     convert_ETRS89_to_ll(&x, &y)
 }
@@ -286,7 +293,8 @@ mod tests {
         // Final Lon, Lat rounded to seven decimal places
         let easting = 651409.792;
         let northing = 313177.448;
-        assert_eq!((1.716074, 52.6580079),
+        // p20 gives the correct lon, lat as (1.716073973, 52.658007833)
+        assert_eq!((1.7160740, 52.658008),
                    convert_osgb36_to_ll(&easting, &northing).unwrap());
     }
 
