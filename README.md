@@ -16,21 +16,19 @@ Full library documentation is available [here](http://urschrei.github.io/lonlat_
 
 **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.**  
 
-The native functions exposed by the library are:
-
-`lonlat_bng::convert_bng(&f32, &f32) -> (i32, i32)`  
-`lonlat_bng::ostn02::convert_osgb36(&f64, &f64) -> (f64, f64)`  
-`lonlat_bng::convert_lonlat(&i21 &i32) -> (f32, f32)`  
-
-`lonlat_bng::convert_to_bng_threaded_vec(Vec<(&f32, &f32)>) -> Vec<(i32, i32)>`  
-`lonlat_bng::convert_to_osgb36_threaded_vec(Vec<(&f64, &f64)>) -> Vec<(f64, f64)>`  
-`lonlat_bng::convert_to_lonlat_threaded_vec(Vec<(&i32, &i32)>) -> Vec<(f32, f32)>`  
+The functions exposed by the library can be found [here](http://urschrei.github.io/lonlat_bng/lonlat_bng/index.html#functions)
 
 ### As an FFI Library
 The FFI C-compatible functions exposed by the library are:  
 `convert_to_bng_threaded(Array, Array) -> Array`  
-`convert_to_osgb36_threaded(Array, Array) -> Array`  
 `convert_to_lonlat_threaded(Array, Array) -> Array`  
+
+`convert_to_osgb36_threaded(Array, Array) -> Array`  
+`convert_to_etrs89_threaded(Array, Array) -> Array)`  
+`convert_etrs89_to_osgb36_threaded(Array, Array) -> Array`  
+
+`convert_osgb36_to_ll_threaded(Array, Array) -> Array`  
+`convert_etrs89_to_ll_threaded(Array, Array) -> Array`  
 
 And for freeing the memory allocated by the above  
 `drop_int_array(Array) -> Null`  
