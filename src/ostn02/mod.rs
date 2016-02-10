@@ -262,7 +262,7 @@ pub fn convert_etrs89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     convert_to_ll(E, N, AIRY_1830_SEMI_MAJOR, AIRY_1830_SEMI_MINOR)
 }
 
-/// Convert OSGB36 coordinates to Lon, Lat using OSTN02 shifts
+/// Convert OSGB36 coordinates to Lon, Lat using OSTN02 data
 #[allow(non_snake_case)]
 pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN02 adustments
