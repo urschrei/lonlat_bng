@@ -66,6 +66,7 @@ pub use ostn02::convert_osgb36_to_etrs89;
 pub use ostn02::convert_osgb36_to_ll;
 pub use ostn02::convert_etrs89_to_ll;
 use ostn02::round_to_nearest_mm;
+use ostn02::round_to_eight;
 // Constants used for coordinate conversions
 //
 // Ellipsoids
@@ -328,7 +329,7 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_doubl
 /// use lonlat_bng::convert_lonlat;
 /// assert_eq!((-0.328248, 51.44534), convert_lonlat(&516276, &173141));
 #[allow(non_snake_case)]
-pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
+pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a = AIRY_1830_SEMI_MAJOR;
     let b = AIRY_1830_SEMI_MINOR;
@@ -347,8 +348,8 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
 
     let mut lat = lat0;
     let mut M: f64 = 0.0;
-    while (*northing as f64 - N0 - M) >= 0.00001 {
-        lat = (*northing as f64 - N0 - M) / (a * F0) + lat;
+    while (*northing - N0 - M) >= 0.00001 {
+        lat = (*northing - N0 - M) / (a * F0) + lat;
         let M1 = (1. + n + (5. / 4.) * n.powi(3) + (5. / 4.) * n.powi(3)) * (lat - lat0);
         let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) *
                  ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin())).ln_1p().exp_m1() *
@@ -378,7 +379,7 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
     let XIIA = secLat / (5040. * nu.powi(7)) *
                (61. + 662. * lat.tan().powi(2) + 1320. * lat.tan().powi(4) +
                 720. * lat.tan().powi(6));
-    let dE = *easting as f64 - E0;
+    let dE = *easting - E0;
     // These are on the wrong ellipsoid currently: Airy1830 (Denoted by _1)
     let lat_1 = lat - VII * dE.powi(2) + VIII * dE.powi(4) - IX * dE.powi(6);
     let lon_1 = lon0 + X * dE - XI * dE.powi(3) + XII * dE.powi(5) - XIIA * dE.powi(7);
@@ -431,7 +432,7 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
     let mut lon = y_2.atan2(x_2);
     lat = lat * 180. / PI;
     lon = lon * 180. / PI;
-    (lon as c_float, lat as c_float)
+    Ok(round_to_eight(lon, lat))
 }
 
 /// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_bng`
@@ -492,35 +493,19 @@ pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f64>,
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> (Array, Array) {
-    let eastings_vec = unsafe { eastings.as_i32_slice().to_vec() };
-    let northings_vec = unsafe { northings.as_i32_slice().to_vec() };
-    let (lons, lats) = convert_to_lonlat_threaded_vec(&eastings_vec, &northings_vec);
-    (Array::from_vec(lons), Array::from_vec(lats))
+    let eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
+    let northings_vec = unsafe { northings.as_f64_slice().to_vec() };
+    let (eastings_shifted, northings_shifted) = convert_to_lonlat_threaded_vec(&eastings_vec,
+                                                                                  &northings_vec);
+    (Array::from_vec(eastings_shifted),
+     Array::from_vec(northings_shifted))
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
-pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<i32>,
-                                      northings: &Vec<i32>)
-                                      -> (Vec<f32>, Vec<f32>) {
-    let numthreads = num_cpus::get() as usize;
-    let orig: Vec<(&i32, &i32)> = eastings.iter().zip(northings.iter()).collect();
-    let mut result: Vec<(f32, f32)> = vec![(1.0, 1.0); orig.len()];
-    let mut size = orig.len() / numthreads;
-    if orig.len() % numthreads > 0 {
-        size += 1;
-    }
-    size = std::cmp::max(1, size);
-    crossbeam::scope(|scope| {
-        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
-            scope.spawn(move || {
-                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
-                    *res_elem = convert_lonlat(orig_elem.0, orig_elem.1);
-                }
-            });
-        }
-    });
-    let (lons, lats): (Vec<f32>, Vec<f32>) = result.into_iter().unzip();
-    (lons, lats)
+pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<f64>,
+                                      northings: &Vec<f64>)
+                                      -> (Vec<f64>, Vec<f64>) {
+    convert_vec(eastings, northings, convert_lonlat)
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
@@ -1069,7 +1054,7 @@ mod tests {
 
     #[test]
     fn test_lonlat_conversion() {
-        let res = convert_lonlat(&516276, &173141);
+        let res = convert_lonlat(&516276.000, &173141.000).unwrap();
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
         // epsilon is .000001 here, because BNG coords are 6 digits, so
