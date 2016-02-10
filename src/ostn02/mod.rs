@@ -171,7 +171,8 @@ pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64,
     // obtain OSTN02 corrections, and incorporate
     let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
     let (shifted_e, shifted_n) = (eastings + e_shift, northings + n_shift);
-    Ok((shifted_e, shifted_n))
+    let rounded = round_to_nearest_mm(shifted_e, shifted_n, 1.0000);
+    Ok((rounded.0, rounded.1))
 
 }
 
