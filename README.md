@@ -88,7 +88,9 @@ Using multithreading gives excellent performance (Pyproj – which is a compiled
 ## Accuracy
 The Helmert transform used in `convert_bng` and its threaded and vectorised versions is accurate to within 7 metres on average, and is **not suitable** for calculations used in e.g. surveying.  
 
-**If higher accuracy is required, please use `convert_osgb36` and `convert_osgb36_threaded`, which adjust for local variation within the Terrestrial Reference Frame by incorporating OSTN02 data**. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.
+**If higher accuracy is required, please use `convert_osgb36` and `convert_osgb36_threaded`, which adjust for local variation within the Terrestrial Reference Frame by incorporating OSTN02 data**. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
+
+[![OSTN02](ostn002_s.gif)]( "OSTN02")
 
 ## License
 [MIT](license.txt)  
