@@ -23,8 +23,6 @@ use super::TRUE_ORIGIN_NORTHING;
 
 const WGS84_A: f64 = GRS80_SEMI_MAJOR;
 const WGS84_B: f64 = GRS80_SEMI_MINOR;
-const ETRS89_A: f64 = GRS80_SEMI_MAJOR;
-const ETRS89_B: f64 = GRS80_SEMI_MINOR;
 
 // lon and lat of true origin
 const LAM0: f64 = RAD * -2.0;
@@ -169,7 +167,7 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
 /// use lonlat_bng::convert_ETRS89_to_OSGB36
 /// assert_eq!((651409.792, 313177.448), convert_ETRS89_to_OSGB36(&651307.003, &313255.686).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_ETRS89_to_OSGB36(eastings: &f64, northings: &f64) -> Result<(f64, f64), ()> {
+pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64, f64), ()> {
     // obtain OSTN02 corrections, and incorporate
     let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
     let (shifted_e, shifted_n) = (eastings + e_shift, northings + n_shift);
@@ -259,11 +257,13 @@ fn convert_to_ll(eastings: &f64,
 }
 
 /// Convert ETRS89 coordinates to Lon, Lat
-pub fn convert_ETRS89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
+#[allow(non_snake_case)]
+pub fn convert_etrs89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     convert_to_ll(E, N, AIRY_1830_SEMI_MAJOR, AIRY_1830_SEMI_MINOR)
 }
 
 /// Convert OSGB36 coordinates to Lon, Lat using OSTN02 shifts
+#[allow(non_snake_case)]
 pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN02 adustments
     let z0 = 0.000;
@@ -297,8 +297,8 @@ mod tests {
     use super::ostn02_shifts;
     use super::convert_etrs89;
     use super::convert_osgb36;
-    use super::convert_ETRS89_to_OSGB36;
-    use super::convert_ETRS89_to_ll;
+    use super::convert_etrs89_to_osgb36;
+    use super::convert_etrs89_to_ll;
     use super::convert_osgb36_to_ll;
 
     #[test]
@@ -313,14 +313,14 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_ETRS89_to_ll() {
+    fn test_convert_etrs89_to_ll() {
         let easting = 651409.903;
         let northing = 313177.270;
-        // from p27
+        // Values from worked example on p27
         // 1°   43' 4.5177" E -> 1.7179215833333334
         // 52°  39' 27.2531" N -> 52.65757030555555
         assert_eq!((1.71792158, 52.65757030),
-                   convert_ETRS89_to_ll(&easting, &northing).unwrap());
+                   convert_etrs89_to_ll(&easting, &northing).unwrap());
     }
 
     #[test]
@@ -348,7 +348,7 @@ mod tests {
         let northings = 313255.686;
         let expected = (651409.792, 313177.448);
         assert_eq!(expected,
-                   convert_ETRS89_to_OSGB36(&eastings, &northings).unwrap());
+                   convert_etrs89_to_osgb36(&eastings, &northings).unwrap());
     }
 
     #[test]
