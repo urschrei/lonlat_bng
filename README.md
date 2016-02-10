@@ -1,10 +1,29 @@
 [![Build Status](https://travis-ci.org/urschrei/lonlat_bng.png?branch=master)](https://travis-ci.org/urschrei/lonlat_bng) [![](https://img.shields.io/crates/v/lonlat_bng.svg)](https://crates.io/crates/lonlat_bng) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt)  
 
 ## Introduction
-An attempt at speeding up the conversion between decimal longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using an external Rust binary and Python FFI.
+An attempt at speeding up the conversion between decimal longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using an external Rust binary and Python FFI, using the faster, less accurate Helmert transform, and the slower OSTN02-enabled for [more accurate](#accuracy) conversions.
 
 ## Motivation
 Python is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement could save precious minutes
+
+## Accuracy
+The Helmert transform used in `convert_bng` `convert_lonlat` and their threaded and vectorised versions is accurate to within 7 metres on average, and is **not suitable** for calculations or conversions used in e.g. surveying.    
+**If higher accuracy is required, use the OSTN02-enabled functions**, which adjust for local variation within the Terrestrial Reference Frame by incorporating OSTN02 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
+
+The OSTN02-enabled functions are:
+
+- convert_osgb36
+- convert_etrs89_to_osgb36
+- convert_to_osgb36_threaded ← FFI
+- convert_to_osgb36_threaded_vec
+- convert_etrs89_to_osgb36_threaded ← FFI
+- convert_etrs89_to_osgb36_threaded_vec
+- convert_osgb36_to_ll_threaded ← FFI
+- convert_osgb36_to_ll_threaded_vec
+- convert_osgb36_to_etrs89_threaded ← FFI
+- convert_osgb36_to_etrs89_threaded_vec
+
+[![OSTN02](ostn002_s.gif)]( "OSTN02")
 
 ## Library Use
 ### As a Rust Library
@@ -25,10 +44,11 @@ The FFI C-compatible functions exposed by the library are:
 
 `convert_to_osgb36_threaded(Array, Array) -> Array`  
 `convert_to_etrs89_threaded(Array, Array) -> Array)`  
-`convert_etrs89_to_osgb36_threaded(Array, Array) -> Array`  
-
 `convert_osgb36_to_ll_threaded(Array, Array) -> Array`  
 `convert_etrs89_to_ll_threaded(Array, Array) -> Array`  
+
+`convert_etrs89_to_osgb36_threaded(Array, Array) -> Array`  
+`convert_osgb36_to_etrs89_threaded(Array, Array) -> Array`  
 
 And for freeing the memory allocated by the above  
 `drop_int_array(Array) -> Null`  
@@ -37,7 +57,7 @@ And for freeing the memory allocated by the above
 The `Array`s must contain 32-bit `Float`s and 32-bit `Int`s, respectively. `Arrays` used in `convert_osgb36_threaded` must contain 64-bit `Float`s. For examples, see the `Array` struct and tests in [lib.rs](src/lib.rs), and the `_BNG_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).  
 
 #### FFI and Memory Management
-If your FFI library implements `convert_to_bng_threaded`, it **must** also implement `drop_int_array`, and if it implements `convert_to_lonlat_threaded` or `convert_to_osgb36_threaded`, it **must** implement `drop_float_array`. **Failing to do so will result in memory leaks**. 
+If your library, module, or script uses the FFI functions, it **must** also implement `drop_int_array`, and if it implements `convert_to_lonlat_threaded` or `convert_to_osgb36_threaded`, it **must** implement `drop_float_array`. **Failing to do so will result in memory leaks**. 
 
 #### Building the Shared Library
 Running `cargo build --release` will build an artefact called `liblonlat_bng.dylib` on OSX, and `liblonlat_bng.a` on `*nix` systems. Note that you'll have to generate `liblonlat_bng.so` for `*nix` hosts using the following steps:
@@ -82,13 +102,6 @@ Test machine:
 
 ### Conclusion
 Using multithreading gives excellent performance (Pyproj – which is a compiled [Cython](http://cython.org) binary – is now only ~20% faster than Rust, on average). Not bad, considering the relative youth of Rust *as a language* (let alone this library), and the maturity of the [PROJ.4](https://en.wikipedia.org/wiki/PROJ.4) project.
-
-## Accuracy
-The Helmert transform used in `convert_bng` and its threaded and vectorised versions is accurate to within 7 metres on average, and is **not suitable** for calculations used in e.g. surveying.  
-
-**If higher accuracy is required, please use `convert_osgb36` and `convert_osgb36_threaded`, which adjust for local variation within the Terrestrial Reference Frame by incorporating OSTN02 data**. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
-
-[![OSTN02](ostn002_s.gif)]( "OSTN02")
 
 ## License
 [MIT](license.txt)  
