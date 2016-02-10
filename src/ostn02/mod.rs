@@ -21,9 +21,6 @@ use super::MAX_LATITUDE;
 use super::TRUE_ORIGIN_EASTING;
 use super::TRUE_ORIGIN_NORTHING;
 
-const WGS84_A: f64 = GRS80_SEMI_MAJOR;
-const WGS84_B: f64 = GRS80_SEMI_MINOR;
-
 // lon and lat of true origin
 const LAM0: f64 = RAD * -2.0;
 const PHI0: f64 = RAD * 49.0;
@@ -125,17 +122,17 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) as f64 * RAD;
     let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))) as f64 * RAD;
     // ellipsoid squared eccentricity constant
-    let e2 = (WGS84_A.powf(2.) - WGS84_B.powf(2.)) / WGS84_A.powf(2.);
-    let n = (WGS84_A - WGS84_B) / (WGS84_A + WGS84_B);
+    let e2 = (GRS80_SEMI_MAJOR.powf(2.) - GRS80_SEMI_MINOR.powf(2.)) / GRS80_SEMI_MAJOR.powf(2.);
+    let n = (GRS80_SEMI_MAJOR - GRS80_SEMI_MINOR) / (GRS80_SEMI_MAJOR + GRS80_SEMI_MINOR);
     let phi = lat_1;
     let lambda = lon_1;
 
     let sp2 = phi.sin().powf(2.);
-    let nu = WGS84_A * F0 * (1. - e2 * sp2).powf(-0.5); // v
-    let rho = WGS84_A * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
+    let nu = GRS80_SEMI_MAJOR * F0 * (1. - e2 * sp2).powf(-0.5); // v
+    let rho = GRS80_SEMI_MAJOR * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
     let eta2 = nu / rho - 1.;
 
-    let m = compute_m(&phi, &WGS84_B, &n);
+    let m = compute_m(&phi, &GRS80_SEMI_MINOR, &n);
 
     let cp = phi.cos();
     let sp = phi.sin();
@@ -211,8 +208,8 @@ fn convert_to_ll(eastings: &f64,
                  ell_a: f64,
                  ell_b: f64)
                  -> Result<(f64, f64), ()> {
-    // FIXME: use WGS84 ellipsoid for conversions that originated in OSGB36
-    // FIXME: use Airy 1830 Ellipsoid for conversions that originate in ETRS89
+    // FIXME: use Airy 1830 ellipsoid for conversions that originated in OSGB36
+    // FIXME: use WGS84 Ellipsoid for conversions that originate in ETRS89
     // ellipsoid squared eccentricity constant
     let a = ell_a;
     let b = ell_b;
@@ -260,7 +257,8 @@ fn convert_to_ll(eastings: &f64,
 /// Convert ETRS89 coordinates to Lon, Lat
 #[allow(non_snake_case)]
 pub fn convert_etrs89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
-    convert_to_ll(E, N, AIRY_1830_SEMI_MAJOR, AIRY_1830_SEMI_MINOR)
+    // ETRS89 uses the WGS84 / GRS80 ellipsoid constants
+    convert_to_ll(E, N, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
 }
 
 /// Convert OSGB36 coordinates to Lon, Lat using OSTN02 data
@@ -270,9 +268,9 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     let z0 = 0.000;
     let epsilon = 0.00001;
     let (mut dx, mut dy, mut dz) = try!(ostn02_shifts(&E, &N));
-    let (mut x, mut y, mut z) = (E - dx, N - dy, dz);
+    let (mut x, mut y, _) = (E - dx, N - dy, dz);
     let (mut last_dx, mut last_dy) = (dx.clone(), dy.clone());
-    let mut res: (_, _, _) = (1., 1., 1.);
+    let mut res;
     loop {
         res = try!(ostn02_shifts(&x, &y));
         dx = res.0;
@@ -287,9 +285,35 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
         last_dy = dy;
     }
     let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
-    let result = round_to_nearest_mm(x, y, z + dz);
-    // Convert to Lon, Lat using WGS84 ellipsoid
-    convert_to_ll(&x, &y, WGS84_A, WGS84_B)
+    // We've converted to ETRS89, so we need to use the WGS84/ GRS80 ellipsoid constants
+    convert_to_ll(&x, &y, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
+}
+
+/// Convert OSGB36 coordinates to ETRS89 using OSTN02 data
+#[allow(non_snake_case)]
+pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
+    // Apply reverse OSTN02 adustments
+    let z0 = 0.000;
+    let epsilon = 0.00001;
+    let (mut dx, mut dy, mut dz) = try!(ostn02_shifts(&E, &N));
+    let (mut x, mut y, _) = (E - dx, N - dy, dz);
+    let (mut last_dx, mut last_dy) = (dx.clone(), dy.clone());
+    let mut res;
+    loop {
+        res = try!(ostn02_shifts(&x, &y));
+        dx = res.0;
+        dy = res.1;
+        dz = res.2;
+        x = E - dx;
+        y = N - dy;
+        if (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
+            break;
+        }
+        last_dx = dx;
+        last_dy = dy;
+    }
+    let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
+    Ok((x, y))
 }
 
 #[cfg(test)]
