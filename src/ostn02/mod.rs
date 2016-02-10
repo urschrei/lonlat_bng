@@ -8,8 +8,6 @@
 //!
 use super::GRS80_SEMI_MAJOR;
 use super::GRS80_SEMI_MINOR;
-use super::AIRY_1830_SEMI_MAJOR;
-use super::AIRY_1830_SEMI_MINOR;
 
 use super::RAD;
 use super::DAR;
@@ -328,23 +326,21 @@ mod tests {
 
     #[test]
     fn test_convert_osgb36_to_ll() {
-        // Caister Water Tower
-        // Final Lon, Lat rounded to seven decimal places
+        // Caister Water Tower, with OSTN02 corrections applied. See p21
+        // Final Lon, Lat rounded to eight decimal places
+        // p20 gives the correct lon, lat as (1.716073973, 52.658007833)
         let easting = 651409.792;
         let northing = 313177.448;
-        // p20 gives the correct lon, lat as (1.716073973, 52.658007833)
         assert_eq!((1.71607397, 52.65800783),
                    convert_osgb36_to_ll(&easting, &northing).unwrap());
     }
 
     #[test]
     fn test_convert_etrs89_to_ll() {
-        let easting = 651409.903;
-        let northing = 313177.270;
-        // Values from worked example on p27
-        // 1°   43' 4.5177" E -> 1.7179215833333334
-        // 52°  39' 27.2531" N -> 52.65757030555555
-        assert_eq!((1.71792158, 52.65757030),
+        // Caister Water Tower, ETRS89. See p20
+        let easting = 651307.003;
+        let northing = 313255.686;
+        assert_eq!((1.71607397, 52.65800783),
                    convert_etrs89_to_ll(&easting, &northing).unwrap());
     }
 
