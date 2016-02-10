@@ -107,7 +107,6 @@ pub struct Array {
     pub len: libc::size_t,
 }
 
-
 // fn helmert(lon_vec: Vec<&f32>, lat_vec: Vec<&f32>) -> (Vec<f32>, Vec<f32>) {
 //     let t_array = Vec3::new(TX, TY, TZ);
 //     let params = Mat3::new(1. + s, RZS, -RYS, -RZS, 1. + s, RXS, RYS, -RXS, 1. + s);
@@ -315,7 +314,7 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_doubl
     let N = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
             IIIA * (lon - lon0).powi(6);
     let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
-    
+
     let result = round_to_nearest_mm(E, N, 1.0);
     Ok((result.0, result.1))
 }
@@ -478,7 +477,8 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
 
 /// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
 pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f64>,
-                                   latitudes: &Vec<f64>) -> (Vec<f64>, Vec<f64>) {
+                                   latitudes: &Vec<f64>)
+                                   -> (Vec<f64>, Vec<f64>) {
     convert_vec(longitudes, latitudes, convert_bng)
 }
 
@@ -496,7 +496,7 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
     let eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let northings_vec = unsafe { northings.as_f64_slice().to_vec() };
     let (eastings_shifted, northings_shifted) = convert_to_lonlat_threaded_vec(&eastings_vec,
-                                                                                  &northings_vec);
+                                                                               &northings_vec);
     (Array::from_vec(eastings_shifted),
      Array::from_vec(northings_shifted))
 }
@@ -689,20 +689,20 @@ fn convert_vec<F>(ex: &Vec<f64>, ny: &Vec<f64>, func: F) -> (Vec<f64>, Vec<f64>)
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
-                                                northings: Array)
-                                                -> (Array, Array) {
+                                                    northings: Array)
+                                                    -> (Array, Array) {
     let eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let northings_vec = unsafe { northings.as_f64_slice().to_vec() };
-    let (eastings_shifted, northings_shifted) = convert_osgb36_to_etrs89_threaded_vec(&eastings_vec,
-                                                                                  &northings_vec);
+    let (eastings_shifted, northings_shifted) =
+        convert_osgb36_to_etrs89_threaded_vec(&eastings_vec, &northings_vec);
     (Array::from_vec(eastings_shifted),
      Array::from_vec(northings_shifted))
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_etrs89`](fn.convert_osgb36_to_etrs89.html)
 pub fn convert_osgb36_to_etrs89_threaded_vec(eastings: &Vec<f64>,
-                                         northings: &Vec<f64>)
-                                         -> (Vec<f64>, Vec<f64>) {
+                                             northings: &Vec<f64>)
+                                             -> (Vec<f64>, Vec<f64>) {
     convert_vec(eastings, northings, convert_osgb36_to_etrs89)
 }
 
@@ -1067,7 +1067,8 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_bad_lon() {
-        assert_eq!((516276.000, 173141.000), convert_bng(&181., &51.44533267).unwrap());
+        assert_eq!((516276.000, 173141.000),
+                   convert_bng(&181., &51.44533267).unwrap());
     }
 
     #[test]
