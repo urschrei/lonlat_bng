@@ -1027,9 +1027,8 @@ mod tests {
 
     #[test]
     fn test_threaded_etrs89_to_ll_conversion_single() {
-        let e_vec: Vec<f64> = vec![651409.903];
-        let n_vec: Vec<f64> = vec![313177.270];
-
+        let e_vec: Vec<f64> = vec![651307.003];
+        let n_vec: Vec<f64> = vec![313255.686];
         let e_arr = Array {
             data: e_vec.as_ptr() as *const libc::c_void,
             len: e_vec.len() as libc::size_t,
@@ -1041,8 +1040,8 @@ mod tests {
         let (lon, lat) = convert_etrs89_to_ll_threaded(e_arr, n_arr);
         let retval = unsafe { lon.as_f64_slice() };
         let retval2 = unsafe { lat.as_f64_slice() };
-        assert_eq!(1.71792158, retval[0]);
-        assert_eq!(52.65757030, retval2[0]);
+        assert_eq!(1.71607397, retval[0]);
+        assert_eq!(52.65800783, retval2[0]);
 
     }
 
