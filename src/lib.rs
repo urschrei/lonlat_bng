@@ -623,9 +623,9 @@ pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89_to_osgb36`](fn.convert_etrs89_to_osgb36.html)
 pub fn convert_etrs89_to_osgb36_threaded_vec(eastings: &Vec<f64>,
-                                      northings: &Vec<f64>)
-                                      -> (Vec<f64>, Vec<f64>) {
-    convert_vec(eastings, northings, convert_etrs89_to_osgb36) 
+                                             northings: &Vec<f64>)
+                                             -> (Vec<f64>, Vec<f64>) {
+    convert_vec(eastings, northings, convert_etrs89_to_osgb36)
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89_to_ll`](fn.convert_etrs89_to_ll.html)
@@ -639,12 +639,12 @@ pub fn convert_etrs89_to_osgb36_threaded_vec(eastings: &Vec<f64>,
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
-                                                    northings: Array)
-                                                    -> (Array, Array) {
+                                                northings: Array)
+                                                -> (Array, Array) {
     let eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let northings_vec = unsafe { northings.as_f64_slice().to_vec() };
-    let (eastings_shifted, northings_shifted) =
-        convert_etrs89_to_ll_threaded_vec(&eastings_vec, &northings_vec);
+    let (eastings_shifted, northings_shifted) = convert_etrs89_to_ll_threaded_vec(&eastings_vec,
+                                                                                  &northings_vec);
     (Array::from_vec(eastings_shifted),
      Array::from_vec(northings_shifted))
 }
@@ -652,9 +652,9 @@ pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89_to_ll`](fn.convert_etrs8989_to_ll.html)
 pub fn convert_etrs89_to_ll_threaded_vec(eastings: &Vec<f64>,
-                                      northings: &Vec<f64>)
-                                      -> (Vec<f64>, Vec<f64>) {
-    convert_vec(eastings, northings, convert_etrs89_to_ll) 
+                                         northings: &Vec<f64>)
+                                         -> (Vec<f64>, Vec<f64>) {
+    convert_vec(eastings, northings, convert_etrs89_to_ll)
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
@@ -668,12 +668,12 @@ pub fn convert_etrs89_to_ll_threaded_vec(eastings: &Vec<f64>,
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
-                                                    northings: Array)
-                                                    -> (Array, Array) {
+                                                northings: Array)
+                                                -> (Array, Array) {
     let eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let northings_vec = unsafe { northings.as_f64_slice().to_vec() };
-    let (eastings_shifted, northings_shifted) =
-        convert_osgb36_to_ll_threaded_vec(&eastings_vec, &northings_vec);
+    let (eastings_shifted, northings_shifted) = convert_osgb36_to_ll_threaded_vec(&eastings_vec,
+                                                                                  &northings_vec);
     (Array::from_vec(eastings_shifted),
      Array::from_vec(northings_shifted))
 }
@@ -681,9 +681,9 @@ pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
 pub fn convert_osgb36_to_ll_threaded_vec(eastings: &Vec<f64>,
-                                      northings: &Vec<f64>)
-                                      -> (Vec<f64>, Vec<f64>) {
-    convert_vec(eastings, northings, convert_osgb36_to_ll) 
+                                         northings: &Vec<f64>)
+                                         -> (Vec<f64>, Vec<f64>) {
+    convert_vec(eastings, northings, convert_osgb36_to_ll)
 }
 
 /// Generic function for threaded processing of conversion functions
@@ -731,6 +731,128 @@ mod tests {
     use super::Array;
 
     extern crate libc;
+
+    #[test]
+    #[ignore]
+    fn test_os_etrs89_to_osgb36() {
+        // these are the values from the OSTN02 download
+        // several values differ by one digit in the third decimal place (mm)
+        let etrs89_e_vec = vec![331439.16, 362174.408, 151874.984, 339824.598, 241030.731,
+                                599345.196, 357359.683, 389448.042, 319092.329, 525643.491,
+                                397061.069, 256247.486, 266961.481, 244687.517, 227685.882,
+                                562079.805, 422143.679, 170277.189, 530526.413, 247865.448,
+                                247865.718, 167542.805, 292090.289, 424539.719, 639720.224,
+                                474237.874, 453904.269, 438614.045, 250265.789, 449719.403,
+                                440623.592, 299624.627, 91400.000, 9500.003, 71622.45, 180766.824,
+                                261500.000, 395898.578, 421200.000, 330300.000, 337800.000,
+                                334100.000];
+        let etrs89_n_vec = vec![431992.943,
+                                170056.5,
+                                966535.331,
+                                556102.504,
+                                220409.858,
+                                225801.485,
+                                383364.152,
+                                261989.271,
+                                671010.63,
+                                470775.61,
+                                805408.146,
+                                664760.292,
+                                846233.646,
+                                495324.611,
+                                468918.331,
+                                319862.042,
+                                433891.207,
+                                11652.895,
+                                178467.043,
+                                393566.264,
+                                393568.938,
+                                797124.153,
+                                168081.281,
+                                565080.533,
+                                169645.824,
+                                262125.333,
+                                340910.743,
+                                114871.192,
+                                62095.883,
+                                75415.594,
+                                1107930.781,
+                                967256.596,
+                                11400.000,
+                                899499.996,
+                                938567.303,
+                                1029654.639,
+                                1025500.000,
+                                1138780.346,
+                                1072200.000,
+                                1017400.000,
+                                981800.000,
+                                982100.000];
+        let osgb36_e_vec = vec![331534.552, 362269.979, 151968.641, 339921.133, 241124.573,
+                                599445.578, 357455.831, 389544.178, 319188.423, 525745.658,
+                                397160.479, 256340.914, 267056.756, 244780.625, 227778.318,
+                                562180.535, 422242.174, 170370.706, 530624.963, 247958.959,
+                                247959.229, 167634.19, 292184.858, 424639.343, 639821.823,
+                                474335.957, 454002.822, 438710.908, 250359.798, 449816.359,
+                                440725.061, 299721.879, 91492.135, 9587.897, 71713.12, 180862.449,
+                                261596.767, 395999.656, 421300.513, 330398.311, 337898.195,
+                                334198.101];
+        let osgb36_n_vec = vec![431920.792,
+                                169978.688,
+                                966483.777,
+                                556034.759,
+                                220332.638,
+                                225722.824,
+                                383290.434,
+                                261912.151,
+                                670947.532,
+                                470703.211,
+                                805349.734,
+                                664697.266,
+                                846176.969,
+                                495254.884,
+                                468847.386,
+                                319784.993,
+                                433818.699,
+                                11572.404,
+                                178388.461,
+                                393492.906,
+                                393495.58,
+                                797067.142,
+                                168003.462,
+                                565012.7,
+                                169565.856,
+                                262047.752,
+                                340834.941,
+                                114792.248,
+                                62016.567,
+                                75335.859,
+                                1107878.445,
+                                967202.99,
+                                11318.801,
+                                899448.993,
+                                938516.401,
+                                1029604.111,
+                                1025447.599,
+                                1138728.948,
+                                1072147.236,
+                                1017347.013,
+                                981746.359,
+                                982046.419];
+        let e_arr = Array {
+            data: etrs89_e_vec.as_ptr() as *const libc::c_void,
+            len: etrs89_e_vec.len() as libc::size_t,
+        };
+        let n_arr = Array {
+            data: etrs89_n_vec.as_ptr() as *const libc::c_void,
+            len: etrs89_n_vec.len() as libc::size_t,
+        };
+        let (osgb36_eastings, osgb36_northings) = convert_etrs89_to_osgb36_threaded(e_arr, n_arr);
+        let retval = unsafe { osgb36_eastings.as_f64_slice() };
+        let retval2 = unsafe { osgb36_northings.as_f64_slice() };
+        assert_eq!(osgb36_e_vec, retval);
+        assert_eq!(osgb36_n_vec, retval2);
+    }
 
     #[test]
     fn test_threaded_bng_conversion() {
