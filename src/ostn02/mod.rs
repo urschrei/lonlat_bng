@@ -53,10 +53,10 @@ pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
 }
 
 // TODO Herbie's going to have a field day with this
-/// Round a float to six decimal places
-pub fn round_to_nine(x: f64, y: f64) -> (f64, f64) {
-    let new_x = (x * 10000000.).round() as f64 / 10000000.;
-    let new_y = (y * 10000000.).round() as f64 / 10000000.;
+/// Round a float to nine decimal places
+pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
+    let new_x = (x * 100000000.).round() as f64 / 100000000.;
+    let new_y = (y * 100000000.).round() as f64 / 100000000.;
     (new_x, new_y)
 }
 
@@ -207,23 +207,29 @@ fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
 }
 
 #[allow(non_snake_case)]
-fn convert_ETRS89_to_ll(eastings: &f64, northings: &f64) -> Result<(f64, f64), ()> {
+fn convert_to_ll(eastings: &f64,
+                 northings: &f64,
+                 ell_a: f64,
+                 ell_b: f64)
+                 -> Result<(f64, f64), ()> {
     // FIXME: use WGS84 ellipsoid for conversions that originated in OSGB36
     // FIXME: use Airy 1830 Ellipsoid for conversions that originate in ETRS89
     // ellipsoid squared eccentricity constant
-    let e2 = (ETRS89_A.powf(2.) - ETRS89_B.powf(2.)) / ETRS89_A.powf(2.);
-    let n = (ETRS89_A - ETRS89_B) / (ETRS89_A + ETRS89_B);
+    let a = ell_a;
+    let b = ell_b;
+    let e2 = (a.powf(2.) - b.powf(2.)) / a.powf(2.);
+    let n = (a - b) / (a + b);
 
     let dN = *northings - N0;
-    let mut phi = PHI0 + dN / (ETRS89_A * F0);
-    let mut m = compute_m(&phi, &ETRS89_B, &n);
+    let mut phi = PHI0 + dN / (a * F0);
+    let mut m = compute_m(&phi, &b, &n);
     while (dN - m) >= 0.001 {
-        phi = phi + (dN - m) / (ETRS89_A * F0);
-        m = compute_m(&phi, &ETRS89_B, &n);
+        phi = phi + (dN - m) / (a * F0);
+        m = compute_m(&phi, &b, &n);
     }
     let sp2 = phi.sin().powf(2.);
-    let nu = ETRS89_A * F0 * (1. - e2 * sp2).powf(-0.5);
-    let rho = ETRS89_A * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
+    let nu = a * F0 * (1. - e2 * sp2).powf(-0.5);
+    let rho = a * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
     let eta2 = nu / rho - 1.;
 
     let tp = phi.tan();
@@ -249,17 +255,23 @@ fn convert_ETRS89_to_ll(eastings: &f64, northings: &f64) -> Result<(f64, f64), (
 
     phi = phi * DAR;
     lambda = lambda * DAR;
-    Ok(round_to_nine(lambda, phi))
+    Ok(round_to_eight(lambda, phi))
 }
 
-// Convert OSGB36 coordinates to Lon, Lat using OSTN02 shifts
+/// Convert ETRS89 coordinates to Lon, Lat
+pub fn convert_ETRS89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
+    convert_to_ll(E, N, AIRY_1830_SEMI_MAJOR, AIRY_1830_SEMI_MINOR)
+}
+
+/// Convert OSGB36 coordinates to Lon, Lat using OSTN02 shifts
 pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
+    // Apply reverse OSTN02 adustments
     let z0 = 0.000;
     let epsilon = 0.00001;
     let (mut dx, mut dy, mut dz) = try!(ostn02_shifts(&E, &N));
     let (mut x, mut y, mut z) = (E - dx, N - dy, dz);
     let (mut last_dx, mut last_dy) = (dx.clone(), dy.clone());
-    let mut res: (_, _, _) = (1., 1., 1.,);
+    let mut res: (_, _, _) = (1., 1., 1.);
     loop {
         res = try!(ostn02_shifts(&x, &y));
         dx = res.0;
@@ -275,9 +287,8 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     }
     let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
     let result = round_to_nearest_mm(x, y, z + dz);
-    // this function returns a Result
-    // FIXME: pass the WGS84 Ellipsoid for use in the conversion
-    convert_ETRS89_to_ll(&x, &y)
+    // Convert to Lon, Lat using WGS84 ellipsoid
+    convert_to_ll(&x, &y, WGS84_A, WGS84_B)
 }
 
 #[cfg(test)]
@@ -297,7 +308,7 @@ mod tests {
         let easting = 651409.792;
         let northing = 313177.448;
         // p20 gives the correct lon, lat as (1.716073973, 52.658007833)
-        assert_eq!((1.7160740, 52.6580078),
+        assert_eq!((1.71607397, 52.65800783),
                    convert_osgb36_to_ll(&easting, &northing).unwrap());
     }
 
@@ -308,7 +319,7 @@ mod tests {
         // from p27
         // 1°   43' 4.5177" E -> 1.7179215833333334
         // 52°  39' 27.2531" N -> 52.65757030555555
-        assert_eq!((1.7179216, 52.6575703),
+        assert_eq!((1.71792158, 52.65757030),
                    convert_ETRS89_to_ll(&easting, &northing).unwrap());
     }
 
