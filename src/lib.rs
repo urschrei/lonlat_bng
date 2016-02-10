@@ -12,6 +12,8 @@
 //! - [`convert_etrs89_to_osgb36_threaded_vec`](fn.convert_etrs89_to_osgb36_threaded_vec.html)
 //! - [`convert_osgb36_to_ll_threaded`](fn.convert_osgb36_to_ll_threaded.html)
 //! - [`convert_osgb36_to_ll_threaded_vec`](fn.convert_osgb36_to_ll_threaded_vec.html)
+//! - [`convert_osgb36_to_etrs89_threaded`](fn.convert_osgb36_to_etrs89_threaded.html)
+//! - [`convert_osgb36_to_etrs89_threaded_vec`](fn.convert_osgb36_to_etrs89_threaded_vec.html)
 //!
 //! These functions transform input longitude and latitude coordinates to OSGB36 Eastings and Northings with high accuracy, and are suitable for use in surveying and construction. Please run your own tests, though.
 //! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.**
@@ -219,9 +221,9 @@ fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
 ///
 /// ```
 /// use lonlat_bng::convert_bng;
-/// assert_eq!((516276, 173141), convert_bng(&-0.32824866, &51.44533267).unwrap());
+/// assert_eq!((516276.000, 173141.000), convert_bng(&-0.32824866, &51.44533267).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_int, c_int), ()> {
+pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_double), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
     let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) as f64 * RAD;
@@ -312,11 +314,9 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_int, c_int), ()
     let N = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
             IIIA * (lon - lon0).powi(6);
     let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
-    // retrieve OSTN02 values
-    // let (shift_E, shift_N, z) = ostn02_shifts(&E, &N);
-    // incorporate corrections and round
-    // round_to_nearest_mm(E + shift_E, N + shift_N, z))
-    Ok((E.round() as c_int, N.round() as c_int))
+    
+    let result = round_to_nearest_mm(E, N, 1.0);
+    Ok((result.0, result.1))
 }
 
 
@@ -469,39 +469,16 @@ pub fn convert_lonlat(easting: &i32, northing: &i32) -> (c_float, c_float) {
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
-    let lons = unsafe { longitudes.as_f64_slice().to_vec() };
-    let lats = unsafe { latitudes.as_f64_slice().to_vec() };
-    let (eastings, northings): (Vec<i32>, Vec<i32>) = convert_to_bng_threaded_vec(&lons, &lats);
+    let longitudes_vec = unsafe { longitudes.as_f64_slice().to_vec() };
+    let latitudes_vec = unsafe { latitudes.as_f64_slice().to_vec() };
+    let (eastings, northings) = convert_to_bng_threaded_vec(&longitudes_vec, &latitudes_vec);
     (Array::from_vec(eastings), Array::from_vec(northings))
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
 pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f64>,
-                                   latitudes: &Vec<f64>)
-                                   -> (Vec<i32>, Vec<i32>) {
-    let numthreads = num_cpus::get() as usize;
-    let orig: Vec<(&f64, &f64)> = longitudes.iter().zip(latitudes.iter()).collect();
-    let mut result = vec![(1, 1); orig.len()];
-    let mut size = orig.len() / numthreads;
-    if orig.len() % numthreads > 0 {
-        size += 1;
-    }
-    size = std::cmp::max(1, size);
-    crossbeam::scope(|scope| {
-        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
-            scope.spawn(move || {
-                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
-                    match convert_bng(orig_elem.0, orig_elem.1) {
-                        Ok(res) => *res_elem = res,
-                        // we don't care about the return value as such
-                        Err(_) => *res_elem = (9999, 9999),
-                    };
-                }
-            });
-        }
-    });
-    let (eastings, northings): (Vec<i32>, Vec<i32>) = result.into_iter().unzip();
-    (eastings, northings)
+                                   latitudes: &Vec<f64>) -> (Vec<f64>, Vec<f64>) {
+    convert_vec(longitudes, latitudes, convert_bng)
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
@@ -907,11 +884,11 @@ mod tests {
             len: lat_vec.len() as libc::size_t,
         };
         let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
-        let retval = unsafe { eastings.as_i32_slice() };
-        let retval2 = unsafe { northings.as_i32_slice() };
+        let retval = unsafe { eastings.as_f64_slice() };
+        let retval2 = unsafe { northings.as_f64_slice() };
         // the value's incorrect, but let's worry about that later
-        assert_eq!(398915, retval[0]);
-        assert_eq!(521545, retval2[0]);
+        assert_eq!(398915.033, retval[0]);
+        assert_eq!(521545.067, retval2[0]);
     }
 
     #[test]
@@ -928,8 +905,8 @@ mod tests {
             len: lat_vec.len() as libc::size_t,
         };
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
-        let retval = unsafe { eastings.as_i32_slice() };
-        assert_eq!(398915, retval[0]);
+        let retval = unsafe { eastings.as_f64_slice() };
+        assert_eq!(398915.033, retval[0]);
     }
 
     #[test]
@@ -1086,7 +1063,7 @@ mod tests {
     #[test]
     fn test_bng_conversion() {
         // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-        assert_eq!((516276, 173141),
+        assert_eq!((516275.973, 173141.092),
                    convert_bng(&-0.32824866, &51.44533267).unwrap());
     }
 
@@ -1105,13 +1082,13 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_bad_lon() {
-        assert_eq!((516276, 173141), convert_bng(&181., &51.44533267).unwrap());
+        assert_eq!((516276.000, 173141.000), convert_bng(&181., &51.44533267).unwrap());
     }
 
     #[test]
     #[should_panic]
     fn test_bad_lat() {
-        assert_eq!((516276, 173141),
+        assert_eq!((516276.000, 173141.000),
                    convert_bng(&-0.32824866, &-90.01).unwrap());
     }
 
@@ -1129,8 +1106,8 @@ mod tests {
             len: lat_vec.len() as libc::size_t,
         };
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
-        let retval = unsafe { eastings.as_i32_slice() };
-        assert_eq!(9999, retval[0]);
+        let retval = unsafe { eastings.as_f64_slice() };
+        assert_eq!(9999.000, retval[0]);
     }
 
     #[test]
