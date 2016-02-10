@@ -5,11 +5,13 @@
 //! for the following functions:
 //!
 //! - [`convert_osgb36`](fn.convert_osgb36.html)
-//! - [`convert_ETRS89_to_OSGB36`](fn.convert_ETRS89_to_OSGB36.html)
+//! - [`convert_etrs89_to_osgb36`](fn.convert_etrs89_to_osgb36.html)
 //! - [`convert_to_osgb36_threaded`](fn.convert_to_osgb36_threaded.html)
 //! - [`convert_to_osgb36_threaded_vec`](fn.convert_to_osgb_threaded_vec.html)
-//! - [`convert_ETRS89_to_OSGB36_threaded`](fn.convert_ETRS89_to_OSGB36_threaded.html)
-//! - [`convert_ETRS89_to_OSGB36_threaded_vec`](fn.convert_ETRS89_to_OSGB36_threaded_vec.html)
+//! - [`convert_etrs89_to_osgb36_threaded`](fn.convert_etrs89_to_osgb36_threaded.html)
+//! - [`convert_etrs89_to_osgb36_threaded_vec`](fn.convert_etrs89_to_osgb36_threaded_vec.html)
+//! - [`convert_osgb36_to_ll_threaded`](fn.convert_osgb36_to_ll_threaded.html)
+//! - [`convert_osgb36_to_ll_threaded_vec`](fn.convert_osgb36_to_ll_threaded_vec.html)
 //!
 //! These functions transform input longitude and latitude coordinates to OSGB36 Eastings and Northings with high accuracy, and are suitable for use in surveying and construction. Please run your own tests, though.
 //! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.**
