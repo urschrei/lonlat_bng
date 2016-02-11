@@ -47,7 +47,7 @@ use std::slice;
 use std::fmt;
 use std::marker::Send;
 extern crate libc;
-use libc::{c_void, c_float, c_double, c_int};
+use libc::{c_void, c_double};
 
 extern crate ostn02_phf;
 
@@ -121,7 +121,7 @@ pub struct Array {
 //     (vec![1.], vec![2.])
 // }
 
-/// Free memory which Rust has allocated across the FFI boundary (i32 values)
+/// Free memory which Rust has allocated across the FFI boundary (f64 values)
 ///
 /// # Examples
 ///
@@ -138,24 +138,8 @@ pub struct Array {
 ///     len: lat_vec.len() as libc::size_t,
 /// };
 /// let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
-/// drop_int_array(eastings, northings);
+/// drop_float_array(eastings, northings);
 /// ```
-/// # Safety
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
-#[no_mangle]
-pub extern "C" fn drop_int_array(eastings: Array, northings: Array) {
-    if eastings.data.is_null() {
-        return;
-    }
-    if northings.data.is_null() {
-        return;
-    }
-    unsafe { Vec::from_raw_parts(eastings.data as *mut c_int, eastings.len, eastings.len) };
-    unsafe { Vec::from_raw_parts(northings.data as *mut c_int, northings.len, northings.len) };
-}
-
-/// Free memory which Rust has allocated across the FFI boundary (f64 values)
-///
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
@@ -175,10 +159,6 @@ impl Array {
     unsafe fn as_f64_slice(&self) -> &[f64] {
         assert!(!self.data.is_null());
         slice::from_raw_parts(self.data as *const f64, self.len as usize)
-    }
-    unsafe fn as_i32_slice(&self) -> &[i32] {
-        assert!(!self.data.is_null());
-        slice::from_raw_parts(self.data as *const i32, self.len as usize)
     }
 
     fn from_vec<T>(mut vec: Vec<T>) -> Array {
@@ -708,7 +688,7 @@ pub fn convert_osgb36_to_etrs89_threaded_vec(eastings: &Vec<f64>,
 
 #[cfg(test)]
 mod tests {
-    use super::drop_int_array;
+    use super::drop_float_array;
     use super::convert_bng;
     use super::convert_lonlat;
     use super::convert_to_bng_threaded;
@@ -1030,7 +1010,7 @@ mod tests {
     }
 
     #[test]
-    fn test_drop_int_array() {
+    fn test_drop_float_array() {
         let lon_vec: Vec<f64> = vec![-2.0183041005533306];
         let lat_vec: Vec<f64> = vec![54.589097162646141];
         let lon_arr = Array {
@@ -1042,7 +1022,7 @@ mod tests {
             len: lat_vec.len() as libc::size_t,
         };
         let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
-        drop_int_array(eastings, northings);
+        drop_float_array(eastings, northings);
     }
 
     #[test]
