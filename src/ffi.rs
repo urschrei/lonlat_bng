@@ -258,4 +258,3 @@ pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
     (Array::from_vec(eastings_shifted),
      Array::from_vec(northings_shifted))
 }
-

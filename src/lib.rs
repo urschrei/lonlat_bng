@@ -41,15 +41,9 @@
 //! ```
 //! The crate also provides C-compatible wrapper functions, which are intended for use with FFI.
 //! An example implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng).
-use std::f64;
-use std::mem;
-use std::fmt;
 use std::marker::Send;
 
 extern crate libc;
-use libc::c_double;
-
-extern crate ostn02_phf;
 
 extern crate rand;
 
@@ -57,8 +51,12 @@ extern crate crossbeam;
 use crossbeam::scope;
 
 extern crate num_cpus;
+extern crate ostn02_phf;
 
+mod conversions;
+mod utils;
 mod ffi;
+
 pub use ffi::Array;
 pub use ffi::drop_float_array;
 pub use ffi::convert_to_bng_threaded;
@@ -70,48 +68,14 @@ pub use ffi::convert_etrs89_to_ll_threaded;
 pub use ffi::convert_osgb36_to_ll_threaded;
 pub use ffi::convert_osgb36_to_etrs89_threaded;
 
-mod ostn02;
-pub use ostn02::convert_etrs89;
-pub use ostn02::convert_osgb36;
-pub use ostn02::convert_etrs89_to_osgb36;
-pub use ostn02::convert_osgb36_to_etrs89;
-pub use ostn02::convert_osgb36_to_ll;
-pub use ostn02::convert_etrs89_to_ll;
-use ostn02::round_to_nearest_mm;
-use ostn02::round_to_eight;
-// Constants used for coordinate conversions
-//
-// Ellipsoids
-pub const AIRY_1830_SEMI_MAJOR: f64 = 6377563.396;
-pub const AIRY_1830_SEMI_MINOR: f64 = 6356256.909;
-pub const GRS80_SEMI_MAJOR: f64 = 6378137.000;
-pub const GRS80_SEMI_MINOR: f64 = 6356752.3141;
-// Northing & easting of true origin (m)
-pub const TRUE_ORIGIN_NORTHING: f64 = -100000.;
-pub const TRUE_ORIGIN_EASTING: f64 = 400000.;
-// For Helmert Transform to OSGB36, translations along the x, y, z axes
-// When transforming to WGS84, reverse the signs
-pub const TX: f64 = -446.448;
-pub const TY: f64 = 125.157;
-pub const TZ: f64 = -542.060;
-// Rotations along the x, y, z axes, in seconds
-pub const RXS: f64 = -0.1502;
-pub const RYS: f64 = -0.2470;
-pub const RZS: f64 = -0.8421;
-
-pub const s: f64 = 20.4894 * 0.000001;
-// etc
-pub const PI: f64 = f64::consts::PI;
-pub const RAD: f64 = PI / 180.;
-pub const DAR: f64 = 180. / PI;
-pub const MAX_EASTING: f64 = 700000.000;
-pub const MAX_NORTHING: f64 = 1250000.000;
-
-pub const MIN_LONGITUDE: f64 = -6.379880;
-pub const MAX_LONGITUDE: f64 = 1.768960;
-pub const MIN_LATITUDE: f64 = 49.871159;
-pub const MAX_LATITUDE: f64 = 55.811741;
-// OSGB bounds according to Spatialreference: -6.2400, 1.7800, 49.9400, 58.6700
+pub use conversions::convert_bng;
+pub use conversions::convert_lonlat;
+pub use conversions::convert_etrs89;
+pub use conversions::convert_osgb36;
+pub use conversions::convert_etrs89_to_osgb36;
+pub use conversions::convert_osgb36_to_etrs89;
+pub use conversions::convert_osgb36_to_ll;
+pub use conversions::convert_etrs89_to_ll;
 
 // fn helmert(lon_vec: Vec<&f32>, lat_vec: Vec<&f32>) -> (Vec<f32>, Vec<f32>) {
 //     let t_array = Vec3::new(TX, TY, TZ);
@@ -126,241 +90,6 @@ pub const MAX_LATITUDE: f64 = 55.811741;
 //     // let inp = DMat::from_row_vec(3, 1, vec![lon_vec, lat_vec, h_vec]);
 //     (vec![1.], vec![2.])
 // }
-
-/// Calculate the meridional radius of curvature
-#[allow(non_snake_case)]
-fn curvature(a: f64, F0: f64, e2: f64, lat: f64) -> f64 {
-    a * F0 * (1. - e2) * (1. - e2 * lat.sin().powi(2)).powf(-1.5)
-}
-
-/// Bounds checking for input values
-fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
-    where T: std::cmp::PartialOrd + fmt::Display + Copy
-{
-    match to_check {
-        to_check if bounds.0 <= to_check && to_check <= bounds.1 => Ok(to_check),
-        _ => Err(()),
-    }
-}
-
-/// Perform Longitude, Latitude to British National Grid conversion
-///
-/// # Examples
-///
-/// ```
-/// use lonlat_bng::convert_bng;
-/// assert_eq!((516276.000, 173141.000), convert_bng(&-0.32824866, &51.44533267).unwrap());
-#[allow(non_snake_case)]
-pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_double), ()> {
-    // input is restricted to the UK bounding box
-    // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) as f64 * RAD;
-    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))) as f64 * RAD;
-    // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
-    let a_1 = GRS80_SEMI_MAJOR;
-    let b_1 = GRS80_SEMI_MINOR;
-    // The eccentricity (squared) of the GRS80 ellipsoid
-    let e2_1 = 1. - (b_1.powi(2)) / (a_1.powi(2));
-    // Transverse radius of curvature
-    let nu_1 = a_1 / (1. - e2_1 * lat_1.sin().powi(2)).sqrt();
-    // Third spherical coordinate is 0, in this case
-    let H: f64 = 0.;
-    let x_1 = (nu_1 + H) * lat_1.cos() * lon_1.cos();
-    let y_1 = (nu_1 + H) * lat_1.cos() * lon_1.sin();
-    let z_1 = ((1. - e2_1) * nu_1 + H) * lat_1.sin();
-
-    // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
-    // The translations along x, y, z axes respectively
-    let tx = TX;
-    let ty = TY;
-    let tz = TZ;
-    // The rotations along x, y, z respectively, in seconds
-    let rxs = RXS;
-    let rys = RYS;
-    let rzs = RZS;
-    // In radians
-    let rx = rxs * PI / (180. * 3600.);
-    let ry = rys * PI / (180. * 3600.);
-    let rz = rzs * PI / (180. * 3600.);
-
-    // TODO solve this for all lat and lon using matrices in an intermediate step?
-    let x_2 = tx + (1. + s) * x_1 + -rz * y_1 + ry * z_1;
-    let y_2 = ty + rz * x_1 + (1. + s) * y_1 + -rx * z_1;
-    let z_2 = tz + -ry * x_1 + rx * y_1 + (1. + s) * z_1;
-
-    // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
-    let a = AIRY_1830_SEMI_MAJOR;
-    let b = AIRY_1830_SEMI_MINOR;
-    // The eccentricity of the Airy 1830 ellipsoid
-    let e2 = 1. - b.powi(2) / a.powi(2);
-    let p = (x_2.powi(2) + y_2.powi(2)).sqrt();
-    // Initial value
-    let mut lat = z_2.atan2((p * (1. - e2)));
-    let mut latold = 2. * PI;
-    // this is cheating, but not sure how else to initialise nu
-    let mut nu: f64 = 1.;
-    // Latitude is obtained by iterative procedure
-    while (lat - latold).abs() > (10 as f64).powi(-16) {
-        mem::swap(&mut lat, &mut latold);
-        nu = a / (1. - e2 * latold.sin().powi(2)).sqrt();
-        lat = (z_2 + e2 * nu * latold.sin()).atan2(p);
-    }
-    let lon = y_2.atan2(x_2);
-    // Scale factor on the central meridian
-    let F0: f64 = 0.9996012717;
-    // Latitude of true origin (radians)
-    let lat0 = 49. * PI / 180.;
-    // Longitude of true origin and central meridian (radians)
-    let lon0 = -2. * PI / 180.;
-    // Northing & easting of true origin (m)
-    let N0 = TRUE_ORIGIN_NORTHING;
-    let E0 = TRUE_ORIGIN_EASTING;
-    let n = (a - b) / (a + b);
-    // Meridional radius of curvature
-    let rho = curvature(a, F0, e2, lat);
-    let eta2 = nu * F0 / rho - 1.;
-
-    let M1 = (1. + n + (5. / 4.) * n.powi(2) + (5. / 4.) * n.powi(3)) * (lat - lat0);
-    let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) *
-             ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin())).ln_1p().exp_m1() *
-             (lat + lat0).cos();
-    let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3)) * (2. * (lat - lat0)).sin() *
-             (2. * (lat + lat0)).cos();
-    let M4 = (35. / 24.) * n.powi(3) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
-    let M = b * F0 * (M1 - M2 + M3 - M4);
-
-    let I = M + N0;
-    let II = nu * F0 * lat.sin() * lat.cos() / 2.;
-    let III = nu * F0 * lat.sin() * lat.cos().powi(3) * (5. - lat.tan().powi(2) + 9. * eta2) / 24.;
-    let IIIA = nu * F0 * lat.sin() * lat.cos().powi(5) *
-               (61. - 58. * lat.tan().powi(2) + lat.tan().powi(4)) / 720.;
-    let IV = nu * F0 * lat.cos();
-    let V = nu * F0 * lat.cos().powi(3) * (nu / rho - lat.tan().powi(2)) / 6.;
-    let VI = nu * F0 * lat.cos().powi(5) *
-             (5. - 18. * lat.tan().powi(2) + lat.tan().powi(4) + 14. * eta2 -
-              58. * eta2 * lat.tan().powi(2)) / 120.;
-    let N = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
-            IIIA * (lon - lon0).powi(6);
-    let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
-
-    let result = round_to_nearest_mm(E, N, 1.0);
-    Ok((result.0, result.1))
-}
-
-
-/// Perform British National Grid Eastings, Northings to Longitude, Latitude conversion
-///
-/// # Examples
-///
-/// ```
-/// use lonlat_bng::convert_lonlat;
-/// assert_eq!((-0.328248, 51.44534), convert_lonlat(&516276, &173141));
-#[allow(non_snake_case)]
-pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
-    // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
-    let a = AIRY_1830_SEMI_MAJOR;
-    let b = AIRY_1830_SEMI_MINOR;
-    // Scale factor on the central meridian
-    let F0: f64 = 0.9996012717;
-    // Latitude of true origin (radians)
-    let lat0 = 49. * PI / 180.;
-    // Longitude of true origin and central meridian (radians)
-    let lon0 = -2. * PI / 180.;
-    // Northing & easting of true origin (m)
-    let N0 = TRUE_ORIGIN_NORTHING;
-    let E0 = TRUE_ORIGIN_EASTING;
-    // Eccentricity squared
-    let e2 = 1. - b.powi(2) / a.powi(2);
-    let n = (a - b) / (a + b);
-
-    let mut lat = lat0;
-    let mut M: f64 = 0.0;
-    while (*northing - N0 - M) >= 0.00001 {
-        lat = (*northing - N0 - M) / (a * F0) + lat;
-        let M1 = (1. + n + (5. / 4.) * n.powi(3) + (5. / 4.) * n.powi(3)) * (lat - lat0);
-        let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) *
-                 ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin())).ln_1p().exp_m1() *
-                 (lat + lat0).cos();
-        let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3)) * (2. * (lat - lat0)).sin() *
-                 (2. * (lat + lat0)).cos();
-        let M4 = (35. / 24.) * n.powi(3) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
-        // Meridional arc!
-        M = b * F0 * (M1 - M2 + M3 - M4);
-    }
-    // Transverse radius of curvature
-    let nu = a * F0 / (1. - e2 * lat.sin().powi(2)).sqrt();
-    // Meridional radius of curvature
-    let rho = curvature(a, F0, e2, lat);
-    let eta2 = nu / rho - 1.;
-
-    let secLat = 1. / lat.cos();
-    let VII = lat.tan() / (2. * rho * nu);
-    let VIII = lat.tan() / (24. * rho * nu.powi(3)) *
-               (5. + 3. * lat.tan().powi(2) + eta2 - 9. * lat.tan().powi(2) * eta2);
-    let IX = lat.tan() / (720. * rho * nu.powi(5)) *
-             (61. + 90. * lat.tan().powi(2) + 45. * lat.tan().powi(4));
-    let X = secLat / nu;
-    let XI = secLat / (6. * nu.powi(3)) * (nu / rho + 2. * lat.tan().powi(2));
-    let XII = secLat / (120. * nu.powi(5)) *
-              (5. + 28. * lat.tan().powi(2) + 24. * lat.tan().powi(4));
-    let XIIA = secLat / (5040. * nu.powi(7)) *
-               (61. + 662. * lat.tan().powi(2) + 1320. * lat.tan().powi(4) +
-                720. * lat.tan().powi(6));
-    let dE = *easting - E0;
-    // These are on the wrong ellipsoid currently: Airy1830 (Denoted by _1)
-    let lat_1 = lat - VII * dE.powi(2) + VIII * dE.powi(4) - IX * dE.powi(6);
-    let lon_1 = lon0 + X * dE - XI * dE.powi(3) + XII * dE.powi(5) - XIIA * dE.powi(7);
-
-    // We Want to convert to the GRS80 ellipsoid
-    // First, convert to cartesian from spherical polar coordinates
-    let H = 0.;
-    let x_1 = (nu / F0 + H) * lat_1.cos() * lon_1.cos();
-    let y_1 = (nu / F0 + H) * lat_1.cos() * lon_1.sin();
-    let z_1 = ((1. - e2) * nu / F0 + H) * lat_1.sin();
-
-    // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
-    let minus_s = -s; // The scale factor -1
-    // The translations along x, y, z axes respectively
-    let tx = TX.abs();
-    let ty = TY * -1.;
-    let tz = TZ.abs();
-    // The rotations along x, y, z respectively, in seconds
-    let rxs = RXS * -1.;
-    let rys = RYS * -1.;
-    let rzs = RZS * -1.;
-
-    let rx = rxs * PI / (180. * 3600.);
-    let ry = rys * PI / (180. * 3600.);
-    let rz = rzs * PI / (180. * 3600.); // In radians
-    let x_2 = tx + (1. + minus_s) * x_1 + (-rz) * y_1 + (ry) * z_1;
-    let y_2 = ty + (rz) * x_1 + (1. + minus_s) * y_1 + (-rx) * z_1;
-    let z_2 = tz + (-ry) * x_1 + (rx) * y_1 + (1. + minus_s) * z_1;
-
-    // Back to spherical polar coordinates from cartesian
-    // Need some of the characteristics of the new ellipsoid
-    // The GRS80 semi-major and semi-minor axes used for WGS84(m)
-    let a_2 = GRS80_SEMI_MAJOR;
-    let b_2 = GRS80_SEMI_MINOR;
-    // The eccentricity of the GRS80 ellipsoid
-    let e2_2 = 1. - b_2.powi(2) / a_2.powi(2);
-    let p = (x_2.powi(2) + y_2.powi(2)).sqrt();
-
-    // Lat is obtained by iterative procedure
-    // Initial value
-    let mut lat = z_2.atan2((p * (1. - e2_2)));
-    let mut latold = 2. * PI;
-    let mut nu_2: f64;
-    while (lat - latold).abs() > (10. as f64).powi(-16) {
-        mem::swap(&mut lat, &mut latold);
-        nu_2 = a_2 / (1. - e2_2 * latold.sin().powi(2)).sqrt();
-        lat = (z_2 + e2_2 * nu_2 * latold.sin()).atan2(p);
-    }
-
-    let mut lon = y_2.atan2(x_2);
-    lat = lat * 180. / PI;
-    lon = lon * 180. / PI;
-    Ok(round_to_eight(lon, lat))
-}
 
 /// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
 pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f64>,
@@ -450,8 +179,7 @@ fn convert_vec<F>(ex: &Vec<f64>, ny: &Vec<f64>, func: F) -> (Vec<f64>, Vec<f64>)
 #[cfg(test)]
 mod tests {
     use ffi::drop_float_array;
-    use super::convert_bng;
-    use super::convert_lonlat;
+    use ffi::Array;
     use super::convert_to_bng_threaded;
     use super::convert_to_lonlat_threaded;
     use super::convert_to_osgb36_threaded;
@@ -460,8 +188,6 @@ mod tests {
     use super::convert_osgb36_to_etrs89_threaded;
     use super::convert_osgb36_to_ll_threaded;
     use super::convert_etrs89_to_ll_threaded;
-    use super::check;
-    use ffi::Array;
 
     extern crate libc;
 
@@ -787,39 +513,6 @@ mod tests {
     }
 
     #[test]
-    fn test_bng_conversion() {
-        // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-        assert_eq!((516275.973, 173141.092),
-                   convert_bng(&-0.32824866, &51.44533267).unwrap());
-    }
-
-    #[test]
-    fn test_lonlat_conversion() {
-        let res = convert_lonlat(&516276.000, &173141.000).unwrap();
-        // We shouldn't really be using error margins, but it should be OK because
-        // neither number is zero, or very close to, and on opposite sides of zero
-        // epsilon is .000001 here, because BNG coords are 6 digits, so
-        // we should be fine if the error is in the 7th digit (i.e. < epsilon)
-        // http://floating-point-gui.de/errors/comparison/
-        assert!(((res.0 - -0.328248269313) / -0.328248269313).abs() < 0.000001);
-        assert!(((res.1 - 51.4453318435) / 51.4453318435).abs() < 0.000001);
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_bad_lon() {
-        assert_eq!((516276.000, 173141.000),
-                   convert_bng(&181., &51.44533267).unwrap());
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_bad_lat() {
-        assert_eq!((516276.000, 173141.000),
-                   convert_bng(&-0.32824866, &-90.01).unwrap());
-    }
-
-    #[test]
     fn test_bad_threaded_conversion() {
         // above maximum longitude
         let lon_vec: Vec<f64> = vec![-6.379881];
@@ -837,39 +530,4 @@ mod tests {
         assert_eq!(9999.000, retval[0]);
     }
 
-    #[test]
-    #[should_panic]
-    fn test_min_lon_extents() {
-        let max_lon = 1.768960;
-        let min_lon = -6.379880;
-        // below min_lon
-        check(&-6.379881, (&min_lon, &max_lon)).unwrap();
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_min_lat_extents() {
-        let max_lat = 55.811741;
-        let min_lat = 49.871159;
-        // below min lat
-        check(&49.871158, (&min_lat, &max_lat)).unwrap();
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_max_lon_extents() {
-        let max_lon = 1.768960;
-        let min_lon = -6.379880;
-        // above max lon
-        check(&1.768961, (&min_lon, &max_lon)).unwrap();
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_max_lat_extents() {
-        let max_lat = 55.811741;
-        let min_lat = 49.871159;
-        // above max lat
-        check(&55.811742, (&min_lat, &max_lat)).unwrap();
-    }
 }
