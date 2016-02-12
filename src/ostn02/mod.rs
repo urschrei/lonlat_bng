@@ -15,6 +15,8 @@ use super::MIN_LONGITUDE;
 use super::MAX_LONGITUDE;
 use super::MIN_LATITUDE;
 use super::MAX_LATITUDE;
+use super::MAX_EASTING;
+use super::MAX_NORTHING;
 
 use super::TRUE_ORIGIN_EASTING;
 use super::TRUE_ORIGIN_NORTHING;
@@ -117,8 +119,8 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
 pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) as f64 * RAD;
-    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))) as f64 * RAD;
+    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) * RAD;
+    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))) * RAD;
     // ellipsoid squared eccentricity constant
     let e2 = (GRS80_SEMI_MAJOR.powf(2.) - GRS80_SEMI_MINOR.powf(2.)) / GRS80_SEMI_MAJOR.powf(2.);
     let n = (GRS80_SEMI_MAJOR - GRS80_SEMI_MINOR) / (GRS80_SEMI_MAJOR + GRS80_SEMI_MINOR);
@@ -163,6 +165,9 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
 /// assert_eq!((651409.792, 313177.448), convert_ETRS89_to_OSGB36(&651307.003, &313255.686).unwrap());
 #[allow(non_snake_case)]
 pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64, f64), ()> {
+    // ensure that we're within the boundaries
+    try!(check(*eastings, (0.000, MAX_EASTING)));
+    try!(check(*northings, (0.000, MAX_NORTHING)));
     // obtain OSTN02 corrections, and incorporate
     let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
     let (shifted_e, shifted_n) = (eastings + e_shift, northings + n_shift);
@@ -206,8 +211,9 @@ fn convert_to_ll(eastings: &f64,
                  ell_a: f64,
                  ell_b: f64)
                  -> Result<(f64, f64), ()> {
-    // FIXME: use Airy 1830 ellipsoid for conversions that originated in OSGB36
-    // FIXME: use WGS84 Ellipsoid for conversions that originate in ETRS89
+    // ensure that we're within the boundaries
+    try!(check(*eastings, (0.000, MAX_EASTING)));
+    try!(check(*northings, (0.000, MAX_NORTHING)));
     // ellipsoid squared eccentricity constant
     let a = ell_a;
     let b = ell_b;
@@ -388,6 +394,25 @@ mod tests {
         let northings = 313255.686;
         let expected = (102.789, -78.238, 44.244);
         assert_eq!(expected, ostn02_shifts(&eastings, &northings).unwrap());
+    }
+
+
+    #[test]
+    #[should_panic]
+    fn test_bad_max_easting() {
+        let max_easting = 700001.000;
+        let max_northing = 1250000.000;
+        // above max lat
+        convert_etrs89_to_osgb36(&max_easting, &max_northing).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_bad_max_northing() {
+        let max_easting = 700000.000;
+        let max_northing = 1250000.001;
+        // above max lat
+        convert_etrs89_to_osgb36(&max_easting, &max_northing).unwrap();
     }
 
 }
