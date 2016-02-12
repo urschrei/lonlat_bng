@@ -92,8 +92,8 @@ pub const s: f64 = 20.4894 * 0.000001;
 pub const PI: f64 = f64::consts::PI;
 pub const RAD: f64 = PI / 180.;
 pub const DAR: f64 = 180. / PI;
-pub const MAX_EASTING: i32 = 700000;
-pub const MAX_NORTHING: i32 = 1250000;
+pub const MAX_EASTING: f64 = 700000.000;
+pub const MAX_NORTHING: f64 = 1250000.000;
 
 pub const MIN_LONGITUDE: f64 = -6.379880;
 pub const MAX_LONGITUDE: f64 = 1.768960;
