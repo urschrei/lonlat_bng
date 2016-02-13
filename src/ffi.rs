@@ -1,7 +1,6 @@
 use std::mem;
 use std::slice;
 
-extern crate libc;
 use libc::{c_void, c_double};
 
 #[repr(C)]
@@ -69,8 +68,8 @@ impl Array {
             len: vec.len() as libc::size_t,
         };
 
-        // Whee! Leak the memory, and now the raw pointer (and
-        // eventually Python) is the owner.
+        // Leak the memory, and now the raw pointer (and
+        // eventually the FFI parent process) is the owner
         mem::forget(vec);
 
         array
