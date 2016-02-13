@@ -51,13 +51,12 @@ The FFI C-compatible functions exposed by the library are:
 `convert_osgb36_to_etrs89_threaded(Array, Array) -> Array`  
 
 And for freeing the memory allocated by the above  
-`drop_int_array(Array) -> Null`  
-`drop_float_array(Array) -> Null` (for `convert_to_lonlat_threaded` and `convert_to_osgb36_threaded`)  
+`drop_float_array(Array) -> Null`  
 
-The `Array`s must contain 32-bit `Float`s and 32-bit `Int`s, respectively. `Arrays` used in `convert_osgb36_threaded` must contain 64-bit `Float`s. For examples, see the `Array` struct and tests in [lib.rs](src/lib.rs), and the `_BNG_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).  
+The `Array`s must contain `c_double` values. For examples, see the `Array` struct and tests in [lib.rs](src/ffi.rs), and the `_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).  
 
 #### FFI and Memory Management
-If your library, module, or script uses the FFI functions, it **must** also implement `drop_int_array`, and if it implements `convert_to_lonlat_threaded` or `convert_to_osgb36_threaded`, it **must** implement `drop_float_array`. **Failing to do so will result in memory leaks**. 
+If your library, module, or script uses the FFI functions, it **must** implement `drop_float_array`. **Failing to do so may result in memory leaks**. 
 
 #### Building the Shared Library
 Running `cargo build --release` will build an artefact called `liblonlat_bng.dylib` on OSX, and `liblonlat_bng.a` on `*nix` systems. Note that you'll have to generate `liblonlat_bng.so` for `*nix` hosts using the following steps:
