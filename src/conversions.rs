@@ -73,7 +73,7 @@ fn curvature(a: f64, f0: f64, e2: f64, lat: f64) -> f64 {
 #[allow(non_snake_case)]
 // See Annexe B (p23) of the transformation user guide for instructions
 pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()> {
-    // input is restricted to the UK bounding box
+    // Input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
     let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) * RAD;
     let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))) * RAD;
@@ -287,8 +287,8 @@ pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_double), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) as f64 * RAD;
-    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))) as f64 * RAD;
+    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) * RAD;
+    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))) * RAD;
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1 = GRS80_SEMI_MAJOR;
     let b_1 = GRS80_SEMI_MINOR;
@@ -333,7 +333,7 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_doubl
     // this is cheating, but not sure how else to initialise nu
     let mut nu: f64 = 1.;
     // Latitude is obtained by iterative procedure
-    while (lat - latold).abs() > (10 as f64).powi(-16) {
+    while (lat - latold).abs() > (10. as f64).powi(-16) {
         mem::swap(&mut lat, &mut latold);
         nu = a / (1. - e2 * latold.sin().powi(2)).sqrt();
         lat = (z_2 + e2 * nu * latold.sin()).atan2(p);
@@ -438,7 +438,7 @@ pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
     let lat_1 = lat - VII * dE.powi(2) + VIII * dE.powi(4) - IX * dE.powi(6);
     let lon_1 = lon0 + X * dE - XI * dE.powi(3) + XII * dE.powi(5) - XIIA * dE.powi(7);
 
-    // We Want to convert to the GRS80 ellipsoid
+    // We want to convert to the GRS80 ellipsoid
     // First, convert to cartesian from spherical polar coordinates
     let H = 0.;
     let x_1 = (nu / F0 + H) * lat_1.cos() * lon_1.cos();

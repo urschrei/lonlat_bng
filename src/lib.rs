@@ -380,7 +380,7 @@ mod tests {
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
         // http://floating-point-gui.de/errors/comparison/
-        assert!((retval[0] - -0.32824799370716407).abs() / -0.32824799370716407 < 0.0000000001);
+        assert!((retval[0] - -0.32824799370716407).abs() / -0.32824799370716407 < 0.000000001);
         // assert!((retval[1] - 51.44534026616287).abs() / 51.44534026616287 < 0.0000000001);
     }
 
