@@ -53,7 +53,7 @@ The FFI C-compatible functions exposed by the library are:
 And for freeing the memory allocated by the above  
 `drop_float_array(Array) -> Null`  
 
-The `Array`s must contain `c_double` values. For examples, see the `Array` struct and tests in [lib.rs](src/ffi.rs), and the `_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).  
+The `Array`s must contain `c_double` values. For examples, see the `Array` struct and tests in [ffi.rs](src/ffi.rs), and the `_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).  
 
 #### FFI and Memory Management
 If your library, module, or script uses the FFI functions, it **must** implement `drop_float_array`. **Failing to do so may result in memory leaks**. 
