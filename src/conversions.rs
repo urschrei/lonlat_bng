@@ -153,12 +153,11 @@ fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
     let p_plus = *phi + PHI0;
     let p_minus = *phi - PHI0;
 
-    let result = *b * F0 *
-                 ((1. + *n * (1. + 5. / 4. * *n * (1. + *n))) * p_minus -
-                  3. * *n * (1. + *n * (1. + 7. / 8. * *n)) * p_minus.sin() * p_plus.cos() +
-                  (15. / 8. * *n * (*n * (1. + *n))) * (2. * p_minus).sin() * (2. * p_plus).cos() -
-                  35. / 24. * n.powf(3.) * (3. * p_minus).sin() * (3. * p_plus).cos());
-    result
+    *b * F0 *
+    ((1. + *n * (1. + 5. / 4. * *n * (1. + *n))) * p_minus -
+     3. * *n * (1. + *n * (1. + 7. / 8. * *n)) * p_minus.sin() * p_plus.cos() +
+     (15. / 8. * *n * (*n * (1. + *n))) * (2. * p_minus).sin() * (2. * p_plus).cos() -
+     35. / 24. * n.powf(3.) * (3. * p_minus).sin() * (3. * p_plus).cos())
 }
 
 #[allow(non_snake_case)]
@@ -229,7 +228,7 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     let epsilon = 0.00001;
     let (mut dx, mut dy, mut dz) = try!(ostn02_shifts(&E, &N));
     let (mut x, mut y, _) = (E - dx, N - dy, dz);
-    let (mut last_dx, mut last_dy) = (dx.clone(), dy.clone());
+    let (mut last_dx, mut last_dy) = (dx, dy);
     let mut res;
     loop {
         res = try!(ostn02_shifts(&x, &y));
@@ -257,7 +256,7 @@ pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     let epsilon = 0.00001;
     let (mut dx, mut dy, mut dz) = try!(ostn02_shifts(&E, &N));
     let (mut x, mut y, _) = (E - dx, N - dy, dz);
-    let (mut last_dx, mut last_dy) = (dx.clone(), dy.clone());
+    let (mut last_dx, mut last_dy) = (dx, dy);
     let mut res;
     loop {
         res = try!(ostn02_shifts(&x, &y));
