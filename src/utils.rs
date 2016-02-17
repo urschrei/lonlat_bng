@@ -39,9 +39,7 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
 pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     let key = format!("{:03x}{:03x}", y, x);
     // some or None, so try! this
-    let lookup = ostn02_lookup(&*key);
-    let intermediate = lookup.ok_or(());
-    let result = intermediate.unwrap();
+    let result = try!(ostn02_lookup(&*key).ok_or(()));
     Ok((result.0 as f64 / 1000. + MIN_X_SHIFT,
         result.1 as f64 / 1000. + MIN_Y_SHIFT,
         result.2 as f64 / 1000. + MIN_Z_SHIFT))
@@ -99,6 +97,16 @@ mod tests {
         let eastings = 651;
         let northings = 313;
         let expected = (102.775, -78.244, 44.252);
+        assert_eq!(expected, get_ostn_ref(&eastings, &northings).unwrap());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_failed_ostn_hashmap_retrieval() {
+        // we're try!ing this in the shift calculation function, so an Err is fine
+        let eastings = 999;
+        let northings = 999;
+        let expected = (1., 1., 1.);
         assert_eq!(expected, get_ostn_ref(&eastings, &northings).unwrap());
     }
 
