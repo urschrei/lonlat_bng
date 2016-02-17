@@ -92,63 +92,63 @@ pub use conversions::convert_etrs89_to_ll;
 // }
 
 /// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
-pub fn convert_to_bng_threaded_vec(longitudes: &Vec<f64>,
-                                   latitudes: &Vec<f64>)
+pub fn convert_to_bng_threaded_vec(longitudes: &[f64],
+                                   latitudes: &[f64])
                                    -> (Vec<f64>, Vec<f64>) {
     convert_vec(longitudes, latitudes, convert_bng)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
-pub fn convert_to_lonlat_threaded_vec(eastings: &Vec<f64>,
-                                      northings: &Vec<f64>)
+pub fn convert_to_lonlat_threaded_vec(eastings: &[f64],
+                                      northings: &[f64])
                                       -> (Vec<f64>, Vec<f64>) {
     convert_vec(eastings, northings, convert_lonlat)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
-pub fn convert_to_etrs89_threaded_vec(longitudes: &Vec<f64>,
-                                      latitudes: &Vec<f64>)
+pub fn convert_to_etrs89_threaded_vec(longitudes: &[f64],
+                                      latitudes: &[f64])
                                       -> (Vec<f64>, Vec<f64>) {
     convert_vec(longitudes, latitudes, convert_etrs89)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
-pub fn convert_to_osgb36_threaded_vec(longitudes: &Vec<f64>,
-                                      latitudes: &Vec<f64>)
+pub fn convert_to_osgb36_threaded_vec(longitudes: &[f64],
+                                      latitudes: &[f64])
                                       -> (Vec<f64>, Vec<f64>) {
     convert_vec(longitudes, latitudes, convert_osgb36)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89_to_osgb36`](fn.convert_etrs89_to_osgb36.html)
-pub fn convert_etrs89_to_osgb36_threaded_vec(eastings: &Vec<f64>,
-                                             northings: &Vec<f64>)
+pub fn convert_etrs89_to_osgb36_threaded_vec(eastings: &[f64],
+                                             northings: &[f64])
                                              -> (Vec<f64>, Vec<f64>) {
     convert_vec(eastings, northings, convert_etrs89_to_osgb36)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89_to_ll`](fn.convert_etrs8989_to_ll.html)
-pub fn convert_etrs89_to_ll_threaded_vec(eastings: &Vec<f64>,
-                                         northings: &Vec<f64>)
+pub fn convert_etrs89_to_ll_threaded_vec(eastings: &[f64],
+                                         northings: &[f64])
                                          -> (Vec<f64>, Vec<f64>) {
     convert_vec(eastings, northings, convert_etrs89_to_ll)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_etrs89`](fn.convert_osgb36_to_etrs89.html)
-pub fn convert_osgb36_to_etrs89_threaded_vec(eastings: &Vec<f64>,
-                                             northings: &Vec<f64>)
+pub fn convert_osgb36_to_etrs89_threaded_vec(eastings: &[f64],
+                                             northings: &[f64])
                                              -> (Vec<f64>, Vec<f64>) {
     convert_vec(eastings, northings, convert_osgb36_to_etrs89)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
-pub fn convert_osgb36_to_ll_threaded_vec(eastings: &Vec<f64>,
-                                         northings: &Vec<f64>)
+pub fn convert_osgb36_to_ll_threaded_vec(eastings: &[f64],
+                                         northings: &[f64])
                                          -> (Vec<f64>, Vec<f64>) {
     convert_vec(eastings, northings, convert_osgb36_to_ll)
 }
 
 /// Generic function for threaded processing of conversion functions
-fn convert_vec<F>(ex: &Vec<f64>, ny: &Vec<f64>, func: F) -> (Vec<f64>, Vec<f64>)
+fn convert_vec<F>(ex: &[f64], ny: &[f64], func: F) -> (Vec<f64>, Vec<f64>)
     where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy
 {
     let numthreads = 8 as usize;
