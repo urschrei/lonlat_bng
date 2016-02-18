@@ -151,7 +151,7 @@ pub fn convert_osgb36_to_ll_threaded_vec(eastings: &[f64],
 fn convert_vec<F>(ex: &[f64], ny: &[f64], func: F) -> (Vec<f64>, Vec<f64>)
     where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy
 {
-    let numthreads = 8 as usize;
+    let numthreads = num_cpus::get() as usize;
     let orig: Vec<(&f64, &f64)> = ex.iter().zip(ny.iter()).collect();
     let mut result = vec![(1.0, 1.0); orig.len()];
     let mut size = orig.len() / numthreads;
