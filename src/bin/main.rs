@@ -12,8 +12,8 @@ fn main() {
     let between_lon = Range::new(-6.379880, 1.768960);
     let between_lat = Range::new(49.871159, 55.811741);
     let mut rng = rand::thread_rng();
-    let lon_vec = vec![between_lon.ind_sample(&mut rng) as f32; num_coords];
-    let lat_vec = vec![between_lat.ind_sample(&mut rng) as f32; num_coords];
+    let lon_vec = vec![between_lon.ind_sample(&mut rng); num_coords];
+    let lat_vec = vec![between_lat.ind_sample(&mut rng); num_coords];
     let lon_arr = Array {
         data: lon_vec.as_ptr() as *const libc::c_void,
         len: lon_vec.len() as libc::size_t,
