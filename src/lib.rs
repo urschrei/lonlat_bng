@@ -60,7 +60,7 @@ mod ffi;
 pub use ffi::Array;
 pub use ffi::drop_float_array;
 pub use ffi::convert_to_bng_threaded;
-pub use ffi::convert_to_bng_threaded_slice;
+pub use ffi::convert_to_bng_threaded_nocopy;
 pub use ffi::convert_to_lonlat_threaded;
 pub use ffi::convert_to_osgb36_threaded;
 pub use ffi::convert_to_etrs89_threaded;
@@ -97,8 +97,10 @@ pub fn convert_to_bng_threaded_vec(longitudes: &[f64], latitudes: &[f64]) -> (Ve
     convert_vec(longitudes, latitudes, convert_bng)
 }
 
-pub fn convert_to_bng_threaded_arr<'a, 'b>(longitudes: &'a mut[f64], latitudes: &'b mut[f64]) -> (&'a mut[f64], &'b mut[f64]) {
-    convert_vec_move(longitudes, latitudes, convert_bng)
+pub fn convert_to_bng_threaded_direct<'a, 'b>(longitudes: &'a mut [f64],
+                                           latitudes: &'b mut [f64])
+                                           -> (&'a mut [f64], &'b mut [f64]) {
+    convert_vec_direct(longitudes, latitudes, convert_bng)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
@@ -177,10 +179,13 @@ fn convert_vec<F>(ex: &[f64], ny: &[f64], func: F) -> (Vec<f64>, Vec<f64>)
     (ex_converted, ny_converted)
 }
 
-fn convert_vec_move<'a, 'b, F>(ex: &'a mut [f64],
-                               ny: &'b mut [f64],
-                               func: F)
-                               -> (&'a mut [f64], &'b mut [f64])
+// Generic function that avoids unnecessary zipping and unzipping
+// As opposed to convert_vec, we're directly modifying and returning the
+// input vectors here, at the cost of having to use lifetime annotations
+fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
+                                 ny: &'b mut [f64],
+                                 func: F)
+                                 -> (&'a mut [f64], &'b mut [f64])
     where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy
 {
     let numthreads = num_cpus::get() as usize;
@@ -213,9 +218,12 @@ fn convert_vec_move<'a, 'b, F>(ex: &'a mut [f64],
 
 #[cfg(test)]
 mod tests {
+    use conversions::convert_bng;
     use ffi::drop_float_array;
     use ffi::Array;
+    use super::convert_vec_direct;
     use super::convert_to_bng_threaded;
+    use super::convert_to_bng_threaded_direct;
     use super::convert_to_lonlat_threaded;
     use super::convert_to_osgb36_threaded;
     use super::convert_to_etrs89_threaded;
@@ -225,6 +233,26 @@ mod tests {
     use super::convert_etrs89_to_ll_threaded;
 
     extern crate libc;
+
+    #[test]
+    // this test verifies that we aren't mangling memory inside our threads
+    fn test_threading() {
+        let mut lon = [-2.0183041005533306,
+                       0.95511887434519682,
+                       0.44975855518383501,
+                       -0.096813621191803811,
+                       -0.36807065656416427,
+                       0.63486335458665621];
+        let mut lat = [54.589097162646141,
+                       51.560873800587828,
+                       50.431429161121699,
+                       54.535021436247419,
+                       50.839059313135706,
+                       55.412189281234419];
+        convert_vec_direct(&mut lon, &mut lat, convert_bng);
+        assert_eq!(398915.033, lon[0]);
+        assert_eq!(521545.067, lat[0]);
+    }
 
     #[test]
     #[ignore]

@@ -11,7 +11,7 @@ pub struct Array {
 }
 
 use super::convert_to_bng_threaded_vec;
-use super::convert_to_bng_threaded_arr;
+use super::convert_to_bng_threaded_direct;
 use super::convert_to_lonlat_threaded_vec;
 use super::convert_to_osgb36_threaded_vec;
 use super::convert_to_etrs89_threaded_vec;
@@ -60,7 +60,7 @@ impl Array {
         slice::from_raw_parts(self.data as *const f64, self.len as usize)
     }
 
-    pub unsafe fn as_f64_slice_mut(&self) -> &mut[f64] {
+    pub unsafe fn as_f64_slice_mut(&self) -> &mut [f64] {
         assert!(!self.data.is_null());
         slice::from_raw_parts_mut(self.data as *mut f64, self.len as usize)
     }
@@ -82,7 +82,7 @@ impl Array {
         array
     }
 
-    pub fn from_slice(s: &mut[f64]) -> Array {
+    pub fn from_slice(s: &mut [f64]) -> Array {
         let array = Array {
             data: s.as_ptr() as *const libc::c_void,
             len: s.len() as libc::size_t,
@@ -132,14 +132,50 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
     let latitudes_vec = unsafe { latitudes.as_f64_slice().to_vec() };
     let (eastings, northings) = convert_to_bng_threaded_vec(&longitudes_vec, &latitudes_vec);
     (Array::from_vec(eastings), Array::from_vec(northings))
-    
+
 }
+
+/// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_bng`
+///
+/// # Examples
+///
+/// ```
+/// extern crate libc;
+/// let lon_vec: Vec<f64> = vec![-2.0183041005533306,
+///                              0.95511887434519682,
+///                              0.44975855518383501,
+///                              -0.096813621191803811,
+///                              -0.36807065656416427,
+///                              0.63486335458665621];
+/// let lat_vec: Vec<f64> = vec![54.589097162646141,
+///                              51.560873800587828,
+///                              50.431429161121699,
+///                              54.535021436247419,
+///                              50.839059313135706,
+///                              55.412189281234419];
+/// let lon_arr = Array {
+///     data: lon_vec.as_ptr() as *const libc::c_void,
+///     len: lon_vec.len() as libc::size_t,
+/// };
+/// let lat_arr = Array {
+///     data: lat_vec.as_ptr() as *const libc::c_void,
+///     len: lat_vec.len() as libc::size_t,
+/// };
+/// let (eastings, northings) = convert_to_bng_threaded_nocopy(lon_arr, lat_arr);
+/// ```
+/// For an FFI implementation, see the code at [Convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).
+///
+/// # Safety
+///
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
-pub extern "C" fn convert_to_bng_threaded_slice(longitudes: Array, latitudes: Array) -> (Array, Array) {
-    let longitudes = unsafe { longitudes.as_f64_slice_mut() };
-    let latitudes = unsafe { latitudes.as_f64_slice_mut() };
-    convert_to_bng_threaded_arr(longitudes, latitudes);
-    (Array::from_slice(longitudes), Array::from_slice(latitudes))
+pub extern "C" fn convert_to_bng_threaded_nocopy(longitudes: Array,
+                                                latitudes: Array)
+                                                -> (Array, Array) {
+    let mut longitudes_v = unsafe { longitudes.as_f64_slice().to_vec() };
+    let mut latitudes_v = unsafe { latitudes.as_f64_slice().to_vec() };
+    convert_to_bng_threaded_direct(&mut longitudes_v, &mut latitudes_v);
+    (Array::from_vec(longitudes_v), Array::from_vec(latitudes_v))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
