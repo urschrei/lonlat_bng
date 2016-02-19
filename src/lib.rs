@@ -60,7 +60,6 @@ mod ffi;
 pub use ffi::Array;
 pub use ffi::drop_float_array;
 pub use ffi::convert_to_bng_threaded;
-pub use ffi::convert_to_bng_threaded_nocopy;
 pub use ffi::convert_to_lonlat_threaded;
 pub use ffi::convert_to_osgb36_threaded;
 pub use ffi::convert_to_etrs89_threaded;
@@ -93,90 +92,59 @@ pub use conversions::convert_etrs89_to_ll;
 // }
 
 /// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
-pub fn convert_to_bng_threaded_vec(longitudes: &[f64], latitudes: &[f64]) -> (Vec<f64>, Vec<f64>) {
-    convert_vec(longitudes, latitudes, convert_bng)
-}
-
-pub fn convert_to_bng_threaded_direct<'a, 'b>(longitudes: &'a mut [f64],
+pub fn convert_to_bng_threaded_vec<'a, 'b>(longitudes: &'a mut [f64],
                                            latitudes: &'b mut [f64])
                                            -> (&'a mut [f64], &'b mut [f64]) {
     convert_vec_direct(longitudes, latitudes, convert_bng)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
-pub fn convert_to_lonlat_threaded_vec(eastings: &[f64], northings: &[f64]) -> (Vec<f64>, Vec<f64>) {
-    convert_vec(eastings, northings, convert_lonlat)
+pub fn convert_to_lonlat_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
+                                              northings: &'b mut [f64])
+                                              -> (&'a mut [f64], &'b mut [f64]) {
+    convert_vec_direct(eastings, northings, convert_lonlat)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
-pub fn convert_to_etrs89_threaded_vec(longitudes: &[f64],
-                                      latitudes: &[f64])
-                                      -> (Vec<f64>, Vec<f64>) {
-    convert_vec(longitudes, latitudes, convert_etrs89)
+pub fn convert_to_etrs89_threaded_vec<'a, 'b>(longitudes: &'a mut [f64],
+                                              latitudes: &'b mut [f64])
+                                              -> (&'a mut [f64], &'b mut [f64]) {
+    convert_vec_direct(longitudes, latitudes, convert_etrs89)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
-pub fn convert_to_osgb36_threaded_vec(longitudes: &[f64],
-                                      latitudes: &[f64])
-                                      -> (Vec<f64>, Vec<f64>) {
-    convert_vec(longitudes, latitudes, convert_osgb36)
+pub fn convert_to_osgb36_threaded_vec<'a, 'b>(longitudes: &'a mut [f64],
+                                              latitudes: &'b mut [f64])
+                                              -> (&'a mut [f64], &'b mut [f64]) {
+    convert_vec_direct(longitudes, latitudes, convert_osgb36)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89_to_osgb36`](fn.convert_etrs89_to_osgb36.html)
-pub fn convert_etrs89_to_osgb36_threaded_vec(eastings: &[f64],
-                                             northings: &[f64])
-                                             -> (Vec<f64>, Vec<f64>) {
-    convert_vec(eastings, northings, convert_etrs89_to_osgb36)
+pub fn convert_etrs89_to_osgb36_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
+                                                     northings: &'b mut [f64])
+                                                     -> (&'a mut [f64], &'b mut [f64]) {
+    convert_vec_direct(eastings, northings, convert_etrs89_to_osgb36)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89_to_ll`](fn.convert_etrs8989_to_ll.html)
-pub fn convert_etrs89_to_ll_threaded_vec(eastings: &[f64],
-                                         northings: &[f64])
-                                         -> (Vec<f64>, Vec<f64>) {
-    convert_vec(eastings, northings, convert_etrs89_to_ll)
+pub fn convert_etrs89_to_ll_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
+                                                 northings: &'b mut [f64])
+                                                 -> (&'a mut [f64], &'b mut [f64]) {
+    convert_vec_direct(eastings, northings, convert_etrs89_to_ll)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_etrs89`](fn.convert_osgb36_to_etrs89.html)
-pub fn convert_osgb36_to_etrs89_threaded_vec(eastings: &[f64],
-                                             northings: &[f64])
-                                             -> (Vec<f64>, Vec<f64>) {
-    convert_vec(eastings, northings, convert_osgb36_to_etrs89)
+pub fn convert_osgb36_to_etrs89_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
+                                                     northings: &'b mut [f64])
+                                                     -> (&'a mut [f64], &'b mut [f64]) {
+    convert_vec_direct(eastings, northings, convert_osgb36_to_etrs89)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
-pub fn convert_osgb36_to_ll_threaded_vec(eastings: &[f64],
-                                         northings: &[f64])
-                                         -> (Vec<f64>, Vec<f64>) {
-    convert_vec(eastings, northings, convert_osgb36_to_ll)
-}
-
-/// Generic function for threaded processing of conversion functions
-fn convert_vec<F>(ex: &[f64], ny: &[f64], func: F) -> (Vec<f64>, Vec<f64>)
-    where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy
-{
-    let numthreads = num_cpus::get() as usize;
-    let orig: Vec<(&f64, &f64)> = ex.iter().zip(ny.iter()).collect();
-    let mut result = vec![(1.0, 1.0); orig.len()];
-    let mut size = orig.len() / numthreads;
-    if orig.len() % numthreads > 0 {
-        size += 1;
-    }
-    size = std::cmp::max(1, size);
-    crossbeam::scope(|scope| {
-        for (res_chunk, orig_chunk) in result.chunks_mut(size).zip(orig.chunks(size)) {
-            scope.spawn(move || {
-                for (res_elem, orig_elem) in res_chunk.iter_mut().zip(orig_chunk.iter()) {
-                    match func(orig_elem.0, orig_elem.1) {
-                        Ok(res) => *res_elem = res,
-                        // we don't care about the return value as such
-                        Err(_) => *res_elem = (9999.000, 9999.000),
-                    };
-                }
-            });
-        }
-    });
-    let (ex_converted, ny_converted): (Vec<f64>, Vec<f64>) = result.into_iter().unzip();
-    (ex_converted, ny_converted)
+pub fn convert_osgb36_to_ll_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
+                                                 northings: &'b mut [f64])
+                                                 -> (&'a mut [f64], &'b mut [f64]) {
+    convert_vec_direct(eastings, northings, convert_osgb36_to_ll)
 }
 
 // Generic function that avoids unnecessary zipping and unzipping
@@ -188,7 +156,7 @@ fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
                                  -> (&'a mut [f64], &'b mut [f64])
     where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy
 {
-    let numthreads = num_cpus::get() as usize;
+    let numthreads = num_cpus::get() * 8 as usize;
     let mut size = ex.len() / numthreads;
     if ex.len() % numthreads > 0 {
         size += 1;
@@ -223,7 +191,6 @@ mod tests {
     use ffi::Array;
     use super::convert_vec_direct;
     use super::convert_to_bng_threaded;
-    use super::convert_to_bng_threaded_direct;
     use super::convert_to_lonlat_threaded;
     use super::convert_to_osgb36_threaded;
     use super::convert_to_etrs89_threaded;
