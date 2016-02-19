@@ -60,6 +60,7 @@ mod ffi;
 pub use ffi::Array;
 pub use ffi::drop_float_array;
 pub use ffi::convert_to_bng_threaded;
+pub use ffi::convert_to_bng_threaded_slice;
 pub use ffi::convert_to_lonlat_threaded;
 pub use ffi::convert_to_osgb36_threaded;
 pub use ffi::convert_to_etrs89_threaded;
@@ -92,16 +93,16 @@ pub use conversions::convert_etrs89_to_ll;
 // }
 
 /// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
-pub fn convert_to_bng_threaded_vec(longitudes: &[f64],
-                                   latitudes: &[f64])
-                                   -> (Vec<f64>, Vec<f64>) {
+pub fn convert_to_bng_threaded_vec(longitudes: &[f64], latitudes: &[f64]) -> (Vec<f64>, Vec<f64>) {
     convert_vec(longitudes, latitudes, convert_bng)
 }
 
+pub fn convert_to_bng_threaded_arr<'a, 'b>(longitudes: &'a mut[f64], latitudes: &'b mut[f64]) -> (&'a mut[f64], &'b mut[f64]) {
+    convert_vec_move(longitudes, latitudes, convert_bng)
+}
+
 /// A threaded wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
-pub fn convert_to_lonlat_threaded_vec(eastings: &[f64],
-                                      northings: &[f64])
-                                      -> (Vec<f64>, Vec<f64>) {
+pub fn convert_to_lonlat_threaded_vec(eastings: &[f64], northings: &[f64]) -> (Vec<f64>, Vec<f64>) {
     convert_vec(eastings, northings, convert_lonlat)
 }
 
@@ -174,6 +175,40 @@ fn convert_vec<F>(ex: &[f64], ny: &[f64], func: F) -> (Vec<f64>, Vec<f64>)
     });
     let (ex_converted, ny_converted): (Vec<f64>, Vec<f64>) = result.into_iter().unzip();
     (ex_converted, ny_converted)
+}
+
+fn convert_vec_move<'a, 'b, F>(ex: &'a mut [f64],
+                               ny: &'b mut [f64],
+                               func: F)
+                               -> (&'a mut [f64], &'b mut [f64])
+    where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy
+{
+    let numthreads = num_cpus::get() as usize;
+    let mut size = ex.len() / numthreads;
+    if ex.len() % numthreads > 0 {
+        size += 1;
+    }
+    size = std::cmp::max(1, size);
+    crossbeam::scope(|scope| {
+        for (ex_chunk, ny_chunk) in ex.chunks_mut(size).zip(ny.chunks_mut(size)) {
+            scope.spawn(move || {
+                for (ex_elem, ny_elem) in ex_chunk.iter_mut().zip(ny_chunk.iter_mut()) {
+                    match func(ex_elem, ny_elem) {
+                        Ok(res) => {
+                            *ex_elem = res.0;
+                            *ny_elem = res.1;
+                        }
+                        // we don't care about the return value as such
+                        Err(_) => {
+                            *ex_elem = 9999.000;
+                            *ny_elem = 9999.000;
+                        }
+                    };
+                }
+            });
+        }
+    });
+    (ex, ny)
 }
 
 #[cfg(test)]

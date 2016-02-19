@@ -11,6 +11,7 @@ pub struct Array {
 }
 
 use super::convert_to_bng_threaded_vec;
+use super::convert_to_bng_threaded_arr;
 use super::convert_to_lonlat_threaded_vec;
 use super::convert_to_osgb36_threaded_vec;
 use super::convert_to_etrs89_threaded_vec;
@@ -59,6 +60,11 @@ impl Array {
         slice::from_raw_parts(self.data as *const f64, self.len as usize)
     }
 
+    pub unsafe fn as_f64_slice_mut(&self) -> &mut[f64] {
+        assert!(!self.data.is_null());
+        slice::from_raw_parts_mut(self.data as *mut f64, self.len as usize)
+    }
+
     pub fn from_vec<T>(mut vec: Vec<T>) -> Array {
         // Important to make length and capacity match
         // A better solution is to track both length and capacity
@@ -72,6 +78,16 @@ impl Array {
         // Leak the memory, and now the raw pointer (and
         // eventually the FFI parent process) is the owner
         mem::forget(vec);
+
+        array
+    }
+
+    pub fn from_slice(s: &mut[f64]) -> Array {
+        let array = Array {
+            data: s.as_ptr() as *const libc::c_void,
+            len: s.len() as libc::size_t,
+        };
+        mem::forget(s);
 
         array
     }
@@ -116,6 +132,14 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
     let latitudes_vec = unsafe { latitudes.as_f64_slice().to_vec() };
     let (eastings, northings) = convert_to_bng_threaded_vec(&longitudes_vec, &latitudes_vec);
     (Array::from_vec(eastings), Array::from_vec(northings))
+    
+}
+#[no_mangle]
+pub extern "C" fn convert_to_bng_threaded_slice(longitudes: Array, latitudes: Array) -> (Array, Array) {
+    let longitudes = unsafe { longitudes.as_f64_slice_mut() };
+    let latitudes = unsafe { latitudes.as_f64_slice_mut() };
+    convert_to_bng_threaded_arr(longitudes, latitudes);
+    (Array::from_slice(longitudes), Array::from_slice(latitudes))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
