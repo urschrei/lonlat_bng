@@ -156,6 +156,7 @@ fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
                                  -> (&'a mut [f64], &'b mut [f64])
     where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy
 {
+    // TODO measure number of threads v perf more effectively
     let numthreads = num_cpus::get() * 8 as usize;
     let mut size = ex.len() / numthreads;
     if ex.len() % numthreads > 0 {
@@ -163,15 +164,17 @@ fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
     }
     size = std::cmp::max(1, size);
     crossbeam::scope(|scope| {
+        // chunks_mut returns chunks of "size"
+        // e.g. 20 items / 4 (numthreads) = 5, resulting in 4 chunks, 1 per thread
         for (ex_chunk, ny_chunk) in ex.chunks_mut(size).zip(ny.chunks_mut(size)) {
             scope.spawn(move || {
                 for (ex_elem, ny_elem) in ex_chunk.iter_mut().zip(ny_chunk.iter_mut()) {
                     match func(ex_elem, ny_elem) {
+                        // mutate values, or assign default error values
                         Ok(res) => {
                             *ex_elem = res.0;
                             *ny_elem = res.1;
                         }
-                        // we don't care about the return value as such
                         Err(_) => {
                             *ex_elem = 9999.000;
                             *ny_elem = 9999.000;
