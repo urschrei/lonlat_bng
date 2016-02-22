@@ -147,7 +147,7 @@ pub fn convert_osgb36_to_ll_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
     convert_vec_direct(eastings, northings, convert_osgb36_to_ll)
 }
 
-// Generic function that avoids unnecessary zipping and unzipping
+// Generic function which applies conversion functions to vector chunks within threads
 // As opposed to convert_vec, we're directly modifying and returning the
 // input vectors here, at the cost of having to use lifetime annotations
 fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
