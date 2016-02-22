@@ -25,7 +25,6 @@ pub const S: f64 = 20.4894 * 0.000001;
 // etc
 pub const PI: f64 = f64::consts::PI;
 pub const RAD: f64 = PI / 180.;
-pub const DAR: f64 = 180. / PI;
 pub const MAX_EASTING: f64 = 700000.000;
 pub const MAX_NORTHING: f64 = 1250000.000;
 
@@ -75,8 +74,8 @@ fn curvature(a: f64, f0: f64, e2: f64, lat: f64) -> f64 {
 pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()> {
     // Input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) * RAD;
-    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))) * RAD;
+    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))).to_radians();
+    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))).to_radians();
     // ellipsoid squared eccentricity constant
     let e2 = (GRS80_SEMI_MAJOR.powf(2.) - GRS80_SEMI_MINOR.powf(2.)) / GRS80_SEMI_MAJOR.powf(2.);
     let n = (GRS80_SEMI_MAJOR - GRS80_SEMI_MINOR) / (GRS80_SEMI_MAJOR + GRS80_SEMI_MINOR);
@@ -208,8 +207,8 @@ fn convert_to_ll(eastings: &f64,
     phi = phi - VII * e.powf(2.) + VIII * e.powf(4.) - IX * e.powf(6.);
     let mut lambda = LAM0 + X * e - XI * e.powf(3.) + XII * e.powf(5.) - XIIA * e.powf(7.);
 
-    phi = phi * DAR;
-    lambda = lambda * DAR;
+    phi = phi.to_degrees();
+    lambda = lambda.to_degrees();
     Ok(round_to_eight(lambda, phi))
 }
 
@@ -286,8 +285,8 @@ pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_double), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))) * RAD;
-    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))) * RAD;
+    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))).to_radians();
+    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))).to_radians();
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1 = GRS80_SEMI_MAJOR;
     let b_1 = GRS80_SEMI_MINOR;
