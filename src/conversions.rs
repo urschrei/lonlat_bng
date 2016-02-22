@@ -125,8 +125,7 @@ pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64,
     try!(check(*northings, (0.000, MAX_NORTHING)));
     // obtain OSTN02 corrections, and incorporate
     let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
-    let (shifted_e, shifted_n) = (eastings + e_shift, northings + n_shift);
-    let rounded = round_to_nearest_mm(shifted_e, shifted_n, 1.0000);
+    let rounded = round_to_nearest_mm(eastings + e_shift, northings + n_shift, 1.0000);
     Ok((rounded.0, rounded.1))
 
 }
@@ -144,10 +143,10 @@ pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     let (eastings, northings) = try!(convert_etrs89(longitude, latitude));
     // obtain OSTN02 corrections, and incorporate
     let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
-    let (shifted_e, shifted_n) = (eastings + e_shift, northings + n_shift);
-    Ok((shifted_e, shifted_n))
+    Ok((eastings + e_shift, northings + n_shift))
 }
 
+// Intermediate calculation used for lon, lat to ETRS89 and reverse conversion
 fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
     let p_plus = *phi + PHI0;
     let p_minus = *phi - PHI0;
@@ -159,6 +158,8 @@ fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
      35. / 24. * n.powf(3.) * (3. * p_minus).sin() * (3. * p_plus).cos())
 }
 
+// Easting and Northing to Lon, Lat conversion using a Helmert transform
+// Note that either GRS80 or Airy 1830 ellipsoids can be passed
 #[allow(non_snake_case)]
 fn convert_to_ll(eastings: &f64,
                  northings: &f64,
