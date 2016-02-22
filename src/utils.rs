@@ -8,6 +8,20 @@ use std;
 use std::fmt;
 use ostn02_phf::ostn02_lookup;
 
+// fn helmert(lon_vec: [&f64], lat_vec: [&f64]) -> (Vec<f64>, Vec<f64>) {
+//     let t_array = Vec3::new(TX, TY, TZ);
+//     let params = Mat3::new(1. + s, RZS, -RYS, -RZS, 1. + s, RXS, RYS, -RXS, 1. + s);
+//     // let zeros: Vec<&f64> = vec![&1.; lon_vec.len()];
+//     let test = vec![1, 2, 3, 4, 5, 6];
+//     // let mut combined: Vec<&f64> = lon_vec.extend(lat_vec.iter()).collect();
+//     // combined.extend(zeros.iter().cloned());
+//     // let tmat = DMat::from_row_vec(3, zeros.len(), &combined);
+//     let tmat = DMat::from_row_vec(3, 2, &test);
+//     // build input vector of x, y, and z columns
+//     // let inp = DMat::from_row_vec(3, 1, vec![lon_vec, lat_vec, h_vec]);
+//     (vec![1.], vec![2.])
+// }
+
 /// Bounds checking for input values
 pub fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
     where T: std::cmp::PartialOrd + fmt::Display + Copy
