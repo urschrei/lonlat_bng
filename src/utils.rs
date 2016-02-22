@@ -18,7 +18,6 @@ pub fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
     }
 }
 
-// TODO Herbie's going to have a field day with this
 /// Round Easting, Northing, and Orthometric height to the nearest millimetre
 pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
     let new_x = (x * 1000.).round() as f64 / 1000.;
@@ -27,7 +26,6 @@ pub fn round_to_nearest_mm(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
     (new_x, new_y, new_z)
 }
 
-// TODO Herbie's going to have a field day with this
 /// Round a float to nine decimal places
 pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
     let new_x = (x * 100000000.).round() as f64 / 100000000.;
@@ -35,7 +33,7 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
     (new_x, new_y)
 }
 
-// Try to get OSTN02 shift parameters, and calculate offsets
+/// Try to get OSTN02 shift parameters, and calculate offsets
 pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     let key = format!("{:03x}{:03x}", y, x);
     // some or None, so try! this
