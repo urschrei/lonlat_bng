@@ -67,6 +67,7 @@ pub use ffi::convert_etrs89_to_osgb36_threaded;
 pub use ffi::convert_etrs89_to_ll_threaded;
 pub use ffi::convert_osgb36_to_ll_threaded;
 pub use ffi::convert_osgb36_to_etrs89_threaded;
+pub use ffi::convert_epsg3857_to_wgs84_threaded;
 
 pub use conversions::convert_bng;
 pub use conversions::convert_lonlat;
@@ -76,6 +77,7 @@ pub use conversions::convert_etrs89_to_osgb36;
 pub use conversions::convert_osgb36_to_etrs89;
 pub use conversions::convert_osgb36_to_ll;
 pub use conversions::convert_etrs89_to_ll;
+pub use conversions::convert_epsg3857_to_wgs84;
 
 /// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
 pub fn convert_to_bng_threaded_vec<'a, 'b>(longitudes: &'a mut [f64],
@@ -133,6 +135,13 @@ pub fn convert_osgb36_to_ll_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
     convert_vec_direct(eastings, northings, convert_osgb36_to_ll)
 }
 
+/// A threaded wrapper for [`lonlat_bng::convert_epsg3857_to_wgs84`](fn.convert_epsg3857_to_wgs84.html)
+pub fn convert_epsg3857_to_wgs84_threaded_vec<'a, 'b>(x: &'a mut [f64],
+                                                 y: &'b mut [f64])
+                                                 -> (&'a mut [f64], &'b mut [f64]) {
+    convert_vec_direct(x, y, convert_epsg3857_to_wgs84)
+}
+
 // Generic function which applies conversion functions to vector chunks within threads
 // As opposed to convert_vec, we're directly modifying and returning the
 // input vectors here, at the cost of having to use lifetime annotations
@@ -187,8 +196,29 @@ mod tests {
     use super::convert_osgb36_to_etrs89_threaded;
     use super::convert_osgb36_to_ll_threaded;
     use super::convert_etrs89_to_ll_threaded;
+    use super::convert_epsg3857_to_wgs84_threaded;
 
     extern crate libc;
+
+    #[test]
+    // Test Google/Bing Maps to WGS84 conversion
+    fn test_epsg3857() {
+        let x = vec![-626172.1357121646];
+        let y = vec![6887893.4928337997];
+        let x_arr = Array {
+            data: x.as_ptr() as *const libc::c_void,
+            len: x.len() as libc::size_t,
+        };
+        let y_arr = Array {
+            data: y.as_ptr() as *const libc::c_void,
+            len: y.len() as libc::size_t,
+        };
+        let (lon, lat) = convert_epsg3857_to_wgs84_threaded(x_arr, y_arr); 
+        let retval = unsafe { lon.as_f64_slice() };
+        let retval2 = unsafe { lat.as_f64_slice() };
+        let expected = (-5.625000000783013, 52.48278022732355);
+        assert_eq!(expected, (retval[0], retval2[0]));
+    }
 
     #[test]
     // this test verifies that we aren't mangling memory inside our threads

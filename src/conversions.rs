@@ -488,6 +488,16 @@ pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
     Ok(round_to_eight(lon, lat))
 }
 
+/// Convert Web Mercator (from Google Maps or Bing Maps) to WGS84
+//  from https://alastaira.wordpress.com/2011/01/23/the-google-maps-bing-maps-spherical-mercator-projection/
+pub fn convert_epsg3857_to_wgs84(x: &f64, y: &f64) -> Result<(f64, f64), ()> {
+      let lon = (x / 20037508.34) * 180.;
+      let mut lat = (y / 20037508.34) * 180.;
+      lat = 180. / PI * (2. * (lat * PI / 180.).exp().atan() - PI / 2.);
+                      // (2 * Math.Atan(Math.Exp(lat * Math.PI / 180))
+      Ok((lon, lat))
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -498,6 +508,16 @@ mod tests {
     use super::convert_osgb36_to_ll;
     use super::convert_bng;
     use super::convert_lonlat;
+    use super::convert_epsg3857_to_wgs84;
+
+    #[test]
+    fn test_gmaps_to_wgs() {
+        let x = -626172.1357121646;
+        let y = 6887893.4928337997;
+        let expected = (-5.625000000783013, 52.48278022732355);
+        assert_eq!(expected, convert_epsg3857_to_wgs84(&x, &y).unwrap());
+
+    }
 
     #[test]
     fn test_convert_osgb36_to_ll() {
