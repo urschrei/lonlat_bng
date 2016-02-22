@@ -89,13 +89,13 @@ Test machine:
 | Coordinates    | Method | Time (ms) | Speedup |
 |:---------------|:------:|:---------:|--------:|
 | 100k (50 runs) | Python | 547       | N/A     |
-|                |**Rust**| 73.9      |**7.4x** |
+|                |**Rust**| 68.2      |**8x**   |
 |                | Pyproj | 57.2      | 9.5x    |
 | 1mm (50 runs)  | Python | 5560      | N/A     |
-|                |**Rust**| 624       |**8.9x** |
-|                | Pyproj | 510       | 10.9x   |
+|                |**Rust**| 624       |**9.1x** |
+|                | Pyproj | 537       | 10.9x   |
 | 10mm (50 runs) | Python | 54500     | N/A     |
-|                |**Rust**| 6360      |**8.6x** |
+|                |**Rust**| 6150      |**8.9x** |
 |                | Pyproj | 4710      | 11.5    | 
 
 
