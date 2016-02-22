@@ -50,6 +50,8 @@ The FFI C-compatible functions exposed by the library are:
 `convert_etrs89_to_osgb36_threaded(Array, Array) -> Array`  
 `convert_osgb36_to_etrs89_threaded(Array, Array) -> Array`  
 
+`convert_epsg3857_to_wgs84_threaded(Array, Array) -> Array`  
+
 And for freeing the memory allocated by the above  
 `drop_float_array(Array) -> Null`  
 
