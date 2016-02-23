@@ -138,7 +138,8 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
     let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
     convert_to_lonlat_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from_vec(eastings_vec), Array::from_vec(northings_vec))
+    (Array::from_vec(eastings_vec),
+     Array::from_vec(northings_vec))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
@@ -269,12 +270,9 @@ pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
 #[no_mangle]
-pub extern "C" fn convert_epsg3857_to_wgs84_threaded(x: Array,
-                                                    y: Array)
-                                                    -> (Array, Array) {
+pub extern "C" fn convert_epsg3857_to_wgs84_threaded(x: Array, y: Array) -> (Array, Array) {
     let mut x_vec = unsafe { x.as_f64_slice().to_vec() };
     let mut y_vec = unsafe { y.as_f64_slice().to_vec() };
     convert_epsg3857_to_wgs84_threaded_vec(&mut x_vec, &mut y_vec);
-    (Array::from_vec(x_vec),
-     Array::from_vec(y_vec))
+    (Array::from_vec(x_vec), Array::from_vec(y_vec))
 }
