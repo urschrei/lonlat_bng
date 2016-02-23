@@ -16,7 +16,7 @@
 //! - [`convert_osgb36_to_etrs89_threaded_vec`](fn.convert_osgb36_to_etrs89_threaded_vec.html)
 //!
 //! These functions transform input longitude and latitude coordinates to OSGB36 Eastings and Northings with high accuracy, and are suitable for use in surveying and construction. Please run your own tests, though.
-//! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(NaN, NaN)`, which cannot be mapped.**
+//! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(NAN, NAN)`, which cannot be mapped.**
 //!
 //! # Examples
 //!
