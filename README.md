@@ -33,7 +33,7 @@ Add the following to your `Cargo.toml` (the latest version is displayed on the s
 
 Full library documentation is available [here](http://urschrei.github.io/lonlat_bng/)  
 
-**Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.**  
+**Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(NAN, NAN)`, which cannot be mapped.**  
 
 The functions exposed by the library can be found [here](http://urschrei.github.io/lonlat_bng/lonlat_bng/index.html#functions)
 
