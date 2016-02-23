@@ -16,7 +16,7 @@
 //! - [`convert_osgb36_to_etrs89_threaded_vec`](fn.convert_osgb36_to_etrs89_threaded_vec.html)
 //!
 //! These functions transform input longitude and latitude coordinates to OSGB36 Eastings and Northings with high accuracy, and are suitable for use in surveying and construction. Please run your own tests, though.
-//! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(9999, 9999)`, which cannot be mapped.**
+//! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(NaN, NaN)`, which cannot be mapped.**
 //!
 //! # Examples
 //!
@@ -78,6 +78,9 @@ pub use conversions::convert_osgb36_to_etrs89;
 pub use conversions::convert_osgb36_to_ll;
 pub use conversions::convert_etrs89_to_ll;
 pub use conversions::convert_epsg3857_to_wgs84;
+
+use std::f64;
+pub const NAN: f64 = f64::NAN;
 
 /// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
 pub fn convert_to_bng_threaded_vec<'a, 'b>(longitudes: &'a mut [f64],
@@ -171,8 +174,8 @@ fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
                             *ny_elem = res.1;
                         }
                         Err(_) => {
-                            *ex_elem = 9999.000;
-                            *ny_elem = 9999.000;
+                            *ex_elem = NAN;
+                            *ny_elem = NAN;
                         }
                     };
                 }
@@ -576,7 +579,7 @@ mod tests {
         };
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
         let retval = unsafe { eastings.as_f64_slice() };
-        assert_eq!(9999.000, retval[0]);
+        assert!(retval[0].is_nan());
     }
 
 }
