@@ -130,8 +130,8 @@ pub fn convert_osgb36_to_ll_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
 
 /// A threaded wrapper for [`lonlat_bng::convert_epsg3857_to_wgs84`](fn.convert_epsg3857_to_wgs84.html)
 pub fn convert_epsg3857_to_wgs84_threaded_vec<'a, 'b>(x: &'a mut [f64],
-                                                 y: &'b mut [f64])
-                                                 -> (&'a mut [f64], &'b mut [f64]) {
+                                                      y: &'b mut [f64])
+                                                      -> (&'a mut [f64], &'b mut [f64]) {
     convert_vec_direct(x, y, convert_epsg3857_to_wgs84)
 }
 
@@ -206,7 +206,7 @@ mod tests {
             data: y.as_ptr() as *const libc::c_void,
             len: y.len() as libc::size_t,
         };
-        let (lon, lat) = convert_epsg3857_to_wgs84_threaded(x_arr, y_arr); 
+        let (lon, lat) = convert_epsg3857_to_wgs84_threaded(x_arr, y_arr);
         let retval = unsafe { lon.as_f64_slice() };
         let retval2 = unsafe { lat.as_f64_slice() };
         let expected = (-5.625000000783013, 52.48278022732355);
@@ -234,9 +234,9 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_os_etrs89_to_osgb36() {
         // these are the values from the OSTN02 download
+        // they exclude the two values which fall outside the bounding box
         // several values differ by one digit in the third decimal place (mm)
         let etrs89_e_vec = vec![331439.16, 362174.408, 151874.984, 339824.598, 241030.731,
                                 599345.196, 357359.683, 389448.042, 319092.329, 525643.491,
@@ -351,8 +351,18 @@ mod tests {
         let (osgb36_eastings, osgb36_northings) = convert_etrs89_to_osgb36_threaded(e_arr, n_arr);
         let retval = unsafe { osgb36_eastings.as_f64_slice() };
         let retval2 = unsafe { osgb36_northings.as_f64_slice() };
-        assert_eq!(osgb36_e_vec, retval);
-        assert_eq!(osgb36_n_vec, retval2);
+        // We're using absolute error margins here, but it should be OK
+        // test eastings
+        for (expect, result) in osgb36_e_vec.iter().zip(retval.iter()) {
+            assert!(((expect - result) / result).abs() < 0.0000001)
+        }
+        // test northings
+        for (expect, result) in osgb36_n_vec.iter().zip(retval2.iter()) {
+            assert!(((expect - result) / result).abs() < 0.0000001)
+        }
+        // This will fail because 11 results differ by .001 (so 1 mm)
+        // assert_eq!(osgb36_e_vec, retval);
+        // assert_eq!(osgb36_n_vec, retval2);
     }
 
     #[test]
