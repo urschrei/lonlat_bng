@@ -275,6 +275,8 @@ pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     Ok((x, y))
 }
 
+/// **THIS FUNCTION IS DEPRECATED**  
+/// 
 /// Perform Longitude, Latitude to British National Grid conversion
 ///
 /// # Examples
@@ -283,6 +285,7 @@ pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 /// use lonlat_bng::convert_bng;
 /// assert_eq!((516276.000, 173141.000), convert_bng(&-0.32824866, &51.44533267).unwrap());
 #[allow(non_snake_case)]
+#[allow(dead_code)]
 pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_double), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
@@ -375,7 +378,8 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_doubl
     Ok((result.0, result.1))
 }
 
-
+/// **THIS FUNCTION IS DEPRECATED**  
+/// 
 /// Perform British National Grid Eastings, Northings to Longitude, Latitude conversion
 ///
 /// # Examples
@@ -384,6 +388,7 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_doubl
 /// use lonlat_bng::convert_lonlat;
 /// assert_eq!((-0.328248, 51.44534), convert_lonlat(&516276, &173141));
 #[allow(non_snake_case)]
+#[allow(dead_code)]
 pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a = AIRY_1830_SEMI_MAJOR;

@@ -1,14 +1,14 @@
 [![Build Status](https://travis-ci.org/urschrei/lonlat_bng.png?branch=master)](https://travis-ci.org/urschrei/lonlat_bng) [![](https://img.shields.io/crates/v/lonlat_bng.svg)](https://crates.io/crates/lonlat_bng) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt)  
 
 ## Introduction
-An attempt at speeding up the conversion between decimal longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary with FFI. Conversions use both the faster, less accurate Helmert transform, and the slower OSTN02-enabled transform for [accuracy](#accuracy), where appropriate.
+An attempt at speeding up the conversion between decimal longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary with FFI. Conversions use a standrad Helmert transform, with the addition of OSTN02 corrections for [accuracy](#accuracy), where appropriate.
 
 ## Motivation
 Python is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement could save precious minutes
 
 ## Accuracy
-The Helmert transform used in `convert_bng` `convert_lonlat` and their threaded and vectorised versions is accurate to within 7 metres on average, and is **not suitable** for calculations or conversions used in e.g. surveying.    
-**If higher accuracy is required, use the OSTN02-enabled functions**, which adjust for local variation within the Terrestrial Reference Frame by incorporating OSTN02 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
+The Helmert transforms and their threaded and vectorised versions are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying.    
+Thus, we use the OSTN02 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN02 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
 
 The OSTN02-enabled functions are:
 
@@ -22,6 +22,12 @@ The OSTN02-enabled functions are:
 - convert_osgb36_to_ll_threaded_vec
 - convert_osgb36_to_etrs89_threaded ← FFI
 - convert_osgb36_to_etrs89_threaded_vec
+
+- convert_bng_threaded (an alias for convert_osgb36_threaded)
+- convert_bng_threaded_vec ← FFI version of the above
+
+- convert_lonlat_threaded (an alias for convert_osgb36_to_ll)
+- convert_lonlat_threaded_vec ← FFI version of the above
 
 [![OSTN02](ostn002_s.gif)]( "OSTN02")
 

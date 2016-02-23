@@ -22,22 +22,14 @@
 //!
 //! ```
 //! // Convert single Longitude, Latitude values to OSGB36 Eastings and Northings
-//! assert_eq!((651409.792, 313177.448), lonlat_bng::ostn02::convert_osgb36(&1.716073973, &52.658007833).unwrap());
+//! assert_eq!((651409.792, 313177.448), lonlat_bng::convert_osgb36(&1.716073973, &52.658007833).unwrap());
 //! ```
 //! ```
-//! // Convert single Longitude, Latitude values to BNG Eastings and Northings (Fast, but only accurate within ~7m)
-//! assert_eq!((516276, 173141), lonlat_bng::convert_bng(&-0.32824866, &51.44533267).unwrap());
+//! // Convert vectors using multi-threaded functions
+//! lonlat_bng::convert_to_osgb36_threaded_vec(vec![&-0.32824866], vec![&51.44533267]);
 //! ```
 //! ```
-//! // Convert single BNG values to Longitude, Latitude (Fast, but only accurate within ~7m)
-//! assert_eq!((-0.328248, 51.44534), lonlat_bng::convert_lonlat(&516276, &173141));
-//! ```
-//! ```
-//! // Convert vectors using threaded functions
-//! lonlat_bng::convert_to_bng_threaded_vec(vec![&-0.32824866], vec![&51.44533267]);
-//! ```
-//! ```
-//! lonlat_bng::convert_to_lonlat_threaded_vec(vec![&516276], vec![&173141]);
+//! lonlat_bng::convert_osgb36_to_lonlat_threaded_vec(vec![&516276], vec![&173141]);
 //! ```
 //! The crate also provides C-compatible wrapper functions, which are intended for use with FFI.
 //! An example implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng).
@@ -69,8 +61,6 @@ pub use ffi::convert_osgb36_to_ll_threaded;
 pub use ffi::convert_osgb36_to_etrs89_threaded;
 pub use ffi::convert_epsg3857_to_wgs84_threaded;
 
-pub use conversions::convert_bng;
-pub use conversions::convert_lonlat;
 pub use conversions::convert_etrs89;
 pub use conversions::convert_osgb36;
 pub use conversions::convert_etrs89_to_osgb36;
@@ -82,18 +72,18 @@ pub use conversions::convert_epsg3857_to_wgs84;
 use std::f64;
 pub const NAN: f64 = f64::NAN;
 
-/// A threaded wrapper for [`lonlat_bng::convert_bng`](fn.convert_bng.html)
+/// A threaded wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
 pub fn convert_to_bng_threaded_vec<'a, 'b>(longitudes: &'a mut [f64],
                                            latitudes: &'b mut [f64])
                                            -> (&'a mut [f64], &'b mut [f64]) {
-    convert_vec_direct(longitudes, latitudes, convert_bng)
+    convert_vec_direct(longitudes, latitudes, convert_osgb36)
 }
 
-/// A threaded wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
+/// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
 pub fn convert_to_lonlat_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
                                               northings: &'b mut [f64])
                                               -> (&'a mut [f64], &'b mut [f64]) {
-    convert_vec_direct(eastings, northings, convert_lonlat)
+    convert_vec_direct(eastings, northings, convert_osgb36_to_ll)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
@@ -366,40 +356,9 @@ mod tests {
     }
 
     #[test]
-    fn test_threaded_bng_conversion() {
-        let lon_vec: Vec<f64> = vec![-2.0183041005533306,
-                                     0.95511887434519682,
-                                     0.44975855518383501,
-                                     -0.096813621191803811,
-                                     -0.36807065656416427,
-                                     0.63486335458665621];
-        let lat_vec: Vec<f64> = vec![54.589097162646141,
-                                     51.560873800587828,
-                                     50.431429161121699,
-                                     54.535021436247419,
-                                     50.839059313135706,
-                                     55.412189281234419];
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
-        let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
-        let retval = unsafe { eastings.as_f64_slice() };
-        let retval2 = unsafe { northings.as_f64_slice() };
-        // the value's incorrect, but let's worry about that later
-        assert_eq!(398915.033, retval[0]);
-        assert_eq!(521545.067, retval2[0]);
-    }
-
-    #[test]
     fn test_threaded_bng_conversion_single() {
-        // I spent 8 hours confused cos I didn't catch that chunks(0) is invalid
-        let lon_vec: Vec<f64> = vec![-2.0183041005533306];
-        let lat_vec: Vec<f64> = vec![54.589097162646141];
+        let lon_vec: Vec<f64> = vec![1.716073973];
+        let lat_vec: Vec<f64> = vec![52.65800783];
         let lon_arr = Array {
             data: lon_vec.as_ptr() as *const libc::c_void,
             len: lon_vec.len() as libc::size_t,
@@ -410,13 +369,14 @@ mod tests {
         };
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
         let retval = unsafe { eastings.as_f64_slice() };
-        assert_eq!(398915.033, retval[0]);
+        assert_eq!(651409.792, retval[0]);
     }
 
     #[test]
     fn test_threaded_lonlat_conversion_single() {
-        let easting_vec: Vec<i32> = vec![516276];
-        let northing_vec: Vec<i32> = vec![173141];
+        // Caister Water Tower OSGB36 coords
+        let easting_vec: Vec<f64> = vec![651409.792];
+        let northing_vec: Vec<f64> = vec![313177.448];
 
 
         let easting_arr = Array {
@@ -432,8 +392,7 @@ mod tests {
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
         // http://floating-point-gui.de/errors/comparison/
-        assert!((retval[0] - -0.32824799370716407).abs() / -0.32824799370716407 < 0.000000001);
-        // assert!((retval[1] - 51.44534026616287).abs() / 51.44534026616287 < 0.0000000001);
+        assert_eq!(1.71607397, retval[0]);
     }
 
     #[test]

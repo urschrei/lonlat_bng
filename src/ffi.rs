@@ -83,7 +83,7 @@ impl Array {
     }
 }
 
-/// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_bng`
+/// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_osgb36`
 ///
 /// # Examples
 ///
@@ -124,11 +124,11 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
     (Array::from_vec(longitudes_v), Array::from_vec(latitudes_v))
 }
 
-/// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_lonlat`](fn.convert_lonlat.html)
+/// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
 ///
 /// # Examples
 ///
-/// See [`lonlat_bng::convert_to_bng_threaded`](fn.convert_to_bng_threaded.html) , substituting i32 vectors
+/// See [`lonlat_bng::convert_to_bng_threaded`](fn.convert_to_bng_threaded.html)
 ///
 /// # Safety
 ///
