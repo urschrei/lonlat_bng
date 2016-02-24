@@ -60,11 +60,6 @@ impl Array {
         slice::from_raw_parts(self.data as *const f64, self.len as usize)
     }
 
-    pub unsafe fn as_f64_slice_mut(&self) -> &mut [f64] {
-        assert!(!self.data.is_null());
-        slice::from_raw_parts_mut(self.data as *mut f64, self.len as usize)
-    }
-
     pub fn from_vec<T>(mut vec: Vec<T>) -> Array {
         // Important to make length and capacity match
         // A better solution is to track both length and capacity
