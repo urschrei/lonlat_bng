@@ -499,7 +499,6 @@ pub fn convert_epsg3857_to_wgs84(x: &f64, y: &f64) -> Result<(f64, f64), ()> {
     let lon = (x / 20037508.34) * 180.;
     let mut lat = (y / 20037508.34) * 180.;
     lat = 180. / PI * (2. * (lat * PI / 180.).exp().atan() - PI / 2.);
-    // (2 * Math.Atan(Math.Exp(lat * Math.PI / 180))
     Ok((lon, lat))
 }
 
