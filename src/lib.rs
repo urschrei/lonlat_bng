@@ -145,7 +145,7 @@ fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
     where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy
 {
     // TODO measure number of threads v perf more effectively
-    let numthreads = num_cpus::get() * 8 as usize;
+    let numthreads = num_cpus::get() * 32 as usize;
     let mut size = ex.len() / numthreads;
     if ex.len() % numthreads > 0 {
         size += 1;
