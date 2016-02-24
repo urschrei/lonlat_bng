@@ -536,7 +536,7 @@ mod tests {
     #[test]
     fn test_bad_threaded_conversion() {
         // above maximum longitude
-        let lon_vec: Vec<f64> = vec![-6.379881];
+        let lon_vec: Vec<f64> = vec![1.85];
         let lat_vec: Vec<f64> = vec![55.811741];
         let lon_arr = Array {
             data: lon_vec.as_ptr() as *const libc::c_void,

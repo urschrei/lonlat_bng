@@ -9,8 +9,8 @@ extern crate libc;
 
 fn main() {
     let num_coords = 1000000;
-    let between_lon = Range::new(-6.379880, 1.768960);
-    let between_lat = Range::new(49.871159, 55.811741);
+    let between_lon = Range::new(7.5600, 1.7800);
+    let between_lat = Range::new(49.9600, 60.8400);
     let mut rng = rand::thread_rng();
     let lon_vec = vec![between_lon.ind_sample(&mut rng); num_coords];
     let lat_vec = vec![between_lat.ind_sample(&mut rng); num_coords];
