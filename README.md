@@ -114,7 +114,7 @@ Using multithreading gives excellent performance (Pyproj – which is a compiled
 Comparing how varying threads and weights affects overall speed, using [`cargo bench`](benches/benchmarks.rs)  
 On a two-core machine, `cores * 4` threads / a weight of `200` give optimum performance. Note the difference between 1 thread and multiple threads.
 
-[![comparison](crossbeam_v_rayon.png)]( "Comparison")
+<img src="crossbeam_v_rayon.png" alt="Comparison" style="width: 789px;"/>
 
 # License
 [MIT](license.txt)  
