@@ -141,7 +141,7 @@ fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
                                  -> (&'a mut [f64], &'b mut [f64])
     where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy + Sync
 {
-    ex.par_iter_mut().zip(ny.par_iter_mut()).for_each(|p| {
+    ex.par_iter_mut().zip(ny.par_iter_mut()).weight(50.0).for_each(|p| {
         match func(p.0, p.1) {
             // mutate values, or assign default error values
             Ok(res) => {
