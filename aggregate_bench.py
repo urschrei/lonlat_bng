@@ -34,6 +34,7 @@ def dump_benchmark(pattern, filepath=None, headers=None, idep_var=None, **kwargs
         headers = ['time', 'error']
     # run cargo bench in cwd, capture output
     result = re.search(pattern, check_output(["cargo", "bench"]))
+    # get rid of nasty commas, convert to int
     output = [int(group.translate(None, ',')) for group in result.groups()]
     # this one's special because wtf are we measuring without a dependent variable
     if idep_var:
@@ -46,7 +47,6 @@ def dump_benchmark(pattern, filepath=None, headers=None, idep_var=None, **kwargs
         output.append(v)
     # check that path and file exist, or create them
     path_wrangle(filepath, headers)
-    # get rid of nasty commas, convert to int, and write
     with open(filepath, 'a') as handle:
         wr = csv.writer(handle)
         wr.writerow(output)
