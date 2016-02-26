@@ -4,6 +4,7 @@
 A wrapper for cargo bench
 Its numeric output is parsed and dumped to a csv
 Pass an an optional dependent variable from the command line
+And also any other static keys and values
 (C) Stephan Hügel 2016
 License: MIT
 """
@@ -16,11 +17,11 @@ pattern = re.compile(
     r"bench:\s+([0-9,]*)\D+([0-9,]*)"
 )
 
-def dump_benchmark(pattern, filepath=None, headers=None, dep_var=None, **kwargs):
+def dump_benchmark(pattern, filepath=None, headers=None, idep_var=None, **kwargs):
     """ If I have to append benchmark output to a CSV once more I'm going
     to drown the world in a bath of fire. This should just work.
     Customise with your own output path and header row.
-    dep_var is an optional dependent variable.
+    dep_var is an optional independent variable.
     """
     if not filepath:
         filepath = "measurements.csv"
@@ -30,9 +31,9 @@ def dump_benchmark(pattern, filepath=None, headers=None, dep_var=None, **kwargs)
     result = re.search(pattern, check_output(["cargo", "bench"]))
     output = [int(group.translate(None, ',')) for group in result.groups()]
     # this one's special because wtf are we measuring without a dependent variable
-    if dep_var:
-        headers.append("dependent_variable")
-        output.append(dep_var)
+    if idep_var:
+        headers.append("independent_variable")
+        output.append(idep_var)
     # anything else will get written as a CSV header row and value
     # nothing prevents you from writing rows that don't have a header
     for k, v in kwargs.items():
@@ -60,8 +61,8 @@ def path_wrangle(filepath, headers):
             wr.writerow(headers)
 
 if __name__ == "__main__":
-    dep_var = None
+    idep_var = None
     # So brittle. Shhh.
     if sys.argv[1] is not None:
-        dep_var = sys.argv[1]
-    dump_benchmark(pattern, filepath="benches/measurements.csv", dep_var=dep_var)
+        idep_var = sys.argv[1]
+    dump_benchmark(pattern, filepath="benches/measurements.csv", idep_var=idep_var)
