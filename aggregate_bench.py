@@ -32,6 +32,7 @@ def dump_benchmark(pattern, filepath=None, headers=None, dep_var=None):
     if dep_var:
         headers.append("dependent_variable")
         output.append(dep_var)
+    # TODO this should be way more robust
     # does the CSV exist?
     if not os.path.isfile(filepath):
         with open(filepath, 'w') as newhandle:
