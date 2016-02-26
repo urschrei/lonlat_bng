@@ -3,7 +3,7 @@
 """
 A wrapper for cargo bench
 Its numeric output is parsed and dumped to a csv
-Pass an an optional dependent variable from the command line
+Pass an an optional independent variable from the command line
 And also any other static keys and values
 (C) Stephan Hügel 2016
 License: MIT
