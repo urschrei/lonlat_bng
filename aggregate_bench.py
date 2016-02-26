@@ -36,7 +36,7 @@ def dump_benchmark(pattern, filepath=None, headers=None, idep_var=None, **kwargs
     result = re.search(pattern, check_output(["cargo", "bench"]))
     # get rid of nasty commas, convert to int
     output = [int(group.translate(None, ',')) for group in result.groups()]
-    # this one's special because wtf are we measuring without a dependent variable
+    # this one's special because wtf are we measuring without an independent variable
     if idep_var:
         headers.append("independent_variable")
         output.append(idep_var)
