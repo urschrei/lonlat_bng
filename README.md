@@ -112,7 +112,7 @@ Using multithreading gives excellent performance (Pyproj – which is a compiled
 
 # Comparing Crossbeam and Rayon
 Comparing how varying threads and weights affects overall speed, using [`cargo bench`](benches/benchmarks.rs)  
-On a two-core machine, `cores * 4` threads / a weight of `200` give optimum performance. Note the difference between 1 thread and multiple threads.
+On a two-core machine, one thread per core gives optimum performance, whereas Rayon does a good job at choosing its own optimum weight. Note the difference between 1 thread and multiple threads.
 
 <img src="crossbeam_v_rayon.png" alt="Comparison" style="width: 789px;"/>
 
