@@ -5,6 +5,11 @@ A wrapper for cargo bench
 Its numeric output is parsed and dumped to a csv
 Pass an an optional independent variable from the command line
 And also any other static keys and values
+
+USAGE: python aggregate_bench.py [independent variable]
+Writes to measurements.csv in the cwd by default, pass a different filepath to alter this
+any other keyword arguments will be written as a header row and value. Be careful with that.
+
 (C) Stephan Hügel 2016
 License: MIT
 """
