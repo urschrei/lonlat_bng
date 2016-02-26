@@ -32,16 +32,26 @@ def dump_benchmark(pattern, filepath=None, headers=None, dep_var=None):
     if dep_var:
         headers.append("dependent_variable")
         output.append(dep_var)
-    # TODO this should be way more robust
-    # does the CSV exist?
-    if not os.path.isfile(filepath):
-        with open(filepath, 'w') as newhandle:
-            wr = csv.writer(newhandle)
-            wr.writerow(headers)
+    # check that path and file exist, or create them
+    path_wrangle(filepath, headers)
     # get rid of nasty commas, convert to int, and write
     with open(filepath, 'a') as handle:
         wr = csv.writer(handle)
         wr.writerow(output)
+
+def path_wrangle(filepath, headers):
+    """ Check for or create path and output file
+    There's no error handling, because noisy failure's probably a good thing
+    """
+    # check for or create directory path
+    directory = os.path.split(filepath)[0]
+    if not os.path.exists(directory):
+            os.makedirs(directory)
+    # if that worked, see if the CSV exists, and create a new one if necessary
+    if not os.path.isfile(filepath):
+        with open(filepath, 'w') as newhandle:
+            wr = csv.writer(newhandle)
+            wr.writerow(headers)
 
 if __name__ == "__main__":
     dep_var = None
