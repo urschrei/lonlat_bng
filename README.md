@@ -4,7 +4,7 @@
 An attempt at speeding up the conversion between decimal longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary with FFI. Conversions use a standrad Helmert transform, with the addition of OSTN02 corrections for [accuracy](#accuracy), where appropriate.
 
 # Motivation
-Python is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement could save precious minutes
+Python (etc.) is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement using FFI could save precious minutes.
 
 # Accuracy
 The Helmert transforms and their threaded and vectorised versions are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying.    
@@ -58,13 +58,11 @@ The FFI C-compatible functions exposed by the library are:
 
 `convert_epsg3857_to_wgs84_threaded(Array, Array) -> Array`  
 
-And for freeing the memory allocated by the above  
-`drop_float_array(Array) -> Null`  
-
-The `Array`s must contain `c_double` values. For examples, see the `Array` struct and tests in [ffi.rs](src/ffi.rs), and the `_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).  
-
 ### FFI and Memory Management
-If your library, module, or script uses the FFI functions, it **must** implement `drop_float_array`. **Failing to do so may result in memory leaks**. 
+If your library, module, or script uses the FFI functions, it **must** implement `drop_float_array`. **Failing to do so may result in memory leaks**.  
+Its signature: `drop_float_array(ar1: Array, ar2: Array)`  
+
+The Array structs you pass to `drop_float_array` must be those you receive from the FFI function. For examples, see the `Array` struct and tests in [ffi.rs](src/ffi.rs), and the `_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).
 
 ### Building the Shared Library
 Running `cargo build --release` will build an artefact called `liblonlat_bng.dylib` on OSX, and `liblonlat_bng.a` on `*nix` systems. Note that you'll have to generate `liblonlat_bng.so` for `*nix` hosts using the following steps:
@@ -112,7 +110,7 @@ Using multithreading gives excellent performance (Pyproj – which is a compiled
 
 # Comparing Crossbeam and Rayon
 Comparing how varying threads and weights affects overall speed, using [`cargo bench`](benches/benchmarks.rs)  
-On a two-core machine, one thread per core gives optimum performance, whereas Rayon does a good job at choosing its own optimum weight. Note the difference between 1 thread and multiple threads.
+On a two-core machine, running `convert_bng_threaded_vec`, one thread per core gives optimum performance, whereas Rayon does a good job at choosing its own optimum weight. Note the difference between 1 thread and multiple threads.
 
 <img src="crossbeam_v_rayon.png" alt="Comparison" style="width: 789px;"/>
 
