@@ -22,16 +22,17 @@ pattern = re.compile(
     r"bench:\s+([0-9,]*)\D+([0-9,]*)"
 )
 
-def dump_benchmark(pattern, filepath=None, headers=None, idep_var=None, **kwargs):
+def dump_benchmark(
+    pattern,
+    filepath="measurements.csv",
+    headers=['time', 'error'],
+    idep_var=None,
+    **kwargs):
     """ If I have to append benchmark output to a CSV once more I'm going
     to drown the world in a bath of fire. This should just work.
     Customise with your own output path and header row.
-    dep_var is an optional independent variable.
+    idep_var is an optional independent variable.
     """
-    if not filepath:
-        filepath = "measurements.csv"
-    if not headers:
-        headers = ['time', 'error']
     # run cargo bench in cwd, capture output
     result = re.search(pattern, check_output(["cargo", "bench"]))
     # get rid of nasty commas, convert to int
@@ -40,7 +41,7 @@ def dump_benchmark(pattern, filepath=None, headers=None, idep_var=None, **kwargs
     if idep_var:
         headers.append("independent_variable")
         output.append(idep_var)
-    # anything else will get written as a CSV header row and value
+    # any other kwargs will be written as a CSV header row and value
     # nothing prevents you from writing rows that don't have a header
     for k, v in kwargs.items():
         headers.append(k),
@@ -66,6 +67,7 @@ def path_wrangle(filepath, headers):
             wr.writerow(headers)
 
 if __name__ == "__main__":
+    # You know what an independent variable is, of course
     idep_var = None
     # So brittle. Shhh.
     if sys.argv[1] is not None:
