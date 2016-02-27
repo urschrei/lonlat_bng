@@ -39,7 +39,7 @@ def dump_benchmark(
     output = [int(group.translate(None, ',')) for group in result.groups()]
     # this one's special because wtf are we measuring without an independent variable
     if idep_var:
-        headers.append("independent_variable")
+        headers.append("ivariable")
         output.append(idep_var)
     # any other kwargs will be written as a CSV header row and value
     # nothing prevents you from writing rows that don't have a header
@@ -72,4 +72,11 @@ if __name__ == "__main__":
     # So brittle. Shhh.
     if sys.argv[1] is not None:
         idep_var = sys.argv[1]
-    dump_benchmark(pattern, filepath="benches/measurements.csv", idep_var=idep_var)
+    dump_benchmark(
+        pattern,
+        filepath="benches/benchmarks.csv",
+        idep_var=idep_var,
+        num_points=100000,
+        cores=2,
+        method="crossbeam"
+    )
