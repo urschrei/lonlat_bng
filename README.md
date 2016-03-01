@@ -1,17 +1,20 @@
 [![Build Status](https://travis-ci.org/urschrei/lonlat_bng.png?branch=master)](https://travis-ci.org/urschrei/lonlat_bng) [![](https://img.shields.io/crates/v/lonlat_bng.svg)](https://crates.io/crates/lonlat_bng) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt)  
 
 # Introduction
-An attempt at speeding up the conversion between decimal longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary with FFI. Conversions use a standrad Helmert transform, with the addition of OSTN02 corrections for [accuracy](#accuracy), where appropriate.
+An attempt at speeding up the conversion between decimal longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary with FFI. Conversions use a standard Helmert transform with the addition of OSTN02 corrections for [accuracy](#accuracy), where appropriate.
 
 # Motivation
 Python (etc.) is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement using FFI could save precious minutes.
 
 # Accuracy
-The Helmert transforms and their threaded and vectorised versions are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying.    
-Thus, we use the OSTN02 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN02 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
+Conversions which solely use Helmert transforms are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying. Thus, we use the OSTN02 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN02 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
 
 The OSTN02-enabled functions are:
 
+- convert_bng_threaded (an alias for convert_osgb36_threaded)
+- convert_bng_threaded_vec ← FFI version of the above
+- convert_lonlat_threaded (an alias for convert_osgb36_to_ll)
+- convert_lonlat_threaded_vec ← FFI version of the above
 - convert_osgb36
 - convert_etrs89_to_osgb36
 - convert_to_osgb36_threaded ← FFI
@@ -22,12 +25,6 @@ The OSTN02-enabled functions are:
 - convert_osgb36_to_ll_threaded_vec
 - convert_osgb36_to_etrs89_threaded ← FFI
 - convert_osgb36_to_etrs89_threaded_vec
-
-- convert_bng_threaded (an alias for convert_osgb36_threaded)
-- convert_bng_threaded_vec ← FFI version of the above
-
-- convert_lonlat_threaded (an alias for convert_osgb36_to_ll)
-- convert_lonlat_threaded_vec ← FFI version of the above
 
 [![OSTN02](ostn002_s.gif)]( "OSTN02")
 
@@ -59,8 +56,7 @@ The FFI C-compatible functions exposed by the library are:
 `convert_epsg3857_to_wgs84_threaded(Array, Array) -> Array`  
 
 ### FFI and Memory Management
-If your library, module, or script uses the FFI functions, it **must** implement `drop_float_array`. **Failing to do so may result in memory leaks**.  
-Its signature: `drop_float_array(ar1: Array, ar2: Array)`  
+If your library, module, or script uses the FFI functions, it **must** implement `drop_float_array`. **Failing to do so may result in memory leaks**. It has the following signature: `drop_float_array(ar1: Array, ar2: Array)`  
 
 The Array structs you pass to `drop_float_array` must be those you receive from the FFI function. For examples, see the `Array` struct and tests in [ffi.rs](src/ffi.rs), and the `_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).
 
