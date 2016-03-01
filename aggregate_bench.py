@@ -77,6 +77,6 @@ if __name__ == "__main__":
         filepath="benches/benchmarks.csv",
         idep_var=idep_var,
         num_points=100000,
-        cores=2,
+        cores=8,
         method="crossbeam"
     )
