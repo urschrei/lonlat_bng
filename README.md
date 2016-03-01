@@ -110,7 +110,7 @@ Using multithreading gives excellent performance (Pyproj – which is a compiled
 
 # Comparing Crossbeam and Rayon
 Comparing how varying threads and weights affects overall speed, using [`cargo bench`](benches/benchmarks.rs)  
-On both two-core i5 and 8-core i7 machines, running `convert_bng_threaded_vec` using one thread per core gives optimum performance, whereas Rayon does a good job at choosing its own optimum weight.
+On both 2-core i5 and 8-core i7 machines, running `convert_bng_threaded_vec` using one thread per core gives optimum performance, whereas Rayon does a good job at choosing its own optimum weight.
 
 <img src="crossbeam_v_rayon.png" alt="Comparison" style="width: 789px;"/>
 
