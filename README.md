@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/urschrei/lonlat_bng.png?branch=master)](https://travis-ci.org/urschrei/lonlat_bng) [![](https://img.shields.io/crates/v/lonlat_bng.svg)](https://crates.io/crates/lonlat_bng) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt)  
+[![Build Status](https://travis-ci.org/urschrei/lonlat_bng.png?branch=master)](https://travis-ci.org/urschrei/lonlat_bng) [![](https://img.shields.io/crates/v/lonlat_bng.svg)](https://crates.io/crates/lonlat_bng) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt) [![Coverage Status](https://coveralls.io/repos/github/urschrei/lonlat_bng/badge.svg?branch=master)](https://coveralls.io/github/urschrei/lonlat_bng?branch=master)  
 
 # Introduction
 An attempt at speeding up the conversion between decimal longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary with FFI. Conversions use a standard Helmert transform with the addition of OSTN02 corrections for [accuracy](#accuracy), where appropriate.
