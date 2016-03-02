@@ -159,19 +159,9 @@ fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use conversions::convert_bng;
-    use ffi::drop_float_array;
-    use ffi::Array;
     use super::convert_vec_direct;
-    use super::convert_to_bng_threaded;
-    use super::convert_to_lonlat_threaded;
-    use super::convert_to_osgb36_threaded;
-    use super::convert_to_etrs89_threaded;
-    use super::convert_etrs89_to_osgb36_threaded;
-    use super::convert_osgb36_to_etrs89_threaded;
-    use super::convert_osgb36_to_ll_threaded;
-    use super::convert_etrs89_to_ll_threaded;
-    use super::convert_epsg3857_to_wgs84_threaded;
 
     extern crate libc;
     use std::ptr;
