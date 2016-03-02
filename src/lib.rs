@@ -174,6 +174,7 @@ mod tests {
     use super::convert_epsg3857_to_wgs84_threaded;
 
     extern crate libc;
+    use std::ptr;
 
     #[test]
     // Test Google/Bing Maps to WGS84 conversion
@@ -512,6 +513,40 @@ mod tests {
             len: lat_vec.len() as libc::size_t,
         };
         let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
+        drop_float_array(eastings, northings);
+    }
+
+    #[test]
+    fn test_empty_lon_array() {
+        let lon_vec: Vec<f64> = vec![];
+        let lat_vec: Vec<f64> = vec![];
+        let lon_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t,
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t,
+        };
+        let (mut eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
+        eastings.data = ptr::null();
+        drop_float_array(eastings, northings);
+    }
+
+    #[test]
+    fn test_empty_lat_array() {
+        let lon_vec: Vec<f64> = vec![];
+        let lat_vec: Vec<f64> = vec![];
+        let lon_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lon_vec.len() as libc::size_t,
+        };
+        let lat_arr = Array {
+            data: lat_vec.as_ptr() as *const libc::c_void,
+            len: lat_vec.len() as libc::size_t,
+        };
+        let (eastings, mut northings) = convert_to_bng_threaded(lon_arr, lat_arr);
+        northings.data = ptr::null();
         drop_float_array(eastings, northings);
     }
 
