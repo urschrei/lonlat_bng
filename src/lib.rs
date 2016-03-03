@@ -38,9 +38,9 @@ use std::marker::Send;
 extern crate libc;
 extern crate rand;
 extern crate ostn02_phf;
-
-extern crate rayon;
-use rayon::prelude::*;
+extern crate crossbeam;
+use crossbeam::scope;
+extern crate num_cpus;
 
 mod conversions;
 mod utils;
@@ -141,17 +141,31 @@ fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
                                  -> (&'a mut [f64], &'b mut [f64])
     where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy + Sync
 {
-    ex.par_iter_mut().zip(ny.par_iter_mut()).weight(50.0).for_each(|p| {
-        match func(p.0, p.1) {
-            // mutate values, or assign default error values
-            Ok(res) => {
-                *p.0 = res.0;
-                *p.1 = res.1;
-            }
-            Err(_) => {
-                *p.0 = NAN;
-                *p.1 = NAN;
-            }
+    let numthreads = num_cpus::get() as usize;
+    let mut size = ex.len() / numthreads;
+    if ex.len() % numthreads > 0 {
+        size += 1;
+    }
+    size = std::cmp::max(1, size);
+    crossbeam::scope(|scope| {
+        // chunks_mut returns chunks of "size"
+        // e.g. 20 items / 4 (numthreads) = 5, resulting in 4 chunks, 1 per thread
+        for (ex_chunk, ny_chunk) in ex.chunks_mut(size).zip(ny.chunks_mut(size)) {
+            scope.spawn(move || {
+                for (ex_elem, ny_elem) in ex_chunk.iter_mut().zip(ny_chunk.iter_mut()) {
+                    match func(ex_elem, ny_elem) {
+                        // mutate values, or assign default error values
+                        Ok(res) => {
+                            *ex_elem = res.0;
+                            *ny_elem = res.1;
+                        }
+                        Err(_) => {
+                            *ex_elem = NAN;
+                            *ny_elem = NAN;
+                        }
+                    };
+                }
+            });
         }
     });
     (ex, ny)
