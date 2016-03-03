@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/urschrei/lonlat_bng.png?branch=master)](https://travis-ci.org/urschrei/lonlat_bng) [![Coverage Status](https://coveralls.io/repos/github/urschrei/lonlat_bng/badge.svg?branch=master)](https://coveralls.io/github/urschrei/lonlat_bng?branch=master) [![](https://img.shields.io/crates/v/lonlat_bng.svg)](https://crates.io/crates/lonlat_bng) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt)  
 
 # Introduction
-An attempt at speeding up the conversion between decimal longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary with FFI. Conversions use a standard Helmert transform with the addition of OSTN02 corrections for [accuracy](#accuracy), where appropriate.
+A Rust library with FFI for fast conversion between WGS84 longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary. Conversions use a standard 7-element Helmert transform with the addition of OSTN02 corrections for [accuracy](#accuracy).
 
 # Motivation
 Python (etc.) is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement using FFI could save precious minutes.
