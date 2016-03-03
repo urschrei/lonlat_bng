@@ -50,7 +50,7 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
 /// Try to get OSTN02 shift parameters, and calculate offsets
 pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     let key = format!("{:03x}{:03x}", y, x);
-    // some or None, so try! this
+    // Some or None, so convert to Result, which we can try!
     let result = try!(ostn02_lookup(&*key).ok_or(()));
     Ok((result.0 as f64 / 1000. + MIN_X_SHIFT,
         result.1 as f64 / 1000. + MIN_Y_SHIFT,
@@ -71,14 +71,19 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
 
     // The easting, northing and geoid shifts for the four corners of the cell
     // any of these could be Err, so use try!
-    let s0: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 0), &(n_index + 0)));
+
+    // bottom-left grid intersection
+    let s0: (f64, f64, f64) = try!(get_ostn_ref(&(e_index), &(n_index)));
+    // bottom-right
     let s1: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 1), &(n_index + 0)));
+    // top-left
     let s2: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 0), &(n_index + 1)));
+    // top-right
     let s3: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 1), &(n_index + 1)));
 
     // offset within square
-    let dx = *x - (x0 as f64);
-    let dy = *y - (y0 as f64);
+    let dx = x - (x0 as f64);
+    let dy = y - (y0 as f64);
 
     let t = dx / 1000.;
     let u = dy / 1000.;
