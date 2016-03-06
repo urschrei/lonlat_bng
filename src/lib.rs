@@ -177,7 +177,6 @@ mod tests {
     use super::convert_vec_direct;
 
     extern crate libc;
-    use self::libc::*;
     use std::ptr;
 
     #[test]
