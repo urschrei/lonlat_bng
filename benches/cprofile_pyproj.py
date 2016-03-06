@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from bng import bng
 import pyproj
 
 # UK bounding box
