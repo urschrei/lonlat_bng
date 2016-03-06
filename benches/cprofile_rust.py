@@ -1,5 +1,5 @@
 import numpy as np
-from ctypes import cdll, c_float, c_double, Structure, ARRAY, POINTER, c_int32, c_uint32, c_size_t, c_void_p, cast
+from ctypes import cdll, c_double, Structure, POINTER, c_size_t, c_void_p, cast
 from sys import platform
 import pyproj
 from array import array
