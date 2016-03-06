@@ -35,7 +35,6 @@
 //! An example implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng).
 use std::marker::Send;
 
-extern crate libc;
 extern crate rand;
 extern crate ostn02_phf;
 extern crate crossbeam;
@@ -178,6 +177,7 @@ mod tests {
     use super::convert_vec_direct;
 
     extern crate libc;
+    use self::libc::*;
     use std::ptr;
 
     #[test]

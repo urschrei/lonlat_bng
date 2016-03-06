@@ -47,7 +47,8 @@ pub const MIN_X_SHIFT: f64 = 86.275;
 pub const MIN_Y_SHIFT: f64 = -81.603;
 pub const MIN_Z_SHIFT: f64 = 43.982;
 
-use libc::c_double;
+extern crate libc;
+use self::libc::c_double;
 use std::mem;
 use std::f64;
 

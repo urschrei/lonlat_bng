@@ -2,7 +2,7 @@ use std::mem;
 use std::slice;
 
 extern crate libc;
-use libc::{c_void, c_double};
+use self::libc::{c_void, c_double};
 
 #[repr(C)]
 pub struct Array {
