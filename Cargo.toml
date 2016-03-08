@@ -10,7 +10,7 @@ documentation = "https://urschrei.github.io/lonlat_bng/"
 readme = "README.md"
 
 [dependencies]
-libc = "0.2.7"
+libc = "0.2.8"
 rand = "0.3.14"
 # nalgebra = "0.5.1"
 ostn02_phf = "0.1.8"
