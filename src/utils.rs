@@ -48,7 +48,7 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
 }
 
 /// Try to get OSTN02 shift parameters, and calculate offsets
-pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
+pub fn get_ostn_ref(x: &i16, y: &i16) -> Result<(f64, f64, f64), ()> {
     let key = format!("{:03x}{:03x}", y, x);
     // Some or None, so convert to Result, which we can try!
     let result = try!(ostn02_lookup(&*key).ok_or(()));
@@ -62,12 +62,12 @@ pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
 // See p20 of the transformation user guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
 pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
-    let e_index = (*x / 1000.) as i32;
-    let n_index = (*y / 1000.) as i32;
+    let e_index = (*x / 1000.) as i16;
+    let n_index = (*y / 1000.) as i16;
 
     // eastings and northings of the south-west corner of the cell
-    let x0 = e_index * 1000;
-    let y0 = n_index * 1000;
+    let x0 = e_index as i32 * 1000;
+    let y0 = n_index as i32 * 1000;
 
     // The easting, northing and geoid shifts for the four corners of the cell
     // any of these could be Err, so use try!

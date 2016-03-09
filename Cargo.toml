@@ -13,7 +13,7 @@ readme = "README.md"
 libc = "0.2.8"
 rand = "0.3.14"
 # nalgebra = "0.5.1"
-ostn02_phf = "0.1.8"
+ostn02_phf = "0.1.9"
 crossbeam = "0.2.5"
 num_cpus = "0.2.11"
 
