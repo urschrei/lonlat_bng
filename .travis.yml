@@ -23,7 +23,7 @@ notifications:
 before_script: |
   PKGNAME="${TRAVIS_REPO_SLUG}" # must match with cargo.toml
   LOCAL="~/.local" # install here to avoid `sudo`
-  pip install 'travis-cargo<0.2' --user &&
+  pip install git+ssh git@github.com:urschrei/travis-cargo.git --user &&
   export PATH=$HOME/.local/bin:$PATH
 # the main build
 script:
