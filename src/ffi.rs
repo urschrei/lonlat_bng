@@ -39,6 +39,8 @@ use super::convert_epsg3857_to_wgs84_threaded_vec;
 /// let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
 /// drop_float_array(eastings, northings);
 /// ```
+/// An example FFI implementation is available at [Convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py), specifically in the `_void_array_to_list` function. 
+///
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
