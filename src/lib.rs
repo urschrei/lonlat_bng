@@ -346,6 +346,25 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
+    // This should panic because the OSTN02 test suite specifies it as outside the polygon: Outside#1
+    // Lon: 4, 51, 3.503091
+    // Lat: 53,20, 49.312599
+    fn test_ostn_invalid_outside_1() {
+        let _ = convert_osgb36(&4.850973, &53.347031).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    // This should panic because the OSTN02 test suite specifies it as outside the polygon: Outside#2
+    // Lon: 2, 22, 31.048596
+    // Lat: 56, 10, 31.115299
+    fn test_ostn_invalid_outside_2() {
+        let _ = convert_osgb36(&2.375291, &56.17531).unwrap();
+        
+    }
+
+    #[test]
     fn test_threaded_bng_conversion_single() {
         let lon_vec: Vec<f64> = vec![1.716073973];
         let lat_vec: Vec<f64> = vec![52.65800783];
