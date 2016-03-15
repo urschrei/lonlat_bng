@@ -8,6 +8,9 @@ use std;
 use std::fmt;
 use ostn02_phf::ostn02_lookup;
 
+extern crate phf;
+// include!("hexkeys.rs");
+
 // fn helmert(lon_vec: [&f64], lat_vec: [&f64]) -> (Vec<f64>, Vec<f64>) {
 //     let t_array = Vec3::new(TX, TY, TZ);
 //     let params = Mat3::new(1. + s, RZS, -RYS, -RZS, 1. + s, RXS, RYS, -RXS, 1. + s);
@@ -50,6 +53,7 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
 /// Try to get OSTN02 shift parameters, and calculate offsets
 pub fn get_ostn_ref(x: &i16, y: &i16) -> Result<(f64, f64, f64), ()> {
     let key = format!("{:03x}{:03x}", y, x);
+    // let key = [hexkeys.get(y).unwrap().cloned(), hexkeys.get(x).unwrap().cloned()].concat();
     // Some or None, so convert to Result, which we can try!
     let result = try!(ostn02_lookup(&*key).ok_or(()));
     Ok((result.0 as f64 / 1000. + MIN_X_SHIFT,
@@ -107,6 +111,10 @@ mod tests {
     use super::get_ostn_ref;
     use super::ostn02_shifts;
     use super::check;
+    // use super::HEXKEYS;
+    use super::phf;
+    include!("hexkeys.rs");
+
 
     #[test]
     // original coordinates are 651307.003, 313255.686
@@ -170,6 +178,13 @@ mod tests {
         let min_lat = 49.871159;
         // above max lat
         check(&55.811742, (&min_lat, &max_lat)).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_hexkeys() {
+        let val = 711;
+        assert_eq!(HEXKEYS[&val], "2c7");
     }
 
 }
