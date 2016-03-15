@@ -1,4 +1,4 @@
-static HEXKEYS: phf::Map<i16, &'static str> = phf::Map {
+static HEXKEYS: phf::Map<u32, &'static str> = phf::Map {
     key: 1897749892740154578,
     disps: &[
         (0, 12),

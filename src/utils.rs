@@ -181,7 +181,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     fn test_hexkeys() {
         let val = 711;
         assert_eq!(HEXKEYS[&val], "2c7");
