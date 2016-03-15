@@ -9,6 +9,7 @@ use std::fmt;
 use ostn02_phf::ostn02_lookup;
 
 extern crate phf;
+include!("hexkeys.rs");
 // include!("hexkeys.rs");
 
 // fn helmert(lon_vec: [&f64], lat_vec: [&f64]) -> (Vec<f64>, Vec<f64>) {
@@ -52,8 +53,11 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
 
 /// Try to get OSTN02 shift parameters, and calculate offsets
 pub fn get_ostn_ref(x: &i16, y: &i16) -> Result<(f64, f64, f64), ()> {
-    let key = format!("{:03x}{:03x}", y, x);
-    // let key = [hexkeys.get(y).unwrap().cloned(), hexkeys.get(x).unwrap().cloned()].concat();
+    // let key = format!("{:03x}{:03x}", y, x);
+    let up_x = *x as u32;
+    let up_y = *y as u32;
+    let key = [HEXKEYS.get(&up_y).unwrap().to_string(), HEXKEYS.get(&up_x).unwrap().to_string()]
+                  .concat();
     // Some or None, so convert to Result, which we can try!
     let result = try!(ostn02_lookup(&*key).ok_or(()));
     Ok((result.0 as f64 / 1000. + MIN_X_SHIFT,
