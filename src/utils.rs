@@ -10,7 +10,6 @@ use ostn02_phf::ostn02_lookup;
 
 extern crate phf;
 include!("hexkeys.rs");
-// include!("hexkeys.rs");
 
 // fn helmert(lon_vec: [&f64], lat_vec: [&f64]) -> (Vec<f64>, Vec<f64>) {
 //     let t_array = Vec3::new(TX, TY, TZ);
@@ -112,13 +111,7 @@ pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
 
 #[cfg(test)]
 mod tests {
-    use super::get_ostn_ref;
-    use super::ostn02_shifts;
-    use super::check;
-    // use super::HEXKEYS;
-    use super::phf;
-    include!("hexkeys.rs");
-
+    use super::*;
 
     #[test]
     // original coordinates are 651307.003, 313255.686
