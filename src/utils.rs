@@ -51,11 +51,9 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
 }
 
 /// Try to get OSTN02 shift parameters, and calculate offsets
-pub fn get_ostn_ref(x: &i16, y: &i16) -> Result<(f64, f64, f64), ()> {
+pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     // let key = format!("{:03x}{:03x}", y, x);
-    let up_x = *x as u32;
-    let up_y = *y as u32;
-    let key = [HEXKEYS.get(&up_y).unwrap().to_string(), HEXKEYS.get(&up_x).unwrap().to_string()]
+    let key = [HEXKEYS.get(y).unwrap().to_string(), HEXKEYS.get(x).unwrap().to_string()]
                   .concat();
     // Some or None, so convert to Result, which we can try!
     let result = try!(ostn02_lookup(&*key).ok_or(()));
@@ -69,8 +67,8 @@ pub fn get_ostn_ref(x: &i16, y: &i16) -> Result<(f64, f64, f64), ()> {
 // See p20 of the transformation user guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
 pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
-    let e_index = (*x / 1000.) as i16;
-    let n_index = (*y / 1000.) as i16;
+    let e_index = (*x / 1000.) as i32;
+    let n_index = (*y / 1000.) as i32;
 
     // eastings and northings of the south-west corner of the cell
     let x0 = e_index as i32 * 1000;
@@ -176,11 +174,4 @@ mod tests {
         // above max lat
         check(&55.811742, (&min_lat, &max_lat)).unwrap();
     }
-
-    #[test]
-    fn test_hexkeys() {
-        let val = 711;
-        assert_eq!(HEXKEYS[&val], "2c7");
-    }
-
 }
