@@ -36,7 +36,7 @@ use crossbeam::scope;
 extern crate num_cpus;
 
 mod conversions;
-mod utils;
+pub mod utils;
 mod ffi;
 
 pub use ffi::Array;

@@ -94,7 +94,7 @@ Test machine:
 |                |**Rust**| 68.2      |**8x**   |
 |                | Pyproj | 57.2      | 9.5x    |
 | 1mm (50 runs)  | Python | 5560      | N/A     |
-|                |**Rust**| 624       |**9.1x** |
+|                |**Rust**| 587       |**9.5x** |
 |                | Pyproj | 537       | 10.9x   |
 | 10mm (50 runs) | Python | 54500     | N/A     |
 |                |**Rust**| 6150      |**8.9x** |

@@ -4,6 +4,7 @@ extern crate test;
 use test::Bencher;
 extern crate lonlat_bng;
 use lonlat_bng::convert_to_bng_threaded_vec;
+use lonlat_bng::utils::get_ostn_ref;
 
 extern crate rand;
 use rand::distributions::{IndependentSample, Range};
@@ -21,5 +22,14 @@ fn bench_threads(b: &mut Bencher) {
             &mut lon_vec,
             &mut lat_vec
         );
+    });
+}
+
+#[bench]
+fn bench_hex_lookup(b: &mut Bencher) {
+    let eastings = 651;
+    let northings = 313;
+    b.iter(||{
+        get_ostn_ref(&eastings, &northings);
     });
 }

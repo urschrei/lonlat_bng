@@ -53,8 +53,10 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
 /// Try to get OSTN02 shift parameters, and calculate offsets
 pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     // let key = format!("{:03x}{:03x}", y, x);
-    let key = [HEXKEYS.get(y).unwrap().to_string(), HEXKEYS.get(x).unwrap().to_string()]
-                  .concat();
+    // optimisation from https://github.com/hoodie/concatenation_benchmarks-rs
+    let mut key = String::with_capacity(10);
+    key.push_str(HEXKEYS.get(y).unwrap());
+    key.push_str(HEXKEYS.get(x).unwrap());
     // Some or None, so convert to Result, which we can try!
     let result = try!(ostn02_lookup(&*key).ok_or(()));
     Ok((result.0 as f64 / 1000. + MIN_X_SHIFT,
