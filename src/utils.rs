@@ -54,7 +54,7 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
 pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     // let key = format!("{:03x}{:03x}", y, x);
     // optimisation from https://github.com/hoodie/concatenation_benchmarks-rs
-    let mut key = String::with_capacity(10);
+    let mut key = String::with_capacity(32);
     key.push_str(HEXKEYS.get(y).unwrap());
     key.push_str(HEXKEYS.get(x).unwrap());
     // Some or None, so convert to Result, which we can try!
