@@ -10,7 +10,7 @@ language: rust
 rust:
   - stable
   - beta
-  # - nightly
+  - nightly
 matrix:
   allow failures:
     - rust: nightly
@@ -23,7 +23,7 @@ notifications:
 before_script: |
   PKGNAME="${TRAVIS_REPO_SLUG}" # must match with cargo.toml
   LOCAL="~/.local" # install here to avoid `sudo`
-  pip install git+https://github.com/urschrei/travis-cargo.git --user &&
+  pip install travis-cargo --user &&
   export PATH=$HOME/.local/bin:$PATH
 # the main build
 script:
