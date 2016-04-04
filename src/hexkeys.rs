@@ -1,6 +1,6 @@
-static HEXKEYS: phf::Map<i32, &'static str> = phf::Map {
+static HEXKEYS: ::phf::Map<i32, &'static str> = ::phf::Map {
     key: 9603444721912725599,
-    disps: &[
+    disps: ::phf::Slice::Static(&[
         (0, 108),
         (0, 18),
         (0, 47),
@@ -301,8 +301,8 @@ static HEXKEYS: phf::Map<i32, &'static str> = phf::Map {
         (0, 646),
         (0, 68),
         (0, 475),
-    ],
-    entries: &[
+    ]),
+    entries: ::phf::Slice::Static(&[
         (103, "067"),
         (334, "14e"),
         (593, "251"),
@@ -1803,5 +1803,5 @@ static HEXKEYS: phf::Map<i32, &'static str> = phf::Map {
         (581, "245"),
         (191, "0bf"),
         (10, "00a"),
-    ]
+    ]),
 };

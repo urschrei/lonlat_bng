@@ -7,8 +7,6 @@ use conversions::MIN_Z_SHIFT;
 use std;
 use std::fmt;
 use ostn02_phf::ostn02_lookup;
-
-extern crate phf;
 include!("hexkeys.rs");
 
 // fn helmert(lon_vec: [&f64], lat_vec: [&f64]) -> (Vec<f64>, Vec<f64>) {
