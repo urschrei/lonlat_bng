@@ -1,7 +1,7 @@
 #![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
 //! The `lonlat_bng` crate provides functions that convert decimal (WGS84 / ETRS89) longitude
 //! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.
-//! This library makes use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations  
+//! This library makes use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations
 //!
 //! These functions transform input longitude and latitude coordinates to OSGB36 Eastings and Northings with high accuracy, and are suitable for use in surveying and construction. Please run your own tests, though.
 //! **Note that `lon`, `lat` coordinates outside the UK bounding box will be transformed to `(NAN, NAN)`, which cannot be mapped.**
@@ -19,12 +19,12 @@
 //! ```
 //! lonlat_bng::convert_osgb36_to_lonlat_threaded_vec(vec![&516276], vec![&173141]);
 //! ```
-//! The crate also provides C-compatible wrapper functions which are intended for use with FFI.  
-//! 
+//! The crate also provides C-compatible wrapper functions which are intended for use with FFI.
+//!
 //! **An example FFI implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng)**.
-//! 
+//!
 //! # Note
-//! 
+//!
 //! FFI implementations **must** implement [`lonlat_bng::drop_float_array`](fn.drop_float_array.html), in order to free memory which has been allocated across the FFI boundary. Failure to do so may result in memory leaks.
 
 use std::marker::Send;
@@ -361,7 +361,7 @@ mod tests {
     // Lat: 56, 10, 31.115299
     fn test_ostn_invalid_outside_2() {
         let _ = convert_osgb36(&2.375291, &56.17531).unwrap();
-        
+
     }
 
     #[test]
