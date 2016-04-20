@@ -12,11 +12,11 @@ readme = "README.md"
 build = "src/build.rs"
 
 [dependencies]
-libc = "0.2.9"
+libc = "0.2.10"
 rand = "0.3.14"
 # nalgebra = "0.5.1"
 ostn02_phf = "0.1.11"
-crossbeam = "0.2.5"
+crossbeam = "0.2.9"
 num_cpus = "0.2.11"
 phf = "0.7.14"
 
