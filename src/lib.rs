@@ -64,75 +64,75 @@ use std::f64;
 pub const NAN: f64 = f64::NAN;
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
-pub fn convert_to_bng_threaded_vec<'a, 'b>(longitudes: &'a mut [f64],
-                                           latitudes: &'b mut [f64])
-                                           -> (&'a mut [f64], &'b mut [f64]) {
+pub fn convert_to_bng_threaded_vec<'a>(longitudes: &'a mut [f64],
+                                       latitudes: &'a mut [f64])
+                                       -> (&'a mut [f64], &'a mut [f64]) {
     convert_vec_direct(longitudes, latitudes, convert_osgb36)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
-pub fn convert_to_lonlat_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
-                                              northings: &'b mut [f64])
-                                              -> (&'a mut [f64], &'b mut [f64]) {
+pub fn convert_to_lonlat_threaded_vec<'a>(eastings: &'a mut [f64],
+                                          northings: &'a mut [f64])
+                                          -> (&'a mut [f64], &'a mut [f64]) {
     convert_vec_direct(eastings, northings, convert_osgb36_to_ll)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
-pub fn convert_to_etrs89_threaded_vec<'a, 'b>(longitudes: &'a mut [f64],
-                                              latitudes: &'b mut [f64])
-                                              -> (&'a mut [f64], &'b mut [f64]) {
+pub fn convert_to_etrs89_threaded_vec<'a>(longitudes: &'a mut [f64],
+                                          latitudes: &'a mut [f64])
+                                          -> (&'a mut [f64], &'a mut [f64]) {
     convert_vec_direct(longitudes, latitudes, convert_etrs89)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
-pub fn convert_to_osgb36_threaded_vec<'a, 'b>(longitudes: &'a mut [f64],
-                                              latitudes: &'b mut [f64])
-                                              -> (&'a mut [f64], &'b mut [f64]) {
+pub fn convert_to_osgb36_threaded_vec<'a>(longitudes: &'a mut [f64],
+                                          latitudes: &'a mut [f64])
+                                          -> (&'a mut [f64], &'a mut [f64]) {
     convert_vec_direct(longitudes, latitudes, convert_osgb36)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89_to_osgb36`](fn.convert_etrs89_to_osgb36.html)
-pub fn convert_etrs89_to_osgb36_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
-                                                     northings: &'b mut [f64])
-                                                     -> (&'a mut [f64], &'b mut [f64]) {
+pub fn convert_etrs89_to_osgb36_threaded_vec<'a>(eastings: &'a mut [f64],
+                                                 northings: &'a mut [f64])
+                                                 -> (&'a mut [f64], &'a mut [f64]) {
     convert_vec_direct(eastings, northings, convert_etrs89_to_osgb36)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89_to_ll`](fn.convert_etrs8989_to_ll.html)
-pub fn convert_etrs89_to_ll_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
-                                                 northings: &'b mut [f64])
-                                                 -> (&'a mut [f64], &'b mut [f64]) {
+pub fn convert_etrs89_to_ll_threaded_vec<'a>(eastings: &'a mut [f64],
+                                             northings: &'a mut [f64])
+                                             -> (&'a mut [f64], &'a mut [f64]) {
     convert_vec_direct(eastings, northings, convert_etrs89_to_ll)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_etrs89`](fn.convert_osgb36_to_etrs89.html)
-pub fn convert_osgb36_to_etrs89_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
-                                                     northings: &'b mut [f64])
-                                                     -> (&'a mut [f64], &'b mut [f64]) {
+pub fn convert_osgb36_to_etrs89_threaded_vec<'a>(eastings: &'a mut [f64],
+                                                 northings: &'a mut [f64])
+                                                 -> (&'a mut [f64], &'a mut [f64]) {
     convert_vec_direct(eastings, northings, convert_osgb36_to_etrs89)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
-pub fn convert_osgb36_to_ll_threaded_vec<'a, 'b>(eastings: &'a mut [f64],
-                                                 northings: &'b mut [f64])
-                                                 -> (&'a mut [f64], &'b mut [f64]) {
+pub fn convert_osgb36_to_ll_threaded_vec<'a>(eastings: &'a mut [f64],
+                                             northings: &'a mut [f64])
+                                             -> (&'a mut [f64], &'a mut [f64]) {
     convert_vec_direct(eastings, northings, convert_osgb36_to_ll)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_epsg3857_to_wgs84`](fn.convert_epsg3857_to_wgs84.html)
-pub fn convert_epsg3857_to_wgs84_threaded_vec<'a, 'b>(x: &'a mut [f64],
-                                                      y: &'b mut [f64])
-                                                      -> (&'a mut [f64], &'b mut [f64]) {
+pub fn convert_epsg3857_to_wgs84_threaded_vec<'a>(x: &'a mut [f64],
+                                                  y: &'a mut [f64])
+                                                  -> (&'a mut [f64], &'a mut [f64]) {
     convert_vec_direct(x, y, convert_epsg3857_to_wgs84)
 }
 
 // Generic function which applies conversion functions to vector chunks within threads
 // As opposed to convert_vec, we're directly modifying and returning the
 // input vectors here, at the cost of having to use lifetime annotations
-fn convert_vec_direct<'a, 'b, F>(ex: &'a mut [f64],
-                                 ny: &'b mut [f64],
-                                 func: F)
-                                 -> (&'a mut [f64], &'b mut [f64])
+fn convert_vec_direct<'a, F>(ex: &'a mut [f64],
+                             ny: &'a mut [f64],
+                             func: F)
+                             -> (&'a mut [f64], &'a mut [f64])
     where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy + Sync
 {
     let numthreads = num_cpus::get() as usize;
