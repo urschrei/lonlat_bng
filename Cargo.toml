@@ -33,7 +33,3 @@ doc = true
 
 # [profile.release]
 # debug = true
-
-[[bin]]
-name = "lonlat_bin"
-doc = false
