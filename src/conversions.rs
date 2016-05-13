@@ -180,7 +180,7 @@ fn convert_to_ll(eastings: &f64,
     let mut phi = PHI0 + dN / (a * F0);
     let mut m = compute_m(&phi, &b, &n);
     while (dN - m) >= 0.001 {
-        phi = phi + (dN - m) / (a * F0);
+        phi += (dN - m) / (a * F0);
         m = compute_m(&phi, &b, &n);
     }
     let sp2 = phi.sin().powf(2.);
@@ -408,7 +408,7 @@ pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
     let mut lat = lat0;
     let mut M: f64 = 0.0;
     while (*northing - N0 - M) >= 0.00001 {
-        lat = (*northing - N0 - M) / (a * F0) + lat;
+        lat += (*northing - N0 - M) / (a * F0);
         let M1 = (1. + n + (5. / 4.) * n.powi(3) + (5. / 4.) * n.powi(3)) * (lat - lat0);
         let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) *
                  ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin())).ln_1p().exp_m1() *
