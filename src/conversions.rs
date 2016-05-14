@@ -276,8 +276,8 @@ pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     Ok((x, y))
 }
 
-/// **THIS FUNCTION IS DEPRECATED**  
-/// 
+/// **THIS FUNCTION IS DEPRECATED**
+///
 /// Perform Longitude, Latitude to British National Grid conversion
 ///
 /// # Examples
@@ -379,8 +379,8 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_doubl
     Ok((result.0, result.1))
 }
 
-/// **THIS FUNCTION IS DEPRECATED**  
-/// 
+/// **THIS FUNCTION IS DEPRECATED**
+///
 /// Perform British National Grid Eastings, Northings to Longitude, Latitude conversion
 ///
 /// # Examples

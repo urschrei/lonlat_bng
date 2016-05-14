@@ -39,11 +39,11 @@ use super::convert_epsg3857_to_wgs84_threaded_vec;
 /// let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
 /// drop_float_array(eastings, northings);
 /// ```
-/// An example FFI implementation is available at [Convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py), specifically in the `_void_array_to_list` function. 
+/// An example FFI implementation is available at [Convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py), specifically in the `_void_array_to_list` function.
 ///
 /// # Safety
 ///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
     if lons.data.is_null() {
@@ -112,7 +112,7 @@ impl Array {
 ///
 /// # Safety
 ///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
     let mut longitudes_v = unsafe { longitudes.as_f64_slice().to_vec() };
@@ -129,7 +129,7 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
 ///
 /// # Safety
 ///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> (Array, Array) {
     let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
@@ -146,7 +146,7 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
 ///
 /// # Safety
 ///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
                                              latitudes: Array)
@@ -165,7 +165,7 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
 ///
 /// # Safety
 ///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
                                              latitudes: Array)
@@ -184,7 +184,7 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
 ///
 /// # Safety
 ///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
                                                     northings: Array)
@@ -203,7 +203,7 @@ pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
 ///
 /// # Safety
 ///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
                                                 northings: Array)
@@ -222,7 +222,7 @@ pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
 ///
 /// # Safety
 ///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
                                                 northings: Array)
@@ -241,7 +241,7 @@ pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
 ///
 /// # Safety
 ///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
                                                     northings: Array)
@@ -260,7 +260,7 @@ pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
 ///
 /// # Safety
 ///
-/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data 
+/// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_epsg3857_to_wgs84_threaded(x: Array, y: Array) -> (Array, Array) {
     let mut x_vec = unsafe { x.as_f64_slice().to_vec() };
