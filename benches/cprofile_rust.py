@@ -1,7 +1,6 @@
 import numpy as np
 from ctypes import cdll, c_double, Structure, POINTER, c_size_t, c_void_p, cast
 from sys import platform
-import pyproj
 from array import array
 
 if platform == "darwin":
@@ -76,7 +75,7 @@ convert_bng.__doc__ = """
     Multi-threaded lon, lat --> BNG conversion
     Returns a list of two lists containing Easting and Northing floats,
     respectively
-    Uses the Helmert transform
+    Uses the Helmert transform + OSTN02 adjustments
     """
 
 # Free FFI-allocated memory
@@ -89,9 +88,6 @@ N = 55.811741
 E = 1.768960
 S = 49.871159
 W = -6.379880
-
-bng = pyproj.Proj(init='epsg:27700')
-wgs84 = pyproj.Proj(init='epsg:4326')
 
 num_coords = 1000000
 lon_ls = list(np.random.uniform(W, E, [num_coords]))
