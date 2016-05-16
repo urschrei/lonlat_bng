@@ -9,7 +9,7 @@ import pstats
 import profile
 import numpy as np
 
-print("Running Rust and Pyproj benchmarks\n")
+print("Running Rust and Pyproj benchmarks, 1mm conversions x 50 runs\n")
 
 # calibrate
 pr = profile.Profile()
