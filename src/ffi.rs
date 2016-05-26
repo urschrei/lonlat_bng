@@ -61,21 +61,15 @@ impl Array {
         assert!(!self.data.is_null());
         slice::from_raw_parts(self.data as *const f64, self.len as usize)
     }
+}
 
-    pub fn from_vec<T>(mut vec: Vec<T>) -> Array {
-        // Important to make length and capacity match
-        // A better solution is to track both length and capacity
-        vec.shrink_to_fit();
-
+impl<T> From<Vec<T>> for Array {
+    fn from(vec: Vec<T>) -> Self {
         let array = Array {
             data: vec.as_ptr() as *const libc::c_void,
             len: vec.len() as libc::size_t,
         };
-
-        // Leak the memory, and now the raw pointer (and
-        // eventually the FFI parent process) is the owner
         mem::forget(vec);
-
         array
     }
 }
@@ -118,7 +112,7 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
     let mut longitudes_v = unsafe { longitudes.as_f64_slice().to_vec() };
     let mut latitudes_v = unsafe { latitudes.as_f64_slice().to_vec() };
     convert_to_bng_threaded_vec(&mut longitudes_v, &mut latitudes_v);
-    (Array::from_vec(longitudes_v), Array::from_vec(latitudes_v))
+    (Array::from(longitudes_v), Array::from(latitudes_v))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
@@ -135,7 +129,7 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
     let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
     convert_to_lonlat_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from_vec(eastings_vec), Array::from_vec(northings_vec))
+    (Array::from(eastings_vec), Array::from(northings_vec))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
@@ -154,7 +148,7 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
     let mut longitudes_v = unsafe { longitudes.as_f64_slice().to_vec() };
     let mut latitudes_v = unsafe { latitudes.as_f64_slice().to_vec() };
     convert_to_osgb36_threaded_vec(&mut longitudes_v, &mut latitudes_v);
-    (Array::from_vec(longitudes_v), Array::from_vec(latitudes_v))
+    (Array::from(longitudes_v), Array::from(latitudes_v))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
@@ -173,7 +167,7 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
     let mut longitudes_v = unsafe { longitudes.as_f64_slice().to_vec() };
     let mut latitudes_v = unsafe { latitudes.as_f64_slice().to_vec() };
     convert_to_etrs89_threaded_vec(&mut longitudes_v, &mut latitudes_v);
-    (Array::from_vec(longitudes_v), Array::from_vec(latitudes_v))
+    (Array::from(longitudes_v), Array::from(latitudes_v))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89_to_osgb36`](fn.convert_etrs89_to_osgb36.html)
@@ -192,7 +186,7 @@ pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
     let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
     convert_etrs89_to_osgb36_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from_vec(eastings_vec), Array::from_vec(northings_vec))
+    (Array::from(eastings_vec), Array::from(northings_vec))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89_to_ll`](fn.convert_etrs89_to_ll.html)
@@ -211,7 +205,7 @@ pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
     let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
     convert_etrs89_to_ll_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from_vec(eastings_vec), Array::from_vec(northings_vec))
+    (Array::from(eastings_vec), Array::from(northings_vec))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
@@ -230,7 +224,7 @@ pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
     let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
     convert_osgb36_to_ll_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from_vec(eastings_vec), Array::from_vec(northings_vec))
+    (Array::from(eastings_vec), Array::from(northings_vec))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_etrs89`](fn.convert_osgb36_to_etrs89.html)
@@ -249,7 +243,7 @@ pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
     let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
     let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
     convert_osgb36_to_etrs89_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from_vec(eastings_vec), Array::from_vec(northings_vec))
+    (Array::from(eastings_vec), Array::from(northings_vec))
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_epsg3857_to_wgs84`](fn.convert_epsg3857_to_wgs84.html)
@@ -266,5 +260,5 @@ pub extern "C" fn convert_epsg3857_to_wgs84_threaded(x: Array, y: Array) -> (Arr
     let mut x_vec = unsafe { x.as_f64_slice().to_vec() };
     let mut y_vec = unsafe { y.as_f64_slice().to_vec() };
     convert_epsg3857_to_wgs84_threaded_vec(&mut x_vec, &mut y_vec);
-    (Array::from_vec(x_vec), Array::from_vec(y_vec))
+    (Array::from(x_vec), Array::from(y_vec))
 }

@@ -179,14 +179,8 @@ mod tests {
     fn test_epsg3857() {
         let x = vec![-626172.1357121646];
         let y = vec![6887893.4928337997];
-        let x_arr = Array {
-            data: x.as_ptr() as *const libc::c_void,
-            len: x.len() as libc::size_t,
-        };
-        let y_arr = Array {
-            data: y.as_ptr() as *const libc::c_void,
-            len: y.len() as libc::size_t,
-        };
+        let x_arr = Array::from(x);
+        let y_arr = Array::from(y);
         let (lon, lat) = convert_epsg3857_to_wgs84_threaded(x_arr, y_arr);
         let retval = unsafe { lon.as_f64_slice() };
         let retval2 = unsafe { lat.as_f64_slice() };
@@ -319,14 +313,8 @@ mod tests {
                                 1017347.013,
                                 981746.359,
                                 982046.419];
-        let e_arr = Array {
-            data: etrs89_e_vec.as_ptr() as *const libc::c_void,
-            len: etrs89_e_vec.len() as libc::size_t,
-        };
-        let n_arr = Array {
-            data: etrs89_n_vec.as_ptr() as *const libc::c_void,
-            len: etrs89_n_vec.len() as libc::size_t,
-        };
+        let e_arr = Array::from(etrs89_e_vec);
+        let n_arr = Array::from(etrs89_n_vec);
         let (osgb36_eastings, osgb36_northings) = convert_etrs89_to_osgb36_threaded(e_arr, n_arr);
         let retval = unsafe { osgb36_eastings.as_f64_slice() };
         let retval2 = unsafe { osgb36_northings.as_f64_slice() };
@@ -367,14 +355,8 @@ mod tests {
     fn test_threaded_bng_conversion_single() {
         let lon_vec: Vec<f64> = vec![1.716073973];
         let lat_vec: Vec<f64> = vec![52.65800783];
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
+        let lon_arr = Array::from(lon_vec);
+        let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
         let retval = unsafe { eastings.as_f64_slice() };
         assert_eq!(651409.792, retval[0]);
@@ -387,14 +369,8 @@ mod tests {
         let northing_vec: Vec<f64> = vec![313177.448];
 
 
-        let easting_arr = Array {
-            data: easting_vec.as_ptr() as *const libc::c_void,
-            len: easting_vec.len() as libc::size_t,
-        };
-        let northing_arr = Array {
-            data: northing_vec.as_ptr() as *const libc::c_void,
-            len: northing_vec.len() as libc::size_t,
-        };
+        let easting_arr = Array::from(easting_vec);
+        let northing_arr = Array::from(northing_vec);
         let (lons, _) = convert_to_lonlat_threaded(easting_arr, northing_arr);
         let retval = unsafe { lons.as_f64_slice() };
         // We shouldn't really be using error margins, but it should be OK because
@@ -407,14 +383,8 @@ mod tests {
     fn test_threaded_osgb36_conversion_single() {
         let lon_vec: Vec<f64> = vec![1.716073973];
         let lat_vec: Vec<f64> = vec![52.65800783];
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
+        let lon_arr = Array::from(lon_vec);
+        let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_osgb36_threaded(lon_arr, lat_arr);
         let retval = unsafe { eastings.as_f64_slice() };
         assert_eq!(651409.792, retval[0]);
@@ -424,14 +394,8 @@ mod tests {
     fn test_threaded_etrs89_to_osgb36_conversion_single() {
         let e_vec: Vec<f64> = vec![651307.003];
         let n_vec: Vec<f64> = vec![313255.686];
-        let e_arr = Array {
-            data: e_vec.as_ptr() as *const libc::c_void,
-            len: e_vec.len() as libc::size_t,
-        };
-        let n_arr = Array {
-            data: n_vec.as_ptr() as *const libc::c_void,
-            len: n_vec.len() as libc::size_t,
-        };
+        let e_arr = Array::from(e_vec);
+        let n_arr = Array::from(n_vec);
         let (eastings, _) = convert_etrs89_to_osgb36_threaded(e_arr, n_arr);
         let retval = unsafe { eastings.as_f64_slice() };
         assert_eq!(651409.792, retval[0]);
@@ -442,14 +406,8 @@ mod tests {
         // Caister Water Tower OSGB36, see p21
         let e_vec: Vec<f64> = vec![651409.792];
         let n_vec: Vec<f64> = vec![313177.448];
-        let e_arr = Array {
-            data: e_vec.as_ptr() as *const libc::c_void,
-            len: e_vec.len() as libc::size_t,
-        };
-        let n_arr = Array {
-            data: n_vec.as_ptr() as *const libc::c_void,
-            len: n_vec.len() as libc::size_t,
-        };
+        let e_arr = Array::from(e_vec);
+        let n_arr = Array::from(n_vec);
         let (eastings, _) = convert_osgb36_to_etrs89_threaded(e_arr, n_arr);
         let retval = unsafe { eastings.as_f64_slice() };
         // Caister Water Tower ETRS89, see p20
@@ -460,14 +418,8 @@ mod tests {
     fn test_threaded_etrs89_conversion_single() {
         let lon_vec: Vec<f64> = vec![1.716073973];
         let lat_vec: Vec<f64> = vec![52.65800783];
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
+        let lon_arr = Array::from(lon_vec);
+        let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_etrs89_threaded(lon_arr, lat_arr);
         let retval = unsafe { eastings.as_f64_slice() };
         assert_eq!(651307.003, retval[0]);
@@ -477,14 +429,8 @@ mod tests {
     fn test_threaded_etrs89_to_ll_conversion_single() {
         let e_vec: Vec<f64> = vec![651307.003];
         let n_vec: Vec<f64> = vec![313255.686];
-        let e_arr = Array {
-            data: e_vec.as_ptr() as *const libc::c_void,
-            len: e_vec.len() as libc::size_t,
-        };
-        let n_arr = Array {
-            data: n_vec.as_ptr() as *const libc::c_void,
-            len: n_vec.len() as libc::size_t,
-        };
+        let e_arr = Array::from(e_vec);
+        let n_arr = Array::from(n_vec);
         let (lon, lat) = convert_etrs89_to_ll_threaded(e_arr, n_arr);
         let retval = unsafe { lon.as_f64_slice() };
         let retval2 = unsafe { lat.as_f64_slice() };
@@ -499,14 +445,8 @@ mod tests {
         let e_vec: Vec<f64> = vec![651409.792];
         let n_vec: Vec<f64> = vec![313177.448];
 
-        let e_arr = Array {
-            data: e_vec.as_ptr() as *const libc::c_void,
-            len: e_vec.len() as libc::size_t,
-        };
-        let n_arr = Array {
-            data: n_vec.as_ptr() as *const libc::c_void,
-            len: n_vec.len() as libc::size_t,
-        };
+        let e_arr = Array::from(e_vec);
+        let n_arr = Array::from(n_vec);
         let (lon, lat) = convert_osgb36_to_ll_threaded(e_arr, n_arr);
         let retval = unsafe { lon.as_f64_slice() };
         let retval2 = unsafe { lat.as_f64_slice() };
@@ -519,14 +459,8 @@ mod tests {
     fn test_drop_float_array() {
         let lon_vec: Vec<f64> = vec![-2.0183041005533306];
         let lat_vec: Vec<f64> = vec![54.589097162646141];
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
+        let lon_arr = Array::from(lon_vec);
+        let lat_arr = Array::from(lat_vec);
         let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
         drop_float_array(eastings, northings);
     }
@@ -535,14 +469,8 @@ mod tests {
     fn test_empty_lon_array() {
         let lon_vec: Vec<f64> = vec![];
         let lat_vec: Vec<f64> = vec![];
-        let lon_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
+        let lon_arr = Array::from(lon_vec);
+        let lat_arr = Array::from(lat_vec);
         let (mut eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
         eastings.data = ptr::null();
         drop_float_array(eastings, northings);
@@ -552,14 +480,8 @@ mod tests {
     fn test_empty_lat_array() {
         let lon_vec: Vec<f64> = vec![];
         let lat_vec: Vec<f64> = vec![];
-        let lon_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
+        let lon_arr = Array::from(lon_vec);
+        let lat_arr = Array::from(lat_vec);
         let (eastings, mut northings) = convert_to_bng_threaded(lon_arr, lat_arr);
         northings.data = ptr::null();
         drop_float_array(eastings, northings);
@@ -570,14 +492,8 @@ mod tests {
         // above maximum longitude
         let lon_vec: Vec<f64> = vec![1.85];
         let lat_vec: Vec<f64> = vec![55.811741];
-        let lon_arr = Array {
-            data: lon_vec.as_ptr() as *const libc::c_void,
-            len: lon_vec.len() as libc::size_t,
-        };
-        let lat_arr = Array {
-            data: lat_vec.as_ptr() as *const libc::c_void,
-            len: lat_vec.len() as libc::size_t,
-        };
+        let lon_arr = Array::from(lon_vec);
+        let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
         let retval = unsafe { eastings.as_f64_slice() };
         assert!(retval[0].is_nan());
