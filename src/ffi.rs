@@ -63,6 +63,7 @@ impl Array {
     }
 }
 
+// Build an Array from a Vec, so it can be leaked across the FFI boundary
 impl<T> From<Vec<T>> for Array {
     fn from(vec: Vec<T>) -> Self {
         let array = Array {
@@ -74,7 +75,7 @@ impl<T> From<Vec<T>> for Array {
     }
 }
 
-
+// Build a Vec from an FFI Array, so it can be dropped
 impl From<Array> for Vec<c_double> {
     fn from(arr: Array) -> Self {
         unsafe { Vec::from_raw_parts(arr.data as *mut c_double, arr.len, arr.len) }
