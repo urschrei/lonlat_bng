@@ -52,8 +52,8 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
     if lats.data.is_null() {
         return;
     }
-    unsafe { Vec::from_raw_parts(lons.data as *mut c_double, lons.len, lons.len) };
-    unsafe { Vec::from_raw_parts(lats.data as *mut c_double, lats.len, lats.len) };
+    Vec::from(lons);
+    Vec::from(lats);
 }
 
 impl Array {
@@ -71,6 +71,13 @@ impl<T> From<Vec<T>> for Array {
         };
         mem::forget(vec);
         array
+    }
+}
+
+
+impl From<Array> for Vec<c_double> {
+    fn from(arr: Array) -> Self {
+        unsafe { Vec::from_raw_parts(arr.data as *mut c_double, arr.len, arr.len) }
     }
 }
 
