@@ -52,14 +52,18 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
     if lats.data.is_null() {
         return;
     }
-    Vec::from(lons);
-    Vec::from(lats);
+    unsafe {
+        lons.as_f64_slice();
+    }
+    unsafe {
+        lats.as_f64_slice();
+    }
 }
 
 impl Array {
-    pub unsafe fn as_f64_slice(&self) -> &[f64] {
+    pub unsafe fn as_f64_slice(&self) -> &mut [f64] {
         assert!(!self.data.is_null());
-        slice::from_raw_parts(self.data as *const f64, self.len as usize)
+        slice::from_raw_parts_mut(self.data as *mut f64, self.len as usize)
     }
 }
 
@@ -75,10 +79,15 @@ impl<T> From<Vec<T>> for Array {
     }
 }
 
-// Build a Vec from an FFI Array, so it can be dropped
-impl From<Array> for Vec<c_double> {
-    fn from(arr: Array) -> Self {
-        unsafe { Vec::from_raw_parts(arr.data as *mut c_double, arr.len, arr.len) }
+// Build an Array from &mut [f64], so it can be leaked across the FFI boundary
+impl<'a> From<&'a mut [f64]> for Array {
+    fn from(sl: &mut [f64]) -> Self {
+        let array = Array {
+            data: sl.as_ptr() as *const libc::c_void,
+            len: sl.len() as libc::size_t,
+        };
+        mem::forget(sl);
+        array
     }
 }
 
@@ -117,8 +126,8 @@ impl From<Array> for Vec<c_double> {
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
-    let mut longitudes_v = unsafe { longitudes.as_f64_slice().to_vec() };
-    let mut latitudes_v = unsafe { latitudes.as_f64_slice().to_vec() };
+    let mut longitudes_v = unsafe { longitudes.as_f64_slice() };
+    let mut latitudes_v = unsafe { latitudes.as_f64_slice() };
     convert_to_bng_threaded_vec(&mut longitudes_v, &mut latitudes_v);
     (Array::from(longitudes_v), Array::from(latitudes_v))
 }
@@ -134,8 +143,8 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> (Array, Array) {
-    let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
-    let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
+    let mut eastings_vec = unsafe { eastings.as_f64_slice() };
+    let mut northings_vec = unsafe { northings.as_f64_slice() };
     convert_to_lonlat_threaded_vec(&mut eastings_vec, &mut northings_vec);
     (Array::from(eastings_vec), Array::from(northings_vec))
 }
@@ -153,8 +162,8 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
 pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
                                              latitudes: Array)
                                              -> (Array, Array) {
-    let mut longitudes_v = unsafe { longitudes.as_f64_slice().to_vec() };
-    let mut latitudes_v = unsafe { latitudes.as_f64_slice().to_vec() };
+    let mut longitudes_v = unsafe { longitudes.as_f64_slice() };
+    let mut latitudes_v = unsafe { latitudes.as_f64_slice() };
     convert_to_osgb36_threaded_vec(&mut longitudes_v, &mut latitudes_v);
     (Array::from(longitudes_v), Array::from(latitudes_v))
 }
@@ -172,8 +181,8 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
 pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
                                              latitudes: Array)
                                              -> (Array, Array) {
-    let mut longitudes_v = unsafe { longitudes.as_f64_slice().to_vec() };
-    let mut latitudes_v = unsafe { latitudes.as_f64_slice().to_vec() };
+    let mut longitudes_v = unsafe { longitudes.as_f64_slice() };
+    let mut latitudes_v = unsafe { latitudes.as_f64_slice() };
     convert_to_etrs89_threaded_vec(&mut longitudes_v, &mut latitudes_v);
     (Array::from(longitudes_v), Array::from(latitudes_v))
 }
@@ -191,8 +200,8 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
 pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
                                                     northings: Array)
                                                     -> (Array, Array) {
-    let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
-    let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
+    let mut eastings_vec = unsafe { eastings.as_f64_slice() };
+    let mut northings_vec = unsafe { northings.as_f64_slice() };
     convert_etrs89_to_osgb36_threaded_vec(&mut eastings_vec, &mut northings_vec);
     (Array::from(eastings_vec), Array::from(northings_vec))
 }
@@ -210,8 +219,8 @@ pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
 pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
                                                 northings: Array)
                                                 -> (Array, Array) {
-    let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
-    let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
+    let mut eastings_vec = unsafe { eastings.as_f64_slice() };
+    let mut northings_vec = unsafe { northings.as_f64_slice() };
     convert_etrs89_to_ll_threaded_vec(&mut eastings_vec, &mut northings_vec);
     (Array::from(eastings_vec), Array::from(northings_vec))
 }
@@ -229,8 +238,8 @@ pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
 pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
                                                 northings: Array)
                                                 -> (Array, Array) {
-    let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
-    let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
+    let mut eastings_vec = unsafe { eastings.as_f64_slice() };
+    let mut northings_vec = unsafe { northings.as_f64_slice() };
     convert_osgb36_to_ll_threaded_vec(&mut eastings_vec, &mut northings_vec);
     (Array::from(eastings_vec), Array::from(northings_vec))
 }
@@ -248,8 +257,8 @@ pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
 pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
                                                     northings: Array)
                                                     -> (Array, Array) {
-    let mut eastings_vec = unsafe { eastings.as_f64_slice().to_vec() };
-    let mut northings_vec = unsafe { northings.as_f64_slice().to_vec() };
+    let mut eastings_vec = unsafe { eastings.as_f64_slice() };
+    let mut northings_vec = unsafe { northings.as_f64_slice() };
     convert_osgb36_to_etrs89_threaded_vec(&mut eastings_vec, &mut northings_vec);
     (Array::from(eastings_vec), Array::from(northings_vec))
 }
@@ -265,8 +274,8 @@ pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_epsg3857_to_wgs84_threaded(x: Array, y: Array) -> (Array, Array) {
-    let mut x_vec = unsafe { x.as_f64_slice().to_vec() };
-    let mut y_vec = unsafe { y.as_f64_slice().to_vec() };
+    let mut x_vec = unsafe { x.as_f64_slice() };
+    let mut y_vec = unsafe { y.as_f64_slice() };
     convert_epsg3857_to_wgs84_threaded_vec(&mut x_vec, &mut y_vec);
     (Array::from(x_vec), Array::from(y_vec))
 }
