@@ -66,6 +66,7 @@ pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
 // Input values must be valid ETRS89 grid references
 // See p20 of the transformation user guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
+/// Calculate OSTN02 shifts for a given coordinate
 pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     let e_index = (*x / 1000.) as i32;
     let n_index = (*y / 1000.) as i32;
