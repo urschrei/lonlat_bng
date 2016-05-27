@@ -56,14 +56,6 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
     let _: &mut [f64] = lats.into();
 }
 
-// Convert Array to mutable [f64] slice
-impl Array {
-    pub unsafe fn as_f64_slice(&self) -> &mut [f64] {
-        assert!(!self.data.is_null());
-        slice::from_raw_parts_mut(self.data as *mut f64, self.len as usize)
-    }
-}
-
 // Build an Array from &mut[T], so it can be leaked across the FFI boundary
 impl<'a, T> From<&'a mut [T]> for Array {
     fn from(sl: &mut [T]) -> Self {
