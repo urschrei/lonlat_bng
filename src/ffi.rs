@@ -60,6 +60,7 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
     }
 }
 
+// Convert Array to mutable [f64] slice
 impl Array {
     pub unsafe fn as_f64_slice(&self) -> &mut [f64] {
         assert!(!self.data.is_null());
@@ -67,7 +68,7 @@ impl Array {
     }
 }
 
-// Build an Array from &mut[f64], so it can be leaked across the FFI boundary
+// Build an Array from &mut[T], so it can be leaked across the FFI boundary
 impl<'a, T> From<&'a mut [T]> for Array {
     fn from(sl: &mut [T]) -> Self {
         let array = Array {
@@ -76,6 +77,25 @@ impl<'a, T> From<&'a mut [T]> for Array {
         };
         mem::forget(sl);
         array
+    }
+}
+
+// Build an Array from a Vec, so it can be leaked across the FFI boundary
+impl<T> From<Vec<T>> for Array {
+    fn from(vec: Vec<T>) -> Self {
+        let array = Array {
+            data: vec.as_ptr() as *const libc::c_void,
+            len: vec.len() as libc::size_t,
+        };
+        mem::forget(vec);
+        array
+    }
+}
+
+// Build a Vec from an Array, so it can be dropped
+impl From<Array> for Vec<f64> {
+    fn from(arr: Array) -> Self {
+        unsafe { Vec::from_raw_parts(arr.data as *mut f64, arr.len, arr.len) }
     }
 }
 
