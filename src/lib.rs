@@ -177,8 +177,8 @@ mod tests {
     #[test]
     // Test Google/Bing Maps to WGS84 conversion
     fn test_epsg3857() {
-        let x = vec![-626172.1357121646];
-        let y = vec![6887893.4928337997];
+        let x: &mut[f64] = &mut[-626172.1357121646];
+        let y: &mut[f64] = &mut[6887893.4928337997];
         let x_arr = Array::from(x);
         let y_arr = Array::from(y);
         let (lon, lat) = convert_epsg3857_to_wgs84_threaded(x_arr, y_arr);
@@ -213,15 +213,15 @@ mod tests {
         // these are the values from the OSTN02 download
         // they exclude the two values which fall outside the bounding box
         // several values differ by one digit in the third decimal place (mm)
-        let etrs89_e_vec =
-            vec![331439.16, 362174.408, 151874.984, 339824.598, 241030.731, 599345.196,
+        let etrs89_e_vec: &mut[f64] =
+            &mut[331439.16, 362174.408, 151874.984, 339824.598, 241030.731, 599345.196,
                  357359.683, 389448.042, 319092.329, 525643.491, 397061.069, 256247.486,
                  266961.481, 244687.517, 227685.882, 562079.805, 422143.679, 170277.189,
                  530526.413, 247865.448, 247865.718, 167542.805, 292090.289, 424539.719,
                  639720.224, 474237.874, 453904.269, 438614.045, 250265.789, 449719.403,
                  440623.592, 299624.627, 91400.000, 9500.003, 71622.45, 180766.824, 261500.000,
                  395898.578, 421200.000, 330300.000, 337800.000, 334100.000];
-        let etrs89_n_vec = vec![431992.943,
+        let etrs89_n_vec: &mut[f64] = &mut[431992.943,
                                 170056.5,
                                 966535.331,
                                 556102.504,
@@ -264,14 +264,14 @@ mod tests {
                                 981800.000,
                                 982100.000];
         let osgb36_e_vec =
-            vec![331534.552, 362269.979, 151968.641, 339921.133, 241124.573, 599445.578,
+            [331534.552, 362269.979, 151968.641, 339921.133, 241124.573, 599445.578,
                  357455.831, 389544.178, 319188.423, 525745.658, 397160.479, 256340.914,
                  267056.756, 244780.625, 227778.318, 562180.535, 422242.174, 170370.706,
                  530624.963, 247958.959, 247959.229, 167634.19, 292184.858, 424639.343,
                  639821.823, 474335.957, 454002.822, 438710.908, 250359.798, 449816.359,
                  440725.061, 299721.879, 91492.135, 9587.897, 71713.12, 180862.449, 261596.767,
                  395999.656, 421300.513, 330398.311, 337898.195, 334198.101];
-        let osgb36_n_vec = vec![431920.792,
+        let osgb36_n_vec = [431920.792,
                                 169978.688,
                                 966483.777,
                                 556034.759,
@@ -353,8 +353,8 @@ mod tests {
 
     #[test]
     fn test_threaded_bng_conversion_single() {
-        let lon_vec: Vec<f64> = vec![1.716073973];
-        let lat_vec: Vec<f64> = vec![52.65800783];
+        let lon_vec: &mut[f64] = &mut[1.716073973];
+        let lat_vec: &mut[f64] = &mut[52.65800783];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
@@ -365,8 +365,8 @@ mod tests {
     #[test]
     fn test_threaded_lonlat_conversion_single() {
         // Caister Water Tower OSGB36 coords
-        let easting_vec: Vec<f64> = vec![651409.792];
-        let northing_vec: Vec<f64> = vec![313177.448];
+        let easting_vec: &mut[f64] = &mut[651409.792];
+        let northing_vec: &mut[f64] = &mut[313177.448];
 
 
         let easting_arr = Array::from(easting_vec);
@@ -381,8 +381,8 @@ mod tests {
 
     #[test]
     fn test_threaded_osgb36_conversion_single() {
-        let lon_vec: Vec<f64> = vec![1.716073973];
-        let lat_vec: Vec<f64> = vec![52.65800783];
+        let lon_vec: &mut[f64] = &mut[1.716073973];
+        let lat_vec: &mut[f64] = &mut[52.65800783];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_osgb36_threaded(lon_arr, lat_arr);
@@ -392,8 +392,8 @@ mod tests {
 
     #[test]
     fn test_threaded_etrs89_to_osgb36_conversion_single() {
-        let e_vec: Vec<f64> = vec![651307.003];
-        let n_vec: Vec<f64> = vec![313255.686];
+        let e_vec: &mut[f64] = &mut[651307.003];
+        let n_vec: &mut[f64]= &mut[313255.686];
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
         let (eastings, _) = convert_etrs89_to_osgb36_threaded(e_arr, n_arr);
@@ -404,8 +404,8 @@ mod tests {
     #[test]
     fn test_threaded_osgb36_to_etrs89_conversion_single() {
         // Caister Water Tower OSGB36, see p21
-        let e_vec: Vec<f64> = vec![651409.792];
-        let n_vec: Vec<f64> = vec![313177.448];
+        let e_vec: &mut[f64] = &mut[651409.792];
+        let n_vec: &mut[f64] = &mut[313177.448];
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
         let (eastings, _) = convert_osgb36_to_etrs89_threaded(e_arr, n_arr);
@@ -416,8 +416,8 @@ mod tests {
 
     #[test]
     fn test_threaded_etrs89_conversion_single() {
-        let lon_vec: Vec<f64> = vec![1.716073973];
-        let lat_vec: Vec<f64> = vec![52.65800783];
+        let lon_vec: &mut[f64] = &mut[1.716073973];
+        let lat_vec: &mut[f64] = &mut[52.65800783];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_etrs89_threaded(lon_arr, lat_arr);
@@ -427,8 +427,8 @@ mod tests {
 
     #[test]
     fn test_threaded_etrs89_to_ll_conversion_single() {
-        let e_vec: Vec<f64> = vec![651307.003];
-        let n_vec: Vec<f64> = vec![313255.686];
+        let e_vec: &mut[f64] = &mut[651307.003];
+        let n_vec: &mut[f64] = &mut[313255.686];
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
         let (lon, lat) = convert_etrs89_to_ll_threaded(e_arr, n_arr);
@@ -442,8 +442,8 @@ mod tests {
     #[test]
     fn test_threaded_osgb36_to_ll_conversion_single() {
         // Caister Water Tower
-        let e_vec: Vec<f64> = vec![651409.792];
-        let n_vec: Vec<f64> = vec![313177.448];
+        let e_vec: &mut[f64] = &mut[651409.792];
+        let n_vec: &mut[f64] = &mut[313177.448];
 
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
@@ -457,8 +457,8 @@ mod tests {
 
     #[test]
     fn test_drop_float_array() {
-        let lon_vec: Vec<f64> = vec![-2.0183041005533306];
-        let lat_vec: Vec<f64> = vec![54.589097162646141];
+        let lon_vec: &mut[f64] = &mut[-2.0183041005533306];
+        let lat_vec: &mut[f64] = &mut[54.589097162646141];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
@@ -467,8 +467,8 @@ mod tests {
 
     #[test]
     fn test_empty_lon_array() {
-        let lon_vec: Vec<f64> = vec![];
-        let lat_vec: Vec<f64> = vec![];
+        let lon_vec: &mut[f64] = &mut[];
+        let lat_vec: &mut[f64] = &mut[];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (mut eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
@@ -478,8 +478,8 @@ mod tests {
 
     #[test]
     fn test_empty_lat_array() {
-        let lon_vec: Vec<f64> = vec![];
-        let lat_vec: Vec<f64> = vec![];
+        let lon_vec: &mut[f64] = &mut[];
+        let lat_vec: &mut[f64] = &mut[];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, mut northings) = convert_to_bng_threaded(lon_arr, lat_arr);
@@ -490,8 +490,8 @@ mod tests {
     #[test]
     fn test_bad_threaded_conversion() {
         // above maximum longitude
-        let lon_vec: Vec<f64> = vec![1.85];
-        let lat_vec: Vec<f64> = vec![55.811741];
+        let lon_vec: &mut[f64] = &mut[1.85];
+        let lat_vec: &mut[f64] = &mut[55.811741];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);

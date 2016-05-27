@@ -2,7 +2,7 @@ use std::mem;
 use std::slice;
 
 extern crate libc;
-use self::libc::{c_void, c_double};
+use self::libc::{c_void};
 
 #[repr(C)]
 pub struct Array {
@@ -67,21 +67,9 @@ impl Array {
     }
 }
 
-// Build an Array from a Vec, so it can be leaked across the FFI boundary
-impl<T> From<Vec<T>> for Array {
-    fn from(vec: Vec<T>) -> Self {
-        let array = Array {
-            data: vec.as_ptr() as *const libc::c_void,
-            len: vec.len() as libc::size_t,
-        };
-        mem::forget(vec);
-        array
-    }
-}
-
-// Build an Array from &mut [f64], so it can be leaked across the FFI boundary
-impl<'a> From<&'a mut [f64]> for Array {
-    fn from(sl: &mut [f64]) -> Self {
+// Build an Array from &mut[f64], so it can be leaked across the FFI boundary
+impl<'a, T> From<&'a mut [T]> for Array {
+    fn from(sl: &mut [T]) -> Self {
         let array = Array {
             data: sl.as_ptr() as *const libc::c_void,
             len: sl.len() as libc::size_t,
