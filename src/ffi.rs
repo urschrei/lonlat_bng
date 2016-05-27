@@ -2,7 +2,7 @@ use std::mem;
 use std::slice;
 
 extern crate libc;
-use self::libc::{c_void};
+use self::libc::c_void;
 
 #[repr(C)]
 pub struct Array {
@@ -52,12 +52,8 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
     if lats.data.is_null() {
         return;
     }
-    unsafe {
-        lons.as_f64_slice();
-    }
-    unsafe {
-        lats.as_f64_slice();
-    }
+    let _: &mut [f64] = lons.into();
+    let _: &mut [f64] = lats.into();
 }
 
 // Convert Array to mutable [f64] slice
@@ -77,6 +73,13 @@ impl<'a, T> From<&'a mut [T]> for Array {
         };
         mem::forget(sl);
         array
+    }
+}
+
+// Build &mut[f64] from an Array, so it can be dropped
+impl<'a> From<Array> for &'a mut [f64] {
+    fn from(arr: Array) -> Self {
+        unsafe { slice::from_raw_parts_mut(arr.data as *mut f64, arr.len) }
     }
 }
 
@@ -134,8 +137,8 @@ impl From<Array> for Vec<f64> {
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
-    let mut longitudes_v = unsafe { longitudes.as_f64_slice() };
-    let mut latitudes_v = unsafe { latitudes.as_f64_slice() };
+    let mut longitudes_v: &mut [f64] = longitudes.into();
+    let mut latitudes_v: &mut [f64] = latitudes.into();
     convert_to_bng_threaded_vec(&mut longitudes_v, &mut latitudes_v);
     (Array::from(longitudes_v), Array::from(latitudes_v))
 }
@@ -151,8 +154,8 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> (Array, Array) {
-    let mut eastings_vec = unsafe { eastings.as_f64_slice() };
-    let mut northings_vec = unsafe { northings.as_f64_slice() };
+    let mut eastings_vec: &mut [f64] = eastings.into();
+    let mut northings_vec: &mut [f64] = northings.into();
     convert_to_lonlat_threaded_vec(&mut eastings_vec, &mut northings_vec);
     (Array::from(eastings_vec), Array::from(northings_vec))
 }
@@ -170,8 +173,8 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
 pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
                                              latitudes: Array)
                                              -> (Array, Array) {
-    let mut longitudes_v = unsafe { longitudes.as_f64_slice() };
-    let mut latitudes_v = unsafe { latitudes.as_f64_slice() };
+    let mut longitudes_v: &mut [f64] = longitudes.into();
+    let mut latitudes_v: &mut [f64] = latitudes.into();
     convert_to_osgb36_threaded_vec(&mut longitudes_v, &mut latitudes_v);
     (Array::from(longitudes_v), Array::from(latitudes_v))
 }
@@ -189,8 +192,8 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
 pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
                                              latitudes: Array)
                                              -> (Array, Array) {
-    let mut longitudes_v = unsafe { longitudes.as_f64_slice() };
-    let mut latitudes_v = unsafe { latitudes.as_f64_slice() };
+    let mut longitudes_v: &mut [f64] = longitudes.into();
+    let mut latitudes_v: &mut [f64] = latitudes.into();
     convert_to_etrs89_threaded_vec(&mut longitudes_v, &mut latitudes_v);
     (Array::from(longitudes_v), Array::from(latitudes_v))
 }
@@ -208,8 +211,8 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
 pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
                                                     northings: Array)
                                                     -> (Array, Array) {
-    let mut eastings_vec = unsafe { eastings.as_f64_slice() };
-    let mut northings_vec = unsafe { northings.as_f64_slice() };
+    let mut eastings_vec: &mut [f64] = eastings.into();
+    let mut northings_vec: &mut [f64] = northings.into();
     convert_etrs89_to_osgb36_threaded_vec(&mut eastings_vec, &mut northings_vec);
     (Array::from(eastings_vec), Array::from(northings_vec))
 }
@@ -227,8 +230,8 @@ pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
 pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
                                                 northings: Array)
                                                 -> (Array, Array) {
-    let mut eastings_vec = unsafe { eastings.as_f64_slice() };
-    let mut northings_vec = unsafe { northings.as_f64_slice() };
+    let mut eastings_vec: &mut [f64] = eastings.into();
+    let mut northings_vec: &mut [f64] = northings.into();
     convert_etrs89_to_ll_threaded_vec(&mut eastings_vec, &mut northings_vec);
     (Array::from(eastings_vec), Array::from(northings_vec))
 }
@@ -246,8 +249,8 @@ pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
 pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
                                                 northings: Array)
                                                 -> (Array, Array) {
-    let mut eastings_vec = unsafe { eastings.as_f64_slice() };
-    let mut northings_vec = unsafe { northings.as_f64_slice() };
+    let mut eastings_vec: &mut [f64] = eastings.into();
+    let mut northings_vec: &mut [f64] = northings.into();
     convert_osgb36_to_ll_threaded_vec(&mut eastings_vec, &mut northings_vec);
     (Array::from(eastings_vec), Array::from(northings_vec))
 }
@@ -265,8 +268,8 @@ pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
 pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
                                                     northings: Array)
                                                     -> (Array, Array) {
-    let mut eastings_vec = unsafe { eastings.as_f64_slice() };
-    let mut northings_vec = unsafe { northings.as_f64_slice() };
+    let mut eastings_vec: &mut [f64] = eastings.into();
+    let mut northings_vec: &mut [f64] = northings.into();
     convert_osgb36_to_etrs89_threaded_vec(&mut eastings_vec, &mut northings_vec);
     (Array::from(eastings_vec), Array::from(northings_vec))
 }
@@ -282,8 +285,8 @@ pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_epsg3857_to_wgs84_threaded(x: Array, y: Array) -> (Array, Array) {
-    let mut x_vec = unsafe { x.as_f64_slice() };
-    let mut y_vec = unsafe { y.as_f64_slice() };
+    let mut x_vec: &mut [f64] = x.into();
+    let mut y_vec: &mut [f64] = y.into();
     convert_epsg3857_to_wgs84_threaded_vec(&mut x_vec, &mut y_vec);
     (Array::from(x_vec), Array::from(y_vec))
 }
