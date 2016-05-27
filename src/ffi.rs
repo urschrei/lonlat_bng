@@ -132,7 +132,7 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
     let mut longitudes_v: &mut [f64] = longitudes.into();
     let mut latitudes_v: &mut [f64] = latitudes.into();
     convert_to_bng_threaded_vec(&mut longitudes_v, &mut latitudes_v);
-    (Array::from(longitudes_v), Array::from(latitudes_v))
+    (longitudes_v.into(), latitudes_v.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
@@ -149,7 +149,7 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
     let mut eastings_vec: &mut [f64] = eastings.into();
     let mut northings_vec: &mut [f64] = northings.into();
     convert_to_lonlat_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from(eastings_vec), Array::from(northings_vec))
+    (eastings_vec.into(), northings_vec.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
@@ -168,7 +168,7 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
     let mut longitudes_v: &mut [f64] = longitudes.into();
     let mut latitudes_v: &mut [f64] = latitudes.into();
     convert_to_osgb36_threaded_vec(&mut longitudes_v, &mut latitudes_v);
-    (Array::from(longitudes_v), Array::from(latitudes_v))
+    (longitudes_v.into(), latitudes_v.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
@@ -187,7 +187,7 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
     let mut longitudes_v: &mut [f64] = longitudes.into();
     let mut latitudes_v: &mut [f64] = latitudes.into();
     convert_to_etrs89_threaded_vec(&mut longitudes_v, &mut latitudes_v);
-    (Array::from(longitudes_v), Array::from(latitudes_v))
+    (longitudes_v.into(), latitudes_v.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89_to_osgb36`](fn.convert_etrs89_to_osgb36.html)
@@ -206,7 +206,7 @@ pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
     let mut eastings_vec: &mut [f64] = eastings.into();
     let mut northings_vec: &mut [f64] = northings.into();
     convert_etrs89_to_osgb36_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from(eastings_vec), Array::from(northings_vec))
+    (eastings_vec.into(), northings_vec.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89_to_ll`](fn.convert_etrs89_to_ll.html)
@@ -225,7 +225,7 @@ pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
     let mut eastings_vec: &mut [f64] = eastings.into();
     let mut northings_vec: &mut [f64] = northings.into();
     convert_etrs89_to_ll_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from(eastings_vec), Array::from(northings_vec))
+    (eastings_vec.into(), northings_vec.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
@@ -244,7 +244,7 @@ pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
     let mut eastings_vec: &mut [f64] = eastings.into();
     let mut northings_vec: &mut [f64] = northings.into();
     convert_osgb36_to_ll_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from(eastings_vec), Array::from(northings_vec))
+    (eastings_vec.into(), northings_vec.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_etrs89`](fn.convert_osgb36_to_etrs89.html)
@@ -263,7 +263,7 @@ pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
     let mut eastings_vec: &mut [f64] = eastings.into();
     let mut northings_vec: &mut [f64] = northings.into();
     convert_osgb36_to_etrs89_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (Array::from(eastings_vec), Array::from(northings_vec))
+    (eastings_vec.into(), northings_vec.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_epsg3857_to_wgs84`](fn.convert_epsg3857_to_wgs84.html)
@@ -280,5 +280,5 @@ pub extern "C" fn convert_epsg3857_to_wgs84_threaded(x: Array, y: Array) -> (Arr
     let mut x_vec: &mut [f64] = x.into();
     let mut y_vec: &mut [f64] = y.into();
     convert_epsg3857_to_wgs84_threaded_vec(&mut x_vec, &mut y_vec);
-    (Array::from(x_vec), Array::from(y_vec))
+    (x_vec.into(), y_vec.into())
 }
