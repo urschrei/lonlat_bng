@@ -129,10 +129,8 @@ impl From<Array> for Vec<f64> {
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> (Array, Array) {
-    let mut longitudes_v: &mut [f64] = longitudes.into();
-    let mut latitudes_v: &mut [f64] = latitudes.into();
-    convert_to_bng_threaded_vec(&mut longitudes_v, &mut latitudes_v);
-    (longitudes_v.into(), latitudes_v.into())
+    let (res_lon, res_lat) = convert_to_bng_threaded_vec(longitudes.into(), latitudes.into());
+    (res_lon.into(), res_lat.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
@@ -146,10 +144,9 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> (Array, Array) {
-    let mut eastings_vec: &mut [f64] = eastings.into();
-    let mut northings_vec: &mut [f64] = northings.into();
-    convert_to_lonlat_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (eastings_vec.into(), northings_vec.into())
+    let (res_eastings, res_northings) = convert_to_lonlat_threaded_vec(eastings.into(),
+                                                                       northings.into());
+    (res_eastings.into(), res_northings.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)
@@ -165,10 +162,8 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
 pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
                                              latitudes: Array)
                                              -> (Array, Array) {
-    let mut longitudes_v: &mut [f64] = longitudes.into();
-    let mut latitudes_v: &mut [f64] = latitudes.into();
-    convert_to_osgb36_threaded_vec(&mut longitudes_v, &mut latitudes_v);
-    (longitudes_v.into(), latitudes_v.into())
+    let (res_lon, res_lat) = convert_to_osgb36_threaded_vec(longitudes.into(), latitudes.into());
+    (res_lon.into(), res_lat.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
@@ -184,10 +179,8 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
 pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
                                              latitudes: Array)
                                              -> (Array, Array) {
-    let mut longitudes_v: &mut [f64] = longitudes.into();
-    let mut latitudes_v: &mut [f64] = latitudes.into();
-    convert_to_etrs89_threaded_vec(&mut longitudes_v, &mut latitudes_v);
-    (longitudes_v.into(), latitudes_v.into())
+    let (res_lon, res_lat) = convert_to_etrs89_threaded_vec(longitudes.into(), latitudes.into());
+    (res_lon.into(), res_lat.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89_to_osgb36`](fn.convert_etrs89_to_osgb36.html)
@@ -203,10 +196,9 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
 pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
                                                     northings: Array)
                                                     -> (Array, Array) {
-    let mut eastings_vec: &mut [f64] = eastings.into();
-    let mut northings_vec: &mut [f64] = northings.into();
-    convert_etrs89_to_osgb36_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (eastings_vec.into(), northings_vec.into())
+    let (res_eastings, res_northings) = convert_etrs89_to_osgb36_threaded_vec(eastings.into(),
+                                                                              northings.into());
+    (res_eastings.into(), res_northings.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_etrs89_to_ll`](fn.convert_etrs89_to_ll.html)
@@ -222,10 +214,9 @@ pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
 pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
                                                 northings: Array)
                                                 -> (Array, Array) {
-    let mut eastings_vec: &mut [f64] = eastings.into();
-    let mut northings_vec: &mut [f64] = northings.into();
-    convert_etrs89_to_ll_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (eastings_vec.into(), northings_vec.into())
+    let (res_eastings, res_northings) = convert_etrs89_to_ll_threaded_vec(eastings.into(),
+                                                                          northings.into());
+    (res_eastings.into(), res_northings.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
@@ -241,10 +232,9 @@ pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
 pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
                                                 northings: Array)
                                                 -> (Array, Array) {
-    let mut eastings_vec: &mut [f64] = eastings.into();
-    let mut northings_vec: &mut [f64] = northings.into();
-    convert_osgb36_to_ll_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (eastings_vec.into(), northings_vec.into())
+    let (res_eastings, res_northings) = convert_osgb36_to_ll_threaded_vec(eastings.into(),
+                                                                          northings.into());
+    (res_eastings.into(), res_northings.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_osgb36_to_etrs89`](fn.convert_osgb36_to_etrs89.html)
@@ -260,10 +250,9 @@ pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
 pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
                                                     northings: Array)
                                                     -> (Array, Array) {
-    let mut eastings_vec: &mut [f64] = eastings.into();
-    let mut northings_vec: &mut [f64] = northings.into();
-    convert_osgb36_to_etrs89_threaded_vec(&mut eastings_vec, &mut northings_vec);
-    (eastings_vec.into(), northings_vec.into())
+    let (res_eastings, res_northings) = convert_osgb36_to_etrs89_threaded_vec(eastings.into(),
+                                                                              northings.into());
+    (res_eastings.into(), res_northings.into())
 }
 
 /// A threaded, FFI-compatible wrapper for [`lonlat_bng::convert_epsg3857_to_wgs84`](fn.convert_epsg3857_to_wgs84.html)
@@ -277,8 +266,6 @@ pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_epsg3857_to_wgs84_threaded(x: Array, y: Array) -> (Array, Array) {
-    let mut x_vec: &mut [f64] = x.into();
-    let mut y_vec: &mut [f64] = y.into();
-    convert_epsg3857_to_wgs84_threaded_vec(&mut x_vec, &mut y_vec);
-    (x_vec.into(), y_vec.into())
+    let (res_x, res_y) = convert_epsg3857_to_wgs84_threaded_vec(x.into(), y.into());
+    (res_x.into(), res_y.into())
 }
