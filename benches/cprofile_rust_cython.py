@@ -1,5 +1,5 @@
 import numpy as np
-from convertbng.util import convert_bng
+from convertbng.cutil import convert_bng
 
 # UK bounding box
 N = 55.811741
