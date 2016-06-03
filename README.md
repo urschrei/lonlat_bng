@@ -73,37 +73,27 @@ Running `cargo build --release` will build an artefact called `liblonlat_bng.dyl
 More information is available in its [repository](https://github.com/urschrei/rust_bng)
 
 # Benchmark
-An IPython (sorry, *Jupyter*) notebook with some benchmarks is [here](rust_BNG.ipynb)
+A CProfile [benchmark](remote_bench.py) was run, comparing 50 runs of converting 1m random lon, lat pairs in NumPy arrays.
 
-## Installation Instructions
-- Ensure you have Rust 1.x installed
-- If you want to run the benchmark yourself, install Pandas, IPython, Numpy, Pyproj, and their dependencies
-- Clone this repository
-- run `cargo build --release` from the repo root
-- run `ipython notebook`, and open `rust_BNG`.
+## Methodology
+- 4 [Amazon EC2 C4](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/c4-instances.html) (compute-optimised) systems were tested
+- The system was first calibrated by taking the mean of five calibration runs of 100,000 repeats
+- A benchmark program was then run for each of the three configurations. See the [benches](benches) directory for details
+- The five slowest function calls for each benchmark were then displayed.
 
 ## Results
-Test machine:  
-- Late-2012 27" iMac
-- 3.4 GHz Intel Core i7
-- 4 cores (8 logical CPUs)
-- 16GB 1600 MHz DDR3 RAM  
 
-| Coordinates    | Method | Time (ms) | Speedup |
-|:---------------|:------:|:---------:|--------:|
-| 100k (50 runs) | Python | 547       | N/A     |
-|                |**Rust**| 68.2      |**8x**   |
-|                | Pyproj | 57.2      | 9.5x    |
-| 1mm (50 runs)  | Python | 5560      | N/A     |
-|                |**Rust**| 587       |**9.5x** |
-|                | Pyproj | 537       | 10.9x   |
-| 10mm (50 runs) | Python | 54500     | N/A     |
-|                |**Rust**| 6150      |**8.9x** |
-|                | Pyproj | 4710      | 11.5    | 
+| EC2 Instance Type    | Processors (vCPU) | Rust Ctypes (s) | Rust Cython (s) | Pyproj (s) | % change, Ctypes vs Pyproj | % change, Pyproj vs Cython |
+|:---------------------|:-----------------:|:---------------:|:---------------:|:----------:|:--------------------------:|---------------------------:|
+| c4.xlarge            | 4                 | 42.075          | 27.964          |  18.73     | 124.64%                    | -33.02%                    |
+| c4.2xlarge           | 8                 | 28.743          | 14.094          |  19.055    | 50.84%                     | 35.20%                     |
+| c4.4xlarge           | 16                | 22.108          | 7.554           |  18.797    | 17.61%                     | 148.84%                    |
+| c4.8xlarge           | 36                | 18.288          | 4.42            |  18.285    | 0.02%                      | 313.69%                    |
 
 
 ## Conclusion
-Using multithreading gives excellent performance (Pyproj – which is a compiled [Cython](http://cython.org) binary – is now only ~20% faster than Rust, on average). Not bad, considering the relative youth of Rust *as a language* (let alone this library), and the maturity of the [PROJ.4](https://en.wikipedia.org/wiki/PROJ.4) project.
+Using multithreading gives excellent performance; Pyproj – which is a compiled [Cython](http://cython.org) binary – is less than 20% faster than Rust + Ctypes on a 16-CPU system, and gives identical performance on 36 CPUs.  
+A compiled Cython binary + Rust is faster than Pyproj on an 8-CPU system, and outperforms Pyproj by greater margins as the number of CPUs increase: at 36 CPUs, it is over 300% faster.
 
 # Comparing Crossbeam and Rayon
 Comparing how varying threads and weights affects overall speed, using [`cargo bench`](benches/benchmarks.rs)  
