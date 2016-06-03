@@ -31,7 +31,7 @@ The OSTN02-enabled functions are:
 
 # Library Use
 ## As a Rust Library
-Add the following to your `Cargo.toml` (the latest version is displayed on the second badge at the top of this screen)  
+Add the following to your `Cargo.toml` (the latest version is displayed on the third badge at the top of this screen)  
 
     lonlat_bng = "x.x.x"
 
