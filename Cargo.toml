@@ -26,7 +26,7 @@ phf_codegen = "0.7.14"
 
 [lib]
 name = "lonlat_bng"
-crate-type = ["rlib", "dylib", "staticlib"]
+crate-type = ["dylib"]
 test = true
 doctest = false
 doc = true
