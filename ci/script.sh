@@ -40,7 +40,6 @@ run_test_suite() {
 
     # cargo run --target $TARGET
     cargo test --target $TARGET
-    travis-cargo --only stable doc
 
     # sanity check the file type
     # file target/$TARGET/debug/hello

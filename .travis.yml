@@ -11,7 +11,7 @@ env:
   global:
     # This will be part of the release tarball
     # TODO change the project name
-    - PROJECT_NAME=rust-everywhere
+    - PROJECT_NAME=lonlat_bng
     # TODO comment out this variable if you don't want to build .deb packages on all the targets.
     # - MAKE_DEB=yes
     # TODO update these two variables. They are part of the .deb package metadata
@@ -100,7 +100,9 @@ install:
 
 script:
   - bash ci/script.sh
+
 after_success:
+  - travis-cargo --only stable doc
   - travis-cargo --only stable doc-upload
   - travis-cargo coveralls --no-sudo --verify
 
