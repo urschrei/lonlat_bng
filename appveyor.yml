@@ -55,7 +55,7 @@ before_deploy:
   - appveyor PushArtifact ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
 
 deploy:
-  description: 'Windows release'
+  description: 'Windows Release'
   # All the zipped artifacts will be deployed
   artifact: /.*\.zip/
   # TODO Regenerate this auth_token for your project, this one won't work for you. Here's how:
