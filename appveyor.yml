@@ -67,12 +67,12 @@ deploy:
     secure: 7fxhCWnrrkw0Qg2VVMBgwmN72e1T+4BMzO8SFMf63VCwyLMJv4N8KFfs3Zi7H2NB
   provider: GitHub
   # deploy when a new tag is pushed and only on the stable channel
+  appveyor_repo_tag: true
   on:
     # channel to use to produce the release artifacts
     # NOTE make sure you only release *once* per target
     # TODO you may want to pick a different channel
     CHANNEL: stable
-    appveyor_repo_tag: true
 
 branches:
   only:
