@@ -117,8 +117,8 @@ deploy:
   # - Call `travis encrypt $github_token` where $github_token is the token you got in the previous
   # step and `travis` is the official Travis CI gem (see https://rubygems.org/gems/travis/)
   # - Enter the "encrypted value" below
-  # api_key:
-    # secure: bamjttk2UcGtQHtjX97bVgXn3rcUXIINmfU9D2OvDx1uoq1ZmVt8qgn2dWnBuZMzQBtlZiOjcx8SZ/od3N8v9Vrv702cFuFwDj2y/G9+qs00rgmxZ791IyatAa5c70kPM0rNfk0IWlpagLV88ebYEgt5BRkWf4kYrbFjkDrKTVBCQSFF1G5uyTAHz88qDp2zsRB4q18WPg3oS79Ik+k5lcwVadPdYtb0UsBvytxZ/OhD5Uldk4zfNmScc0XIxw58RqcAQHe7+7rcdJ+o7YtHetYu0LNUYCz+sU+dUKX9hKtdn9UfstM5xRY4P+IIVBoiCzZibVydu+yMm9IsS+/BjHxmbRQ+d0ON2dtzh3ZmmnhmfWgl32Cvim+z1jFic5uHpHtx5TrHnZo55PVjTvyV5DaicEUMY4FstpqkaiM8v7+Pn5sKYa4Br3P2swY7vFhdEimQPgDqcb5D+vTElla0uPLA2+FF/j0Wtd4wHfsCOzMXWZpDWhsDL/b7HWeI4CaetB/SjTVX2ORBF9FNQXMvJcLyHAxTI81CZFhX+sCEIyAGM53vkR7l0kL9iWUTSMqt4urLDjoJ2PSPquo5J9f607IkkqrC/lJSFnXdiUo0BAOj56Cy96SCDSQpo9yN3pdorsScaQ3beSWQKdKue63Eej3Ru+FZogTEFN3w8JGJeuQ=
+  api_key:
+        - secure: bW+621HpryUdRObWedUlzgwrQ+lRrqN2S4MiMNJX9oa2I1/B4AM26QQDn604q9Hb+lRSO3S8SPqzvj7RqyCL+dmhR+vwf5Evyk+StR3aDAIAvXk1pl6w37ZoEJu4LPEUMpFjyTsOZ9CWj7KY1dqLo5fXV0iMd71m3yrNMLLaRRH6p9lV3tpIHu3IET5KrGcP4w1UNJtur116RAjtxS/lrraUUanTVepUidmnYdQGtpY1f1/1WDh4+J/oRyUws08FplUqsB1EFX0/zkVJbhShV1G85WUeZSFqZc7ij9H//3DJy05fzPhWbxUe4SXAMuaNaR1bOPiSUe+5HJbIgsg4vocBixRKkwj/I6hSzn35ODo/OyviWcb6u+DCJfq7ihhliH5JnKoX3Zn0RmTd4DL0jQNwsm136htpb7j1GeJ5GPT89lVZEss2pXBQhJWw4RU0goLbsgef3iw+RQ8r38TALh+MUGm8CjOjo8ESGQFkTIF3+9yJxF9XWuVx1sliI6dVgfbygFsRJWj2sas+TJJAT6gFqKYkGTZT6xkSds5JVfFVLIUDoSyJoJYwjpHnoBbPQfcQr8tRaw3XlhZpiSBnA/qCmjhTJ3W4VQEbhJtP4Ikf6GZmjMKuajW47pQHCf+egqgaYXiOAWZZ+iXzSB4R9OHi2inz1Lvw8YaIUe6p0o0=
   file_glob: true
   file: ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.*
   # don't delete the artifacts from previous phases
