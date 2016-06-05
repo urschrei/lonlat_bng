@@ -38,10 +38,8 @@ run_test_suite() {
         export RUST_TEST_THREADS=1
     fi
 
-    cargo build --target $TARGET --verbose
     # cargo run --target $TARGET
     cargo test --target $TARGET
-    travis-cargo --only stable doc
 
     # sanity check the file type
     # file target/$TARGET/debug/hello

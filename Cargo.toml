@@ -31,5 +31,6 @@ test = true
 doctest = false
 doc = true
 
-# [profile.release]
+[profile.release]
+rpath = true
 # debug = true

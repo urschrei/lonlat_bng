@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/urschrei/lonlat_bng.png?branch=master)](https://travis-ci.org/urschrei/lonlat_bng) [![Coverage Status](https://coveralls.io/repos/github/urschrei/lonlat_bng/badge.svg?branch=master)](https://coveralls.io/github/urschrei/lonlat_bng?branch=master) [![](https://img.shields.io/crates/v/lonlat_bng.svg)](https://crates.io/crates/lonlat_bng) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt) [![DOI](https://zenodo.org/badge/3657/urschrei/lonlat_bng.svg)](https://zenodo.org/badge/latestdoi/3657/urschrei/lonlat_bng)  
+[![Build Status](https://travis-ci.org/urschrei/lonlat_bng.png?branch=master)](https://travis-ci.org/urschrei/lonlat_bng) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/urschrei/lonlat_bng?branch=master&svg=true)](https://ci.appveyor.com/project/urschrei/lonlat-bng) [![Coverage Status](https://coveralls.io/repos/github/urschrei/lonlat_bng/badge.svg?branch=master)](https://coveralls.io/github/urschrei/lonlat_bng?branch=master) [![](https://img.shields.io/crates/v/lonlat_bng.svg)](https://crates.io/crates/lonlat_bng) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](license.txt) [![DOI](https://zenodo.org/badge/3657/urschrei/lonlat_bng.svg)](https://zenodo.org/badge/latestdoi/3657/urschrei/lonlat_bng)  
 
 # Introduction
 <img alt="Map of the UK showing OS control points" style="float: left;" src="points.png">
@@ -31,7 +31,7 @@ The OSTN02-enabled functions are:
 
 # Library Use
 ## As a Rust Library
-Add the following to your `Cargo.toml` (the latest version is displayed on the third badge at the top of this screen)  
+Add the following to your `Cargo.toml` (the latest version is displayed on the fourth badge at the top of this screen)  
 
     lonlat_bng = "x.x.x"
 

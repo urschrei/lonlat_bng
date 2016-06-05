@@ -16,13 +16,20 @@ mk_tarball() {
 
     # TODO update this part to copy the artifacts that make sense for your project
     # NOTE All Cargo build artifacts will be under the 'target/$TARGET/{debug,release}'
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        for lib in target/$TARGET/release/liblonlat_bng.*; do
+            strip -s $lib
+        done
+    fi
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        for lib in target/$TARGET/release/liblonlat_bng.*; do
+            strip -ur $lib
+        done
+    fi
     cp target/$TARGET/release/liblonlat_bng.* $td
 
     pushd $td
-
     # release tarball will look like 'rust-everywhere-v1.2.3-x86_64-unknown-linux-gnu.tar.gz'
-    # Can I use build scripts on custom targets?
-    # i.e. can I generate a .so on Linux, and a DLL on Windows
     tar czf $out_dir/${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz *
 
     popd
