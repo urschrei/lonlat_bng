@@ -21,21 +21,10 @@ environment:
     - TARGET: x86_64-pc-windows-msvc
       CHANNEL: nightly
 
-init:
-  # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
-  - ps: >-
-      if ($env:APPVEYOR_REPO_TAG -eq "true")
-      {
-        Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_TAG_NAME"
-      }
-      else
-      {
-        Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
-      }
-
 # Install Rust and Cargo
 # (Based on from https://github.com/rust-lang/libc/blob/master/appveyor.yml)
 install:
+  - ps: echo $env:APPVEYOR_REPO_TAG_NAME
   - ps: Start-FileDownload "https://static.rust-lang.org/dist/channel-rust-stable"
   - ps: $env:RUST_VERSION = Get-Content channel-rust-stable | select -first 1 | %{$_.split('-')[1]}
   - if NOT "%CHANNEL%" == "stable" set RUST_VERSION=%CHANNEL%
@@ -48,7 +37,7 @@ install:
   - cargo -V
 
 # ???
-build: false
+# build: false
 
 # Equivalent to Travis' `script` phase
 # TODO modify this phase as you see fit
@@ -72,6 +61,7 @@ deploy:
   artifact: /.*\.zip/
   draft: false
   prerelease: false
+  tag: $(APPVEYOR_REPO_TAG_NAME)
   release: $(APPVEYOR_REPO_TAG_NAME)
   # deploy when a new tag is pushed and only on the stable channel
   # All the zipped artifacts will be deployed
