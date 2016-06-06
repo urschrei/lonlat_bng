@@ -21,6 +21,18 @@ environment:
     - TARGET: x86_64-pc-windows-msvc
       CHANNEL: nightly
 
+init:
+  # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
+  - ps: >-
+      if ($env:APPVEYOR_REPO_TAG -eq "true")
+      {
+        Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_TAG_NAME"
+      }
+      else
+      {
+        Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
+      }
+
 # Install Rust and Cargo
 # (Based on from https://github.com/rust-lang/libc/blob/master/appveyor.yml)
 install:
@@ -32,8 +44,6 @@ install:
   - SET PATH=%PATH%;C:\Program Files (x86)\Rust\bin
   - if "%TARGET%" == "i686-pc-windows-gnu" set PATH=%PATH%;C:\msys64\mingw32\bin
   - if "%TARGET%" == "x86_64-pc-windows-gnu" set PATH=%PATH%;C:\msys64\mingw64\bin
-  - $tag = $env:APPVEYOR_REPO_TAG_NAME
-  - Update-AppveyorBuild -Version "$tag"
   - rustc -V
   - cargo -V
 
@@ -57,12 +67,14 @@ before_deploy:
   - appveyor PushArtifact ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
 
 deploy:
+  - provider: GitHub
+  artifact: /.*\.zip/
+  draft: false
+  prerelease: false
   appveyor_repo_tag: true
-  release: $(tag)
+  release: $(appveyor_build_version)
   # deploy when a new tag is pushed and only on the stable channel
   # All the zipped artifacts will be deployed
-  artifact: /.*\.zip/
-  provider: GitHub
   # TODO Regenerate this auth_token for your project, this one won't work for you. Here's how:
   # - Go to 'https://github.com/settings/tokens/new' and generate a Token with only the
   # `public_repo` scope enabled
@@ -70,8 +82,6 @@ deploy:
   # - Enter the "encrypted value" below
   auth_token:
     secure: 7fxhCWnrrkw0Qg2VVMBgwmN72e1T+4BMzO8SFMf63VCwyLMJv4N8KFfs3Zi7H2NB
-  draft: false
-  prerelease: false
   on:
     # channel to use to produce the release artifacts
     # NOTE make sure you only release *once* per target
