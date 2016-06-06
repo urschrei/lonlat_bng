@@ -37,7 +37,7 @@ install:
   - cargo -V
 
 # ???
-# build: false
+build: false
 
 # Equivalent to Travis' `script` phase
 # TODO modify this phase as you see fit
@@ -56,26 +56,16 @@ before_deploy:
   - appveyor PushArtifact ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
 
 deploy:
-  appveyor_repo_tag: true
+  release: $(APPVEYOR_REPO_TAG_NAME)
+  description: 'Binaries'
   provider: GitHub
+  auth_token:
+    secure: 7fxhCWnrrkw0Qg2VVMBgwmN72e1T+4BMzO8SFMf63VCwyLMJv4N8KFfs3Zi7H2NB
   artifact: /.*\.zip/
   draft: false
   prerelease: false
-  tag: $(APPVEYOR_REPO_TAG_NAME)
-  release: $(APPVEYOR_REPO_TAG_NAME)
-  # deploy when a new tag is pushed and only on the stable channel
-  # All the zipped artifacts will be deployed
-  # TODO Regenerate this auth_token for your project, this one won't work for you. Here's how:
-  # - Go to 'https://github.com/settings/tokens/new' and generate a Token with only the
-  # `public_repo` scope enabled
-  # - Then go to 'https://ci.appveyor.com/tools/encrypt' and enter the newly generated token.
-  # - Enter the "encrypted value" below
-  auth_token:
-    secure: 7fxhCWnrrkw0Qg2VVMBgwmN72e1T+4BMzO8SFMf63VCwyLMJv4N8KFfs3Zi7H2NB
   on:
-    # channel to use to produce the release artifacts
-    # NOTE make sure you only release *once* per target
-    # TODO you may want to pick a different channel
+    appveyor_repo_tag: true
     CHANNEL: stable
 
 branches:
