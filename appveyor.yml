@@ -57,6 +57,7 @@ before_deploy:
 
 deploy:
   appveyor_repo_tag: true
+  tag: $(appveyor_repo_tag_name)
   release: $(APPVEYOR_REPO_TAG_NAME)
   description: 'Binaries'
   provider: GitHub
