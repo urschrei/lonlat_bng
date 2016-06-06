@@ -71,8 +71,7 @@ deploy:
     artifact: /.*\.zip/
     draft: false
     prerelease: false
-    appveyor_repo_tag: true
-    release: $(appveyor_build_version)
+    release: $(APPVEYOR_REPO_TAG_NAME)
     # deploy when a new tag is pushed and only on the stable channel
     # All the zipped artifacts will be deployed
     # TODO Regenerate this auth_token for your project, this one won't work for you. Here's how:
@@ -83,6 +82,7 @@ deploy:
     auth_token:
       secure: 7fxhCWnrrkw0Qg2VVMBgwmN72e1T+4BMzO8SFMf63VCwyLMJv4N8KFfs3Zi7H2NB
     on:
+      appveyor_repo_tag: true
       # channel to use to produce the release artifacts
       # NOTE make sure you only release *once* per target
       # TODO you may want to pick a different channel
