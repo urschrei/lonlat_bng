@@ -77,7 +77,7 @@ deploy:
     # NOTE make sure you only release *once* per target
     # TODO you may want to pick a different channel
     CHANNEL: stable
-    appveyor_repo_tag: true
+    # appveyor_repo_tag: true
 
 branches:
   only:
