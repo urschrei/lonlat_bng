@@ -3,7 +3,6 @@ environment:
     # This will be used as part of the zipfile name
     # TODO change the project name
     PROJECT_NAME: lonlat_bng
-    appveyor_repo_tag: true
   # TODO feel free to delete targets/channels you don't need
   matrix:
     # Stable channel
@@ -56,7 +55,6 @@ before_deploy:
   - appveyor PushArtifact ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
 
 deploy:
-  appveyor_repo_tag: true
   tag: $(APPVEYOR_REPO_TAG_NAME)
   release: $(APPVEYOR_REPO_TAG_NAME)
   description: 'Binaries'
@@ -73,3 +71,4 @@ deploy:
 branches:
   only:
     - master
+    - /v\d\.\d\.\d/
