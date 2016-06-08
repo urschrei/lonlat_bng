@@ -32,9 +32,13 @@ matrix:
     - os: osx
       rust: stable
       env: TARGET=i686-apple-darwin
+      services:
+        - docker
     - os: linux
       rust: stable
       env: TARGET=i686-unknown-linux-gnu
+      services:
+        - docker
       addons:
         apt:
           packages: &i686_unknown_linux_gnu
@@ -43,9 +47,13 @@ matrix:
     - os: osx
       rust: stable
       env: TARGET=x86_64-apple-darwin
+      services:
+        - docker
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
+      services:
+        - docker
     # Beta channel
     - os: osx
       rust: beta
