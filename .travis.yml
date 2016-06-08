@@ -32,7 +32,7 @@ matrix:
     - os: osx
       rust: stable
       env: TARGET=i686-apple-darwin
-    services:
+      services:
         - docker
     - os: linux
       rust: stable
