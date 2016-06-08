@@ -1,8 +1,5 @@
 language: rust
 cache: cargo
-sudo: required
-services:
-  - docker
 addons:
   apt:
     packages:
@@ -35,9 +32,13 @@ matrix:
     - os: osx
       rust: stable
       env: TARGET=i686-apple-darwin
+    services:
+        - docker
     - os: linux
       rust: stable
       env: TARGET=i686-unknown-linux-gnu
+      services:
+        - docker
       addons:
         apt:
           packages: &i686_unknown_linux_gnu
@@ -51,6 +52,8 @@ matrix:
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
+      services:
+        - docker
     # Beta channel
     - os: osx
       rust: beta
@@ -113,8 +116,8 @@ after_success:
   - travis-cargo coveralls --no-sudo --verify
 
 before_deploy:
-  - sudo docker pull $DOCKER_IMAGE
-  - sudo docker run --rm -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD ci/before_deploy.sh
+  - docker pull $DOCKER_IMAGE
+  - docker run --rm -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD ci/before_deploy.sh
   # - bash ci/before_deploy.sh
 
 deploy:
