@@ -6,18 +6,18 @@ environment:
   # TODO feel free to delete targets/channels you don't need
   matrix:
     # Stable channel
-    - TARGET: i686-pc-windows-msvc
-      CHANNEL: stable
+    # - TARGET: i686-pc-windows-msvc
+    #   CHANNEL: stable
     - TARGET: x86_64-pc-windows-msvc
       CHANNEL: stable
     # Beta channel
-    - TARGET: i686-pc-windows-msvc
-      CHANNEL: beta
+    # - TARGET: i686-pc-windows-msvc
+    #   CHANNEL: beta
     - TARGET: x86_64-pc-windows-msvc
       CHANNEL: beta
     # Nightly channel
-    - TARGET: i686-pc-windows-msvc
-      CHANNEL: nightly
+    # - TARGET: i686-pc-windows-msvc
+    #   CHANNEL: nightly
     - TARGET: x86_64-pc-windows-msvc
       CHANNEL: nightly
 
