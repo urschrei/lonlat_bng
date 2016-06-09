@@ -1,5 +1,7 @@
 language: rust
 cache: cargo
+services:
+  - docker
 addons:
   apt:
     packages:
@@ -95,6 +97,7 @@ before_script: |
 
 before_install:
   - export PATH="$PATH:$HOME/.cargo/bin"
+  - docker pull $DOCKER_IMAGE
 
 install:
   - bash ci/install.sh
