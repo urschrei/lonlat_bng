@@ -6,7 +6,8 @@ set -ex
 
 # Generate artifacts for release
 mk_artifacts() {
-    cargo build --target $TARGET --release
+    # cargo build --target $TARGET --release
+    RUSTFLAGS="-C link-args=-Wl,-install_name,@rpath/liblonlat_bng.dylib" cargo build --target $TARGET --release
 }
 
 mk_tarball() {
