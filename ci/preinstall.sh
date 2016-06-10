@@ -5,4 +5,5 @@
     virtualenv venv -p python
     source venv/bin/activate
     pip install pip --upgrade
+    pip install travis-cargo
 fi
