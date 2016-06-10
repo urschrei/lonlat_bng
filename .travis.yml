@@ -100,7 +100,6 @@ before_script: |
 
 before_install:
   - export PATH="$PATH:$HOME/.cargo/bin"
-  - docker pull $DOCKER_IMAGE
 
 install:
   - bash ci/install.sh
@@ -114,8 +113,6 @@ after_success:
   - travis-cargo coveralls --no-sudo --verify
 
 before_deploy:
-  # - docker pull $DOCKER_IMAGE
-  # - docker run --rm -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD ci/before_deploy.sh
   - bash ci/before_deploy.sh
 
 deploy:
