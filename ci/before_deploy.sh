@@ -6,8 +6,12 @@ set -ex
 
 # Generate artifacts for release
 mk_artifacts() {
-    # cargo build --target $TARGET --release
-    RUSTFLAGS="-C link-args=-Wl,-install_name,@rpath/liblonlat_bng.dylib" cargo build --target $TARGET --release
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        cargo build --target $TARGET --release
+    fi
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        RUSTFLAGS="-C link-args=-Wl,-install_name,@rpath/liblonlat_bng.dylib" cargo build --target $TARGET --release
+    fi
 }
 
 mk_tarball() {
