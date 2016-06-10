@@ -92,14 +92,15 @@ matrix:
       rust: beta
       env: TARGET=i686-unknown-linux-musl
 
+before_install:
+  - bash ci/preinstall.sh
+  - export PATH="$PATH:$HOME/.cargo/bin"
+
 before_script: |
   PKGNAME="${TRAVIS_REPO_SLUG}" # must match with cargo.toml
   LOCAL="~/.local" # install here to avoid `sudo`
   pip install travis-cargo --user &&
   export PATH=$HOME/.local/bin:$PATH
-
-before_install:
-  - export PATH="$PATH:$HOME/.cargo/bin"
 
 install:
   - bash ci/install.sh
