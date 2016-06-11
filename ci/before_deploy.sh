@@ -6,13 +6,7 @@ set -ex
 
 # Generate artifacts for release
 mk_artifacts() {
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        cargo build --target $TARGET --release
-    fi
-    # OSX artifacts need rpath support for relative paths when linking
-    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-        RUSTFLAGS="-C rpath" cargo build --target $TARGET --release
-    fi
+    cargo build --target $TARGET --release
 }
 
 mk_tarball() {
