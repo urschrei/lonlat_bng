@@ -49,6 +49,7 @@ matrix:
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
+      services: docker
     # Beta channel
     # - os: osx
     #   rust: beta
@@ -112,6 +113,7 @@ after_success:
   - travis-cargo --only stable doc
   - travis-cargo --only stable doc-upload
   - travis-cargo coveralls --no-sudo --verify
+  - if [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then docker pull; fi
 
 before_deploy:
   - bash ci/before_deploy.sh
