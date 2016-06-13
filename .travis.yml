@@ -117,7 +117,7 @@ after_success:
 
 before_deploy:
   - if ! [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then bash ci/before_deploy.sh; fi
-  - if [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then docker run --rm -v `pwd`:/io -e TRAVIS_TAG="$TRAVIS_TAG" $DOCKER_IMAGE /io/ci/manylinux_rust.sh; fi
+  - if [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then docker run -e TRAVIS_TAG="$TRAVIS_TAG" --rm -v `pwd`:/io $DOCKER_IMAGE /io/ci/manylinux_rust.sh; fi
 
 deploy:
   provider: releases
