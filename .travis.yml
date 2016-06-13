@@ -102,6 +102,7 @@ matrix:
       env: TARGET=i686-unknown-linux-musl
 
 before_install:
+  - ls
   - bash ci/preinstall.sh
   - export PATH="$PATH:$HOME/.cargo/bin"
 
