@@ -6,7 +6,7 @@ set -ex
 export TARGET=x86_64-unknown-linux-gnu
 export PROJECT_NAME=convert_bng
 export PATH="$PATH:$HOME/.cargo/bin"
-export $TRAVIS_RUST_VERSION=stable
+export TRAVIS_RUST_VERSION=stable
 
 install_rustup() {
     # uninstall the rust toolchain installed by travis, we are going to use rustup
