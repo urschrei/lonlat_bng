@@ -16,8 +16,6 @@
 //! ```
 //! // Convert vectors or slices using multi-threaded functions
 //! lonlat_bng::convert_to_osgb36_threaded_vec(vec![&-0.32824866], vec![&51.44533267]);
-//! ```
-//! ```
 //! lonlat_bng::convert_osgb36_to_lonlat_threaded_vec(vec![&516276], vec![&173141]);
 //! ```
 //! The crate also provides C-compatible wrapper functions which are intended for use with FFI.
