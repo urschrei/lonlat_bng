@@ -127,7 +127,8 @@ after_success:
 before_deploy:
   - if ! [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then bash ci/before_deploy.sh; fi
   - if [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then sudo docker run -e TRAVIS_TAG="$TRAVIS_TAG" --rm -v `pwd`:/io $DOCKER_IMAGE /io/ci/manylinux_rust.sh; fi
-
+  - sudo chown $USER ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz
+  
 deploy:
   provider: releases
   # TODO Regenerate this api_key for your project, this one won't work for you. Here's how:
