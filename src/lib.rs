@@ -1,4 +1,5 @@
-#![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/urschrei/lonlat_bng/master/points.png",
+       html_root_url = "https://urschrei.github.io/lonlat_bng/")]
 //! The `lonlat_bng` crate provides functions that convert decimal (WGS84 / ETRS89) longitude
 //! and latitude coordinates into [British National Grid](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) coordinates, and vice versa.
 //! This library makes use of the [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) transformations
@@ -13,7 +14,7 @@
 //! assert_eq!((651409.792, 313177.448), lonlat_bng::convert_osgb36(&1.716073973, &52.658007833).unwrap());
 //! ```
 //! ```
-//! // Convert vectors using multi-threaded functions
+//! // Convert vectors or slices using multi-threaded functions
 //! lonlat_bng::convert_to_osgb36_threaded_vec(vec![&-0.32824866], vec![&51.44533267]);
 //! ```
 //! ```
