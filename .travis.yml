@@ -44,10 +44,10 @@ matrix:
     #         - gcc-multilib
 
     ###############################
-    # - os: osx
-    #   osx_image: xcode7.3
-    #   rust: stable
-    #   env: TARGET=x86_64-apple-darwin
+    - os: osx
+      osx_image: xcode7.3
+      rust: stable
+      env: TARGET=x86_64-apple-darwin
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
