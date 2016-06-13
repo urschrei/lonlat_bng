@@ -24,18 +24,18 @@ mk_artifacts() {
 mk_tarball() {
     # create a "staging" directory
     local td=$(echo $(mktemp -d 2>/dev/null || mktemp -d -t tmp))
-    local out_dir=/io/$(pwd)
+    local out_dir=/io$(pwd)
 
     # TODO update this part to copy the artifacts that make sense for your project
     # NOTE All Cargo build artifacts will be under the 'target/$TARGET/{debug,release}'
     for lib in /io/target/$TARGET/release/liblonlat_bng.*; do
         strip -s $lib
     done
-    cp target/$TARGET/release/liblonlat_bng.* $td
+    cp /io/target/$TARGET/release/liblonlat_bng.* $td
 
     pushd $td
     # release tarball will look like 'rust-everywhere-v1.2.3-x86_64-unknown-linux-gnu.tar.gz'
-    tar czf $out_dir/${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz *
+    tar czf /io/${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz *
 
     popd
     rm -r $td
