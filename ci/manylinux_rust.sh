@@ -1,3 +1,4 @@
+#!/bin/bash
 set -ex
 
 . /io/ci/utils.sh
