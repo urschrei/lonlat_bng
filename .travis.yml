@@ -112,6 +112,7 @@ before_script: |
   export PATH=$HOME/.local/bin:$PATH
 
 install:
+  - echo $TRAVIS_RUST_VERSION
   - bash ci/install.sh
 
 script:
