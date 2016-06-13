@@ -3,15 +3,16 @@ set -ex
 
 . /io/ci/utils.sh
 
-export TARGET=x86_64-unknown-linux-gnu
 export PROJECT_NAME=lonlat_bng
+# we pass {TRAVIS_TAG} into Docker from Travis
+export TARGET=x86_64-unknown-linux-gnu
+
 export PATH="$PATH:$HOME/.cargo/bin"
+# we always produce release artifacts using stable
 export TRAVIS_RUST_VERSION=stable
-ldd --version
 
 install_rustup() {
-    # uninstall the rust toolchain installed by travis, we are going to use rustup
-    # sh ~/rust/lib/rustlib/uninstall.sh
+    # toolchain is set to stable by default
     curl https://sh.rustup.rs -sSf | sh -s -- -y
     rustc -V
     cargo -V
@@ -31,8 +32,8 @@ mk_tarball() {
     # NOTE All Cargo build artifacts will be under the 'target/$TARGET/{debug,release}'
     for lib in /io/target/$TARGET/release/liblonlat_bng.*; do
         strip -s $lib
-        md5 $lib
     done
+
     cp /io/target/$TARGET/release/liblonlat_bng.* $td
 
     pushd $td
