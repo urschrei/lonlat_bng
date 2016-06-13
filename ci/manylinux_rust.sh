@@ -4,7 +4,7 @@ set -ex
 . /io/ci/utils.sh
 
 export TARGET=x86_64-unknown-linux-gnu
-export PROJECT_NAME=convert_bng
+export PROJECT_NAME=lonlat_bng
 export PATH="$PATH:$HOME/.cargo/bin"
 export TRAVIS_RUST_VERSION=stable
 
