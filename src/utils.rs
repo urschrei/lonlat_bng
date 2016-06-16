@@ -43,7 +43,7 @@ impl ToMm for f64 {
     }
 }
 
-/// Round a float to nine decimal places
+/// Round a float to eight decimal places
 pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
     let new_x = (x * 100000000.).round() as f64 / 100000000.;
     let new_y = (y * 100000000.).round() as f64 / 100000000.;
