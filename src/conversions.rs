@@ -54,8 +54,8 @@ use std::f64;
 
 use utils::check;
 use utils::round_to_eight;
-use utils::round_to_nearest_mm;
 use utils::ostn02_shifts;
+use utils::ToMm;
 
 /// Calculate the meridional radius of curvature
 #[allow(non_snake_case)]
@@ -108,8 +108,7 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     let l = lambda - LAM0;
     let north = I + II * l.powf(2.) + III * l.powf(4.) + IIIA * l.powf(6.);
     let east = E0 + IV * l + V * l.powf(3.) + VI * l.powf(5.);
-    let (rounded_eastings, rounded_northings, _) = round_to_nearest_mm(east, north, 1.00);
-    Ok((rounded_eastings, rounded_northings))
+    Ok((east.round_to_mm(), north.round_to_mm()))
 }
 
 /// Perform ETRS89 to OSGB36 conversion, using [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html) data
@@ -126,8 +125,7 @@ pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64,
     try!(check(*northings, (0.000, MAX_NORTHING)));
     // obtain OSTN02 corrections, and incorporate
     let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
-    let rounded = round_to_nearest_mm(eastings + e_shift, northings + n_shift, 1.0000);
-    Ok((rounded.0, rounded.1))
+    Ok(((eastings + e_shift).round_to_mm(), (northings + n_shift).round_to_mm()))
 
 }
 
@@ -144,7 +142,7 @@ pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     let (eastings, northings) = try!(convert_etrs89(longitude, latitude));
     // obtain OSTN02 corrections, and incorporate
     let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
-    Ok((eastings + e_shift, northings + n_shift))
+    Ok(((eastings + e_shift).round_to_mm(), (northings + n_shift).round_to_mm()))
 }
 
 // Intermediate calculation used for lon, lat to ETRS89 and reverse conversion
@@ -225,17 +223,15 @@ pub fn convert_etrs89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 #[allow(non_snake_case)]
 pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN02 adustments
-    let z0 = 0.000;
     let epsilon = 0.00001;
-    let (mut dx, mut dy, mut dz) = try!(ostn02_shifts(&E, &N));
-    let (mut x, mut y, _) = (E - dx, N - dy, dz);
+    let (mut dx, mut dy, _) = try!(ostn02_shifts(&E, &N));
+    let (mut x, mut y) = (E - dx, N - dy);
     let (mut last_dx, mut last_dy) = (dx, dy);
     let mut res;
     loop {
         res = try!(ostn02_shifts(&x, &y));
         dx = res.0;
         dy = res.1;
-        dz = res.2;
         x = E - dx;
         y = N - dy;
         if (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
@@ -244,7 +240,8 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
         last_dx = dx;
         last_dy = dy;
     }
-    let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
+    let x = (E - dx).round_to_mm();
+    let y = (N - dy).round_to_mm();
     // We've converted to ETRS89, so we need to use the WGS84/ GRS80 ellipsoid constants
     convert_to_ll(&x, &y, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
 }
@@ -253,17 +250,15 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 #[allow(non_snake_case)]
 pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN02 adustments
-    let z0 = 0.000;
     let epsilon = 0.00001;
-    let (mut dx, mut dy, mut dz) = try!(ostn02_shifts(&E, &N));
-    let (mut x, mut y, _) = (E - dx, N - dy, dz);
+    let (mut dx, mut dy, _) = try!(ostn02_shifts(&E, &N));
+    let (mut x, mut y) = (E - dx, N - dy);
     let (mut last_dx, mut last_dy) = (dx, dy);
     let mut res;
     loop {
         res = try!(ostn02_shifts(&x, &y));
         dx = res.0;
         dy = res.1;
-        dz = res.2;
         x = E - dx;
         y = N - dy;
         if (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
@@ -272,7 +267,8 @@ pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
         last_dx = dx;
         last_dy = dy;
     }
-    let (x, y, _) = round_to_nearest_mm(E - dx, N - dy, z0 + dz);
+    let x = (E - dx).round_to_mm();
+    let y = (N - dy).round_to_mm();
     Ok((x, y))
 }
 
@@ -375,8 +371,7 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_doubl
             IIIA * (lon - lon0).powi(6);
     let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
 
-    let result = round_to_nearest_mm(E, N, 1.0);
-    Ok((result.0, result.1))
+    Ok((E.round_to_mm(), N.round_to_mm()))
 }
 
 /// **THIS FUNCTION IS DEPRECATED**
