@@ -33,6 +33,7 @@ pub fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
     }
 }
 
+/// Round an Easting or Northing coordinate to the nearest millimetre
 pub trait ToMm {
     fn round_to_mm(self) -> f64;
 }
