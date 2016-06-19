@@ -1,11 +1,11 @@
 import numpy as np
 from convertbng.cutil import convert_bng
 
-# UK bounding box
-N = 55.811741
-E = 1.768960
-S = 49.871159
-W = -6.379880
+# London bounding box
+N = 51.691874116909894
+E = 0.3340155643740321
+S = 51.28676016315085
+W = -0.5103750689005356
 
 num_coords = 1000000
 lon_ls = np.random.uniform(W, E, [num_coords])
