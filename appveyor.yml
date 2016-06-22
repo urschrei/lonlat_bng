@@ -1,4 +1,5 @@
 environment:
+  VisualStudioVersion: 8.0
   global:
     # This will be used as part of the zipfile name
     # TODO change the project name
