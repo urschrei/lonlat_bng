@@ -4,6 +4,7 @@ environment:
     # This will be used as part of the zipfile name
     # TODO change the project name
     PROJECT_NAME: lonlat_bng
+    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\ci\\run_with_env.cmd"
   # TODO feel free to delete targets/channels you don't need
   matrix:
     # Stable channel
@@ -11,6 +12,8 @@ environment:
     #   CHANNEL: stable
     - TARGET: x86_64-pc-windows-msvc
       CHANNEL: stable
+      PYTHON_VERSION: "2.7.x" # currently 2.7.11
+      PYTHON_ARCH: "64"
     - TARGET: x86_64-pc-windows-gnu
       CHANNEL: stable
     # Beta channel
@@ -52,7 +55,7 @@ artifacts:
 
 before_deploy:
   # Generate artifacts for release
-  - cargo build --release
+  - "%CMD_IN_ENV% cargo build --release"
   - mkdir staging
   # TODO update this part to copy the artifacts that make sense for your project
   - copy target\release\* staging
