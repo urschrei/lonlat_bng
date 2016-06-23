@@ -10,22 +10,20 @@ environment:
     # Stable channel
     # - TARGET: i686-pc-windows-msvc
     #   CHANNEL: stable
-    - TARGET: x86_64-pc-windows-msvc
-      CHANNEL: stable
-      PYTHON_VERSION: "2.7.x" # currently 2.7.11
-      PYTHON_ARCH: "64"
+    # - TARGET: x86_64-pc-windows-msvc
+    #   CHANNEL: stable
     - TARGET: x86_64-pc-windows-gnu
       CHANNEL: stable
     # Beta channel
     # - TARGET: i686-pc-windows-msvc
     #   CHANNEL: beta
-    - TARGET: x86_64-pc-windows-msvc
-      CHANNEL: beta
+    # - TARGET: x86_64-pc-windows-gnu
+    #   CHANNEL: beta
     # Nightly channel
     # - TARGET: i686-pc-windows-msvc
     #   CHANNEL: nightly
-    - TARGET: x86_64-pc-windows-msvc
-      CHANNEL: nightly
+    # - TARGET: x86_64-pc-windows-gnu
+    #   CHANNEL: nightly
 
 # Install Rust and Cargo
 # (Based on from https://github.com/rust-lang/libc/blob/master/appveyor.yml)
@@ -48,20 +46,19 @@ build: false
 # TODO modify this phase as you see fit
 test_script:
   - cargo test
-  - cargo rustc --release -- -C link-args=-Wl,--out-implib,lonlat_bng.a
-  - dlltool -z target\release\lonlat_bng.def --export-all-symbols target\release\lonlat_bng.dll
-  - ps: ls target\release
 
 artifacts:
   # Archive the generated packages in the ci.appveyor.com build report.
-  - path: target\release\*
+  - path: staging
 
 before_deploy:
   # Generate artifacts for release
-  - cargo build --release
+  - cargo rustc --release -- -C link-args=-Wl,--out-implib,lonlat_bng.a
+  - dlltool -z target\release\lonlat_bng.def --export-all-symbols target\release\lonlat_bng.dll
+  - ps: ls target\release
   - mkdir staging
   # TODO update this part to copy the artifacts that make sense for your project
-  - copy target\release\* staging
+  - copy target\release\lonlat* staging
   - cd staging
   # - dlltool -d lonlat_bng.def -l libsomedll.a && exit 0
     # release zipfile will look like 'rust-everywhere-v1.2.3-x86_64-pc-windows-msvc'
