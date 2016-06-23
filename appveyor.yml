@@ -48,7 +48,8 @@ build: false
 # TODO modify this phase as you see fit
 test_script:
   - cargo test
-  - cargo build --release
+  - cargo rustc --release -- -C link-args=-Wl,--out-implib,lonlat_bng.a
+  - dlltool -z target\release\lonlat_bng.def --export-all-symbols target\release\lonlat_bng.dll
   - ps: ls target\release
 
 artifacts:
