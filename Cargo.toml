@@ -1,7 +1,7 @@
 [package]
 name = "lonlat_bng"
 description = "Convert longitude and latitude coordinates to BNG coordinates, and vice versa"
-version = "0.3.5"
+version = "0.3.7"
 authors = ["Stephan Hügel <urschrei@gmail.com>"]
 license = "MIT"
 keywords = ["OSGB36", "Geo", "FFI", "ETRS89", "OSTN02"]
@@ -15,7 +15,7 @@ build = "src/build.rs"
 libc = "0.2.12"
 rand = "0.3.14"
 # nalgebra = "0.5.1"
-ostn02_phf = "0.1.11"
+ostn02_phf = "0.1.12"
 crossbeam = "0.2.9"
 num_cpus = "0.2.13"
 phf = "0.7.14"
