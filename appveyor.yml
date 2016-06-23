@@ -47,7 +47,8 @@ build: false
 # Equivalent to Travis' `script` phase
 # TODO modify this phase as you see fit
 test_script:
-  - "%CMD_IN_ENV% cargo test"
+  - cargo test
+  - ps: ls target\debug
 
 artifacts:
   # Archive the generated packages in the ci.appveyor.com build report.
@@ -55,7 +56,7 @@ artifacts:
 
 before_deploy:
   # Generate artifacts for release
-  - "%CMD_IN_ENV% cargo build --release"
+  - cargo build --release
   - mkdir staging
   # TODO update this part to copy the artifacts that make sense for your project
   - copy target\release\* staging
