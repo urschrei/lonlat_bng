@@ -14,6 +14,8 @@ environment:
     #   CHANNEL: stable
     - TARGET: x86_64-pc-windows-gnu
       CHANNEL: stable
+    - TARGET: i686-pc-windows-gnu
+      CHANNEL: stable
     # Beta channel
     # - TARGET: i686-pc-windows-msvc
     #   CHANNEL: beta
