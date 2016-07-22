@@ -75,25 +75,6 @@ impl<'a> From<Array> for &'a mut [f64] {
     }
 }
 
-// Build an Array from a Vec, so it can be leaked across the FFI boundary
-impl<T> From<Vec<T>> for Array {
-    fn from(vec: Vec<T>) -> Self {
-        let array = Array {
-            data: vec.as_ptr() as *const libc::c_void,
-            len: vec.len() as libc::size_t,
-        };
-        mem::forget(vec);
-        array
-    }
-}
-
-// Build a Vec from an Array, so it can be dropped
-impl From<Array> for Vec<f64> {
-    fn from(arr: Array) -> Self {
-        unsafe { Vec::from_raw_parts(arr.data as *mut f64, arr.len, arr.len) }
-    }
-}
-
 /// A threaded, FFI-compatible wrapper for `lonlat_bng::convert_osgb36`
 ///
 /// # Examples
