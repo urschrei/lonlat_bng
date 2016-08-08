@@ -223,7 +223,7 @@ pub fn convert_etrs89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 #[allow(non_snake_case)]
 pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN02 adustments
-    let epsilon = 0.00001;
+    let epsilon = 0.009;
     let (mut dx, mut dy, _) = try!(ostn02_shifts(&E, &N));
     let (mut x, mut y) = (E - dx, N - dy);
     let (mut last_dx, mut last_dy) = (dx, dy);
@@ -234,6 +234,8 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
         dy = res.1;
         x = E - dx;
         y = N - dy;
+        // If the difference […] is more than 0.00010m (User Guide, p15)
+        // TODO: invert this logic
         if (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
             break;
         }
@@ -602,6 +604,14 @@ mod tests {
         // http://floating-point-gui.de/errors/comparison/
         assert!(((res.0 - -0.328248269313) / -0.328248269313).abs() < 0.000001);
         assert!(((res.1 - 51.4453318435) / 51.4453318435).abs() < 0.000001);
+    }
+
+    #[test]
+    // TrainTrick reported that this coordinate doesn't converge at an epsilon of 0.00001
+    fn test_traintrick() {
+        let res = convert_osgb36_to_ll(&515415.0, &202612.0).unwrap();
+        assert_eq!(res.0, -0.33093472); // 0.3309347144
+        assert_eq!(res.1, 51.71038498); // 51.7103849894
     }
 
     #[test]
