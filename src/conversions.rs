@@ -78,12 +78,12 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))).to_radians();
     let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))).to_radians();
     // ellipsoid squared eccentricity constant
-    let e2 = (GRS80_SEMI_MAJOR.powf(2.) - GRS80_SEMI_MINOR.powf(2.)) / GRS80_SEMI_MAJOR.powf(2.);
+    let e2 = (GRS80_SEMI_MAJOR.powi(2) - GRS80_SEMI_MINOR.powi(2)) / GRS80_SEMI_MAJOR.powi(2);
     let n = (GRS80_SEMI_MAJOR - GRS80_SEMI_MINOR) / (GRS80_SEMI_MAJOR + GRS80_SEMI_MINOR);
     let phi = lat_1;
     let lambda = lon_1;
 
-    let sp2 = phi.sin().powf(2.);
+    let sp2 = phi.sin().powi(2);
     let nu = GRS80_SEMI_MAJOR * F0 * (1. - e2 * sp2).powf(-0.5); // v
     let rho = GRS80_SEMI_MAJOR * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
     let eta2 = nu / rho - 1.;
@@ -93,21 +93,21 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     let cp = phi.cos();
     let sp = phi.sin();
     let tp = phi.tan();
-    let tp2 = tp.powf(2.);
-    let tp4 = tp.powf(4.);
+    let tp2 = tp.powi(2);
+    let tp4 = tp.powi(4);
 
     let I = m + N0;
     let II = nu / 2. * sp * cp;
-    let III = nu / 24. * sp * cp.powf(3.) * (5. - tp2 + 9. * eta2);
-    let IIIA = nu / 720. * sp * cp.powf(5.) * (61. - 58. * tp2 + tp4);
+    let III = nu / 24. * sp * cp.powi(3) * (5. - tp2 + 9. * eta2);
+    let IIIA = nu / 720. * sp * cp.powi(5) * (61. - 58. * tp2 + tp4);
 
     let IV = nu * cp;
-    let V = nu / 6. * cp.powf(3.) * (nu / rho - tp2);
-    let VI = nu / 120. * cp.powf(5.) * (5. - 18. * tp2 + tp4 + 14. * eta2 - 58. * tp2 * eta2);
+    let V = nu / 6. * cp.powi(3) * (nu / rho - tp2);
+    let VI = nu / 120. * cp.powi(5) * (5. - 18. * tp2 + tp4 + 14. * eta2 - 58. * tp2 * eta2);
 
     let l = lambda - LAM0;
-    let north = I + II * l.powf(2.) + III * l.powf(4.) + IIIA * l.powf(6.);
-    let east = E0 + IV * l + V * l.powf(3.) + VI * l.powf(5.);
+    let north = I + II * l.powi(2) + III * l.powi(4) + IIIA * l.powi(6);
+    let east = E0 + IV * l + V * l.powi(3) + VI * l.powi(5);
     Ok((east.round_to_mm(), north.round_to_mm()))
 }
 
@@ -154,7 +154,7 @@ fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
     ((1. + *n * (1. + 5. / 4. * *n * (1. + *n))) * p_minus -
      3. * *n * (1. + *n * (1. + 7. / 8. * *n)) * p_minus.sin() * p_plus.cos() +
      (15. / 8. * *n * (*n * (1. + *n))) * (2. * p_minus).sin() * (2. * p_plus).cos() -
-     35. / 24. * n.powf(3.) * (3. * p_minus).sin() * (3. * p_plus).cos())
+     35. / 24. * n.powi(3) * (3. * p_minus).sin() * (3. * p_plus).cos())
 }
 
 // Easting and Northing to Lon, Lat conversion using a Helmert transform
@@ -171,7 +171,7 @@ fn convert_to_ll(eastings: &f64,
     // ellipsoid squared eccentricity constant
     let a = ell_a;
     let b = ell_b;
-    let e2 = (a.powf(2.) - b.powf(2.)) / a.powf(2.);
+    let e2 = (a.powi(2) - b.powi(2)) / a.powi(2);
     let n = (a - b) / (a + b);
 
     let dN = *northings - N0;
@@ -181,31 +181,31 @@ fn convert_to_ll(eastings: &f64,
         phi += (dN - m) / (a * F0);
         m = compute_m(&phi, &b, &n);
     }
-    let sp2 = phi.sin().powf(2.);
+    let sp2 = phi.sin().powi(2);
     let nu = a * F0 * (1. - e2 * sp2).powf(-0.5);
     let rho = a * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
     let eta2 = nu / rho - 1.;
 
     let tp = phi.tan();
-    let tp2 = tp.powf(2.);
-    let tp4 = tp.powf(4.);
+    let tp2 = tp.powi(2);
+    let tp4 = tp.powi(4);
 
     let VII = tp / (2. * rho * nu);
-    let VIII = tp / (24. * rho * nu.powf(3.)) * (5. + 3. * tp2 + eta2 - 9. * tp2 * eta2);
-    let IX = tp / (720. * rho * nu.powf(5.)) * (61. + 90. * tp2 + 45. * tp4);
+    let VIII = tp / (24. * rho * nu.powi(3)) * (5. + 3. * tp2 + eta2 - 9. * tp2 * eta2);
+    let IX = tp / (720. * rho * nu.powi(5)) * (61. + 90. * tp2 + 45. * tp4);
 
     let sp = 1.0 / phi.cos();
     let tp6 = tp4 * tp2;
 
     let X = sp / nu;
-    let XI = sp / (6. * nu.powf(3.)) * (nu / rho + 2. * tp2);
-    let XII = sp / (120. * nu.powf(5.)) * (5. + 28. * tp2 + 24. * tp4);
-    let XIIA = sp / (5040. * nu.powf(7.)) * (61. + 662. * tp2 + 1320. * tp4 + 720. * tp6);
+    let XI = sp / (6. * nu.powi(3)) * (nu / rho + 2. * tp2);
+    let XII = sp / (120. * nu.powi(5)) * (5. + 28. * tp2 + 24. * tp4);
+    let XIIA = sp / (5040. * nu.powi(7)) * (61. + 662. * tp2 + 1320. * tp4 + 720. * tp6);
 
     let e = *eastings - E0;
 
-    phi = phi - VII * e.powf(2.) + VIII * e.powf(4.) - IX * e.powf(6.);
-    let mut lambda = LAM0 + X * e - XI * e.powf(3.) + XII * e.powf(5.) - XIIA * e.powf(7.);
+    phi = phi - VII * e.powi(2) + VIII * e.powi(4) - IX * e.powi(6);
+    let mut lambda = LAM0 + X * e - XI * e.powi(3) + XII * e.powi(5) - XIIA * e.powi(7);
 
     phi = phi.to_degrees();
     lambda = lambda.to_degrees();
