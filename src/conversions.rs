@@ -519,12 +519,13 @@ mod tests {
 
     #[test]
     fn test_convert_osgb36_to_ll() {
-        // Caister Water Tower, with OSTN02 corrections applied. See p21
+        // Caister Water Tower, with OSTN02 corrections applied. See p23
         // Final Lon, Lat rounded to eight decimal places
         // p20 gives the correct lon, lat as (1.716073973, 52.658007833)
-        let easting = 651409.792;
-        let northing = 313177.448;
-        assert_eq!((1.71607397, 52.65800783),
+        let easting = 651409.804;
+        let northing = 313177.450;
+        let expected = (1.71607397, 52.65800783);
+        assert_eq!(expected,
                    convert_osgb36_to_ll(&easting, &northing).unwrap());
     }
 
@@ -551,7 +552,7 @@ mod tests {
         // these are the input values and final result in the example on p20–21
         let longitude = 1.716073973;
         let latitude = 52.658007833;
-        let expected = (651409.792, 313177.448);
+        let expected = (651409.804, 313177.450);
         assert_eq!(expected, convert_osgb36(&longitude, &latitude).unwrap());
     }
 
