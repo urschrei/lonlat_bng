@@ -9,21 +9,13 @@ repository = "https://github.com/urschrei/lonlat_bng"
 documentation = "https://urschrei.github.io/lonlat_bng/"
 readme = "README.md"
 
-build = "src/build.rs"
-
 [dependencies]
 libc = "0.2.15"
 rand = "0.3.14"
 # nalgebra = "0.5.1"
-ostn02_phf = "0.1.13"
 crossbeam = "0.2.9"
 num_cpus = "0.2.13"
-phf = "0.7.14"
 ostn15_phf = { git = "https://github.com/urschrei/ostn15_phf.git" }
-
-
-[build-dependencies]
-phf_codegen = "0.7.14"
 
 [lib]
 name = "lonlat_bng"
