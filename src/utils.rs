@@ -51,9 +51,7 @@ pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     let key = x + (y * 701) + 1;
     // Some or None, so convert to Result, which we can try!
     let result = try!(ostn15_lookup(&key).ok_or(()));
-    Ok((result.0,
-        result.1,
-        result.2))
+    Ok((result.0, result.1, result.2))
 }
 
 // Input values must be valid ETRS89 grid references

@@ -549,7 +549,7 @@ mod tests {
 
     #[test]
     fn test_osgb36_conversion() {
-        // these are the input values and final result in the example on p20–21
+        // these are the input values and final result in the example on p20–23
         let longitude = 1.716073973;
         let latitude = 52.658007833;
         let expected = (651409.804, 313177.450);
@@ -558,10 +558,10 @@ mod tests {
 
     #[test]
     fn test_etrs89_to_osgb36_conversion() {
-        // these are the input values and final result in the example on p20–21
+        // these are the input values and final result in the example on p20–23
         let eastings = 651307.003;
         let northings = 313255.686;
-        let expected = (651409.792, 313177.448);
+        let expected = (651409.804, 313177.450);
         assert_eq!(expected,
                    convert_etrs89_to_osgb36(&eastings, &northings).unwrap());
     }
@@ -607,8 +607,8 @@ mod tests {
     // TrainTrick reported that this coordinate doesn't converge at an epsilon of 0.00001
     fn test_traintrick() {
         let res = convert_osgb36_to_ll(&515415.0, &202612.0).unwrap();
-        assert_eq!(res.0, -0.33093472); // 0.3309347144
-        assert_eq!(res.1, 51.71038498); // 51.7103849894
+        assert_eq!(res.0, -0.33093489);
+        assert_eq!(res.1, 51.71038497);
     }
 
     #[test]
