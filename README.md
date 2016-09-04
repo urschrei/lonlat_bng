@@ -2,13 +2,13 @@
 
 # Introduction
 <img alt="Map of the UK showing OS control points" style="float: left;" src="points.png">
-A Rust library with FFI bindings for fast conversion between WGS84 longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary. Conversions use a standard 7-element Helmert transform with the addition of OSTN02 corrections for [accuracy](#accuracy).
+A Rust library with FFI bindings for fast conversion between WGS84 longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary. Conversions use a standard 7-element Helmert transform with the addition of OSTN15 corrections for [accuracy](#accuracy).
 
 # Motivation
 Python (etc.) is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement using FFI saves both time and energy.
 
 # Accuracy
-Conversions which solely use Helmert transforms are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying. Thus, we use the OSTN02 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN02 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
+Conversions which solely use Helmert transforms are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying. Thus, we use the OSTN15 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN15 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
 
 The OSTN02-enabled functions are:
 
@@ -27,7 +27,7 @@ The OSTN02-enabled functions are:
 - convert_osgb36_to_etrs89_threaded ← FFI
 - convert_osgb36_to_etrs89_threaded_vec
 
-[![OSTN02](ostn002_s.gif)]( "OSTN02")
+[![OSTN02](ostn002_s.gif)]( "OSTN15")
 
 # Library Use
 ## As a Rust Library
@@ -83,12 +83,12 @@ A CProfile [benchmark](remote_bench.py) was run, comparing 50 runs of converting
 
 ## Results
 
-| EC2 Instance Type    | Processors (vCPU) | Rust Ctypes (s) | Rust Cython (s) | Pyproj (s) | % change, Pyproj vs Ctypes | % change, Pyproj vs Cython |
-|:---------------------|:-----------------:|:---------------:|:---------------:|:----------:|:--------------------------:|---------------------------:|
-| c4.xlarge            | 4                 | 23.075          | 21.964          |  18.73     |  23.19%                    |  17.26%                   |
-| c4.2xlarge           | 8                 | 13.35           | 11.160          |  19.055    | -28.72%                    | -40.41%                    |
-| c4.4xlarge           | 16                | 8.73            | 6.117           |  18.797    | -53.3%                     | -67.34%                    |
-| c4.8xlarge           | 36                | 6.016           | 3.667           |  17.883    | -66.35%                    | -79.53%                   |
+| EC2 Instance Type    | Processors (vCPU) | Rust Ctypes (s) | Rust Cython (s) | Pyproj (s) | Ctypes vs Pyproj | Cython vs Pyproj |
+|:----------|:----------:|:----------:|:----------:|:----------:|:----------:|----------:|
+| c4.xlarge            | 4                 | 23.075          | 21.964          |  18.73     |   23.39%         |  17.45%          |
+| c4.2xlarge           | 8                 | 13.35           | 11.160          |  19.055    |  -29.93%         |  -41.43%         |
+| c4.4xlarge           | 16                | 8.73            | 6.117           |  18.797    |  -53.55%         |  -67.45%         |
+| c4.8xlarge           | 36                | 6.016           | 3.667           |  17.883    |  -66.35%         |  -79.49%         |
 
 
 ## Conclusion
@@ -105,6 +105,3 @@ On both 2- and 8-core i7 machines, running `convert_bng_threaded_vec` using one 
 [MIT](license.txt)  
 
 This software makes use of OSTN02 data, which is © Crown copyright, Ordnance Survey and the Ministry of Defence (MOD) 2002. All rights reserved. Provided under the BSD 2-clause [license](OSTN02_license.txt).
-
-† Really, pyproj?  
-[![mediocre](mediocre.png)]( "MEDIOCRE")

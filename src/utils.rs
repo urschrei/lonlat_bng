@@ -1,13 +1,9 @@
 #![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
 //! This module provides utilities to the conversions module
-use conversions::MIN_X_SHIFT;
-use conversions::MIN_Y_SHIFT;
-use conversions::MIN_Z_SHIFT;
-
 use std;
 use std::fmt;
-use ostn02_phf::ostn02_lookup;
-include!("hexkeys.rs");
+// use ostn02_phf::ostn02_lookup;
+use ostn15_phf::ostn15_lookup;
 
 // fn helmert(lon_vec: [&f64], lat_vec: [&f64]) -> (Vec<f64>, Vec<f64>) {
 //     let t_array = Vec3::new(TX, TY, TZ);
@@ -51,26 +47,21 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
     (new_x, new_y)
 }
 
-/// Try to get OSTN02 shift parameters, and calculate offsets
+/// Try to get OSTN15 shift parameters, and calculate offsets
 pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
-    // let key = format!("{:03x}{:03x}", y, x);
-    // optimisation from https://github.com/hoodie/concatenation_benchmarks-rs
-    let mut key = String::with_capacity(32);
-    key.push_str(HEXKEYS.get(y).unwrap());
-    key.push_str(HEXKEYS.get(x).unwrap());
+    let key = x + (y * 701) + 1;
     // Some or None, so convert to Result, which we can try!
-    let result = try!(ostn02_lookup(&*key).ok_or(()));
-    Ok((result.0 as f64 / 1000. + MIN_X_SHIFT,
-        result.1 as f64 / 1000. + MIN_Y_SHIFT,
-        result.2 as f64 / 1000. + MIN_Z_SHIFT))
-
+    let result = try!(ostn15_lookup(&key).ok_or(()));
+    Ok((result.0,
+        result.1,
+        result.2))
 }
 
 // Input values must be valid ETRS89 grid references
 // See p20 of the transformation user guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
 /// Calculate OSTN02 shifts for a given coordinate
-pub fn ostn02_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
+pub fn ostn15_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     let e_index = (*x / 1000.) as i32;
     let n_index = (*y / 1000.) as i32;
 
@@ -120,7 +111,7 @@ mod tests {
     fn test_ostn_hashmap_retrieval() {
         let eastings = 651;
         let northings = 313;
-        let expected = (102.775, -78.244, 44.252);
+        let expected = (102.787, -78.242, 44.236);
         assert_eq!(expected, get_ostn_ref(&eastings, &northings).unwrap());
     }
 
@@ -139,8 +130,8 @@ mod tests {
         // these are the input values and corrections on p20-21
         let eastings = 651307.003;
         let northings = 313255.686;
-        let expected = (102.789, -78.238, 44.244);
-        assert_eq!(expected, ostn02_shifts(&eastings, &northings).unwrap());
+        let expected = (102.801, -78.236, 44.228);
+        assert_eq!(expected, ostn15_shifts(&eastings, &northings).unwrap());
     }
 
     #[test]

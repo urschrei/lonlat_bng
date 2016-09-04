@@ -19,6 +19,7 @@ ostn02_phf = "0.1.13"
 crossbeam = "0.2.9"
 num_cpus = "0.2.13"
 phf = "0.7.14"
+ostn15_phf = { git = "https://github.com/urschrei/ostn15_phf.git" }
 
 
 [build-dependencies]

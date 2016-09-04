@@ -43,10 +43,6 @@ const N0: f64 = TRUE_ORIGIN_NORTHING;
 // convergence factor
 const F0: f64 = 0.9996012717;
 
-pub const MIN_X_SHIFT: f64 = 86.275;
-pub const MIN_Y_SHIFT: f64 = -81.603;
-pub const MIN_Z_SHIFT: f64 = 43.982;
-
 extern crate libc;
 use self::libc::c_double;
 use std::mem;
@@ -54,7 +50,7 @@ use std::f64;
 
 use utils::check;
 use utils::round_to_eight;
-use utils::ostn02_shifts;
+use utils::ostn15_shifts;
 use utils::ToMm;
 
 /// Calculate the meridional radius of curvature
@@ -124,7 +120,7 @@ pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64,
     try!(check(*eastings, (0.000, MAX_EASTING)));
     try!(check(*northings, (0.000, MAX_NORTHING)));
     // obtain OSTN02 corrections, and incorporate
-    let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
+    let (e_shift, n_shift, _) = try!(ostn15_shifts(&eastings, &northings));
     Ok(((eastings + e_shift).round_to_mm(), (northings + n_shift).round_to_mm()))
 
 }
@@ -141,7 +137,7 @@ pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     // convert input to ETRS89 (this also does a bounds check)
     let (eastings, northings) = try!(convert_etrs89(longitude, latitude));
     // obtain OSTN02 corrections, and incorporate
-    let (e_shift, n_shift, _) = try!(ostn02_shifts(&eastings, &northings));
+    let (e_shift, n_shift, _) = try!(ostn15_shifts(&eastings, &northings));
     Ok(((eastings + e_shift).round_to_mm(), (northings + n_shift).round_to_mm()))
 }
 
@@ -224,12 +220,12 @@ pub fn convert_etrs89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN02 adustments
     let epsilon = 0.009;
-    let (mut dx, mut dy, _) = try!(ostn02_shifts(&E, &N));
+    let (mut dx, mut dy, _) = try!(ostn15_shifts(&E, &N));
     let (mut x, mut y) = (E - dx, N - dy);
     let (mut last_dx, mut last_dy) = (dx, dy);
     let mut res;
     loop {
-        res = try!(ostn02_shifts(&x, &y));
+        res = try!(ostn15_shifts(&x, &y));
         dx = res.0;
         dy = res.1;
         x = E - dx;
@@ -253,12 +249,12 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN02 adustments
     let epsilon = 0.00001;
-    let (mut dx, mut dy, _) = try!(ostn02_shifts(&E, &N));
+    let (mut dx, mut dy, _) = try!(ostn15_shifts(&E, &N));
     let (mut x, mut y) = (E - dx, N - dy);
     let (mut last_dx, mut last_dy) = (dx, dy);
     let mut res;
     loop {
-        res = try!(ostn02_shifts(&x, &y));
+        res = try!(ostn15_shifts(&x, &y));
         dx = res.0;
         dy = res.1;
         x = E - dx;
