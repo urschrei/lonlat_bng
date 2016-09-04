@@ -30,7 +30,6 @@ use std::marker::Send;
 
 extern crate rand;
 extern crate phf;
-extern crate ostn02_phf;
 extern crate ostn15_phf;
 extern crate crossbeam;
 use crossbeam::scope;

@@ -2,7 +2,6 @@
 //! This module provides utilities to the conversions module
 use std;
 use std::fmt;
-// use ostn02_phf::ostn02_lookup;
 use ostn15_phf::ostn15_lookup;
 
 // fn helmert(lon_vec: [&f64], lat_vec: [&f64]) -> (Vec<f64>, Vec<f64>) {
@@ -60,7 +59,7 @@ pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
 // Input values must be valid ETRS89 grid references
 // See p20 of the transformation user guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
-/// Calculate OSTN02 shifts for a given coordinate
+/// Calculate OSTN15 shifts for a given coordinate
 pub fn ostn15_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     let e_index = (*x / 1000.) as i32;
     let n_index = (*y / 1000.) as i32;
@@ -126,7 +125,7 @@ mod tests {
     }
 
     #[test]
-    fn test_ostn02_shift_incorporation() {
+    fn test_ostn15_shift_incorporation() {
         // these are the input values and corrections on p20-21
         let eastings = 651307.003;
         let northings = 313255.686;
