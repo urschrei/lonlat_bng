@@ -10,7 +10,7 @@ Python (etc.) is relatively slow; this type of conversion is usually carried out
 # Accuracy
 Conversions which solely use Helmert transforms are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying. Thus, we use the OSTN15 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN15 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
 
-The OSTN02-enabled functions are:
+The OSTN15-enabled functions are:
 
 - convert_bng_threaded (an alias for convert_osgb36_threaded)
 - convert_bng_threaded_vec ← FFI version of the above
@@ -27,7 +27,7 @@ The OSTN02-enabled functions are:
 - convert_osgb36_to_etrs89_threaded ← FFI
 - convert_osgb36_to_etrs89_threaded_vec
 
-[![OSTN02](ostn002_s.gif)]( "OSTN15")
+[![OSTN15](ostn002_s.gif)]( "OSTN15")
 
 # Library Use
 ## As a Rust Library
@@ -104,4 +104,4 @@ On both 2- and 8-core i7 machines, running `convert_bng_threaded_vec` using one 
 # License
 [MIT](license.txt)  
 
-This software makes use of OSTN15 data, which is © Crown copyright, Ordnance Survey and the Ministry of Defence (MOD) 2016. All rights reserved. Provided under the BSD 2-clause [license](OSTN02_license.txt).
+This software makes use of OSTN15 data, which is © Crown copyright, Ordnance Survey and the Ministry of Defence (MOD) 2016. All rights reserved. Provided under the BSD 2-clause [license](OSTN15_license.txt).
