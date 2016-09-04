@@ -104,4 +104,4 @@ On both 2- and 8-core i7 machines, running `convert_bng_threaded_vec` using one 
 # License
 [MIT](license.txt)  
 
-This software makes use of OSTN02 data, which is © Crown copyright, Ordnance Survey and the Ministry of Defence (MOD) 2002. All rights reserved. Provided under the BSD 2-clause [license](OSTN02_license.txt).
+This software makes use of OSTN15 data, which is © Crown copyright, Ordnance Survey and the Ministry of Defence (MOD) 2016. All rights reserved. Provided under the BSD 2-clause [license](OSTN02_license.txt).
