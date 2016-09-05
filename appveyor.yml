@@ -26,9 +26,14 @@ environment:
     #   CHANNEL: nightly
     - TARGET: x86_64-pc-windows-gnu
       CHANNEL: nightly
+    allow_failures:
+      - TARGET: x86_64-pc-windows-gnu
+        CHANNEL: stable
+      - TARGET: i686-pc-windows-gnu
+        CHANNEL: stable
 
 # Install Rust and Cargo
-# (Based on from https://github.com/rust-lang/libc/blob/master/appveyor.yml)
+# (Based on https://github.com/rust-lang/libc/blob/master/appveyor.yml)
 install:
   - ps: Start-FileDownload "https://static.rust-lang.org/dist/channel-rust-stable"
   - ps: $env:RUST_VERSION = Get-Content channel-rust-stable | select -first 1 | %{$_.split('-')[1]}
@@ -80,7 +85,7 @@ deploy:
   prerelease: false
   on:
     appveyor_repo_tag: true
-    CHANNEL: stable
+    CHANNEL: beta
 
 branches:
   only:
