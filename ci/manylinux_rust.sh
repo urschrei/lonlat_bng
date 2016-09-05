@@ -16,7 +16,7 @@ install_rustup() {
     curl https://sh.rustup.rs -sSf | sh -s -- -y
     rustc -V
     cargo -V
-    rustup overide set beta
+    rustup override set beta
 }
 
 # Generate artifacts for release
