@@ -100,6 +100,9 @@ matrix:
     - os: linux
       rust: beta
       env: TARGET=i686-unknown-linux-musl
+    - os: linux
+      rust: stable
+      env: TARGET=x86_64-unknown-linux-gnu
 
 before_install:
   - bash ci/preinstall.sh
@@ -148,7 +151,7 @@ deploy:
     # channel to use to produce the release artifacts
     # NOTE make sure you only release *once* per target
     # TODO you may want to pick a different channel
-    condition: $TRAVIS_RUST_VERSION = stable
+    condition: $TRAVIS_RUST_VERSION = beta
     tags: true
 
 branches:
