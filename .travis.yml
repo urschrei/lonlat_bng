@@ -67,9 +67,11 @@ matrix:
       rust: beta
       osx_image: xcode7.3
       env: TARGET=x86_64-apple-darwin
+      services: docker
     - os: linux
       rust: beta
       env: TARGET=x86_64-unknown-linux-gnu
+      services: docker
 
 
     # Nightly channel
