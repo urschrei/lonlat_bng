@@ -107,7 +107,7 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     Ok((east.round_to_mm(), north.round_to_mm()))
 }
 
-/// Perform ETRS89 to OSGB36 conversion, using [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html) data
+/// Perform ETRS89 to OSGB36 conversion, using [OSTN15](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html) data
 ///
 /// # Examples
 ///
@@ -125,7 +125,7 @@ pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64,
 
 }
 
-/// Perform Longitude, Latitude to OSGB36 conversion, using [OSTN02](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html) data
+/// Perform Longitude, Latitude to OSGB36 conversion, using [OSTN15](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html) data
 ///
 /// # Examples
 ///
@@ -215,7 +215,7 @@ pub fn convert_etrs89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     convert_to_ll(E, N, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
 }
 
-/// Convert OSGB36 coordinates to Lon, Lat using OSTN02 data
+/// Convert OSGB36 coordinates to Lon, Lat using OSTN15 data
 #[allow(non_snake_case)]
 pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN02 adustments
@@ -244,10 +244,10 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     convert_to_ll(&x, &y, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
 }
 
-/// Convert OSGB36 coordinates to ETRS89 using OSTN02 data
+/// Convert OSGB36 coordinates to ETRS89 using OSTN15 data
 #[allow(non_snake_case)]
 pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
-    // Apply reverse OSTN02 adustments
+    // Apply reverse OSTN15 adustments
     let epsilon = 0.00001;
     let (mut dx, mut dy, _) = try!(ostn15_shifts(&E, &N));
     let (mut x, mut y) = (E - dx, N - dy);
@@ -519,7 +519,7 @@ mod tests {
 
     #[test]
     fn test_convert_osgb36_to_ll() {
-        // Caister Water Tower, with OSTN02 corrections applied. See p23
+        // Caister Water Tower, with OSTN15 corrections applied. See p23
         // Final Lon, Lat rounded to eight decimal places
         // p20 gives the correct lon, lat as (1.716073973, 52.658007833)
         let easting = 651409.804;
@@ -540,7 +540,7 @@ mod tests {
 
     #[test]
     fn test_etrs89_conversion() {
-        // these are the input values and intermediate result in the example on p20–21
+        // these are the input values and intermediate result in the example on p20–23
         let longitude = 1.716073973;
         let latitude = 52.658007833;
         let expected = (651307.003, 313255.686);
