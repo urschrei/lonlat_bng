@@ -175,8 +175,8 @@ mod tests {
     #[test]
     // Test Google/Bing Maps to WGS84 conversion
     fn test_epsg3857() {
-        let x: &mut[f64] = &mut[-626172.1357121646];
-        let y: &mut[f64] = &mut[6887893.4928337997];
+        let x: &mut [f64] = &mut [-626172.1357121646];
+        let y: &mut [f64] = &mut [6887893.4928337997];
         let x_arr = Array::from(x);
         let y_arr = Array::from(y);
         let (lon, lat) = convert_epsg3857_to_wgs84_threaded(x_arr, y_arr);
@@ -211,175 +211,167 @@ mod tests {
         // these are the values from the OSTN15 NTv2 download
         // they exclude the two values which fall outside the bounding box
         // several values differ by one digit in the third decimal place (mm)
-        let etrs89_lons_vec: &mut[f64] = &mut[
-            // -6.29977752,
-            -5.2030461,
-            -4.108645636,
-            -1.297822772,
-            -1.450514337,
-            -3.551283492,
-            1.444547304,
-            -2.544076183,
-            -0.119925572,
-            -4.30852477,
-            0.89724327,
-            -2.154586144,
-            -0.91248957,
-            0.401535471,
-            -1.197476559,
-            -2.640493208,
-            -4.289180698,
-            -4.289177929,
-            -3.040454907,
-            -1.663791682,
-            -4.634521682,
-            -0.077731332,
-            -4.388491181,
-            -2.938277411,
-            -1.616576852,
-            -4.296490163,
-            -3.294792193,
-            -5.828366919,
-            -2.048560307,
-            // -4.219263986,
-            // -8.578544561,
-            // -7.592555606,
-            -6.260914555,
-            -3.726310221,
-            -3.214540011,
-            -4.417576746,
-            -5.827993398,
-            -1.625169661,
-            -1.274869104,
-            -2.073828228
-        ];
-        let etrs89_lats_vec: &mut[f64] = &mut[
-            // 49.92226394,
-            49.96006138,
-            50.43885826,
-            50.57563665,
-            50.93127938,
-            51.4007822,
-            51.37447026,
-            51.42754743,
-            51.48936565,
-            51.85890896,
-            51.89436637,
-            52.25529382,
-            52.25160951,
-            52.75136687,
-            52.96219109,
-            53.3448028,
-            53.41628516,
-            53.41630925,
-            53.77911026,
-            53.8002152,
-            54.08666318,
-            54.11685144,
-            54.32919541,
-            54.8954234,
-            54.97912274,
-            55.85399953,
-            55.92478266,
-            57.00606696,
-            57.13902519,
-            // 57.48625001,
-            // 57.81351838,
-            // 58.21262247,
-            58.51560361,
-            58.58120461,
-            59.03743871,
-            59.09335035,
-            59.09671617,
-            59.53470794,
-            59.85409914,
-            60.13308092
-        ];
+        let etrs89_lons_vec: &mut [f64] = &mut [// -6.29977752,
+                                                -5.2030461,
+                                                -4.108645636,
+                                                -1.297822772,
+                                                -1.450514337,
+                                                -3.551283492,
+                                                1.444547304,
+                                                -2.544076183,
+                                                -0.119925572,
+                                                -4.30852477,
+                                                0.89724327,
+                                                -2.154586144,
+                                                -0.91248957,
+                                                0.401535471,
+                                                -1.197476559,
+                                                -2.640493208,
+                                                -4.289180698,
+                                                -4.289177929,
+                                                -3.040454907,
+                                                -1.663791682,
+                                                -4.634521682,
+                                                -0.077731332,
+                                                -4.388491181,
+                                                -2.938277411,
+                                                -1.616576852,
+                                                -4.296490163,
+                                                -3.294792193,
+                                                -5.828366919,
+                                                -2.048560307,
+                                                // -4.219263986,
+                                                // -8.578544561,
+                                                // -7.592555606,
+                                                -6.260914555,
+                                                -3.726310221,
+                                                -3.214540011,
+                                                -4.417576746,
+                                                -5.827993398,
+                                                -1.625169661,
+                                                -1.274869104,
+                                                -2.073828228];
+        let etrs89_lats_vec: &mut [f64] = &mut [// 49.92226394,
+                                                49.96006138,
+                                                50.43885826,
+                                                50.57563665,
+                                                50.93127938,
+                                                51.4007822,
+                                                51.37447026,
+                                                51.42754743,
+                                                51.48936565,
+                                                51.85890896,
+                                                51.89436637,
+                                                52.25529382,
+                                                52.25160951,
+                                                52.75136687,
+                                                52.96219109,
+                                                53.3448028,
+                                                53.41628516,
+                                                53.41630925,
+                                                53.77911026,
+                                                53.8002152,
+                                                54.08666318,
+                                                54.11685144,
+                                                54.32919541,
+                                                54.8954234,
+                                                54.97912274,
+                                                55.85399953,
+                                                55.92478266,
+                                                57.00606696,
+                                                57.13902519,
+                                                // 57.48625001,
+                                                // 57.81351838,
+                                                // 58.21262247,
+                                                58.51560361,
+                                                58.58120461,
+                                                59.03743871,
+                                                59.09335035,
+                                                59.09671617,
+                                                59.53470794,
+                                                59.85409914,
+                                                60.13308092];
 
-        let osgb36_e_vec = [
-            // 91492.146,
-            170370.718,
-            250359.811,
-            449816.371,
-            438710.92,
-            292184.87,
-            639821.835,
-            362269.991,
-            530624.974,
-            241124.584,
-            599445.59,
-            389544.19,
-            474335.969,
-            562180.547,
-            454002.834,
-            357455.843,
-            247958.971,
-            247959.241,
-            331534.564,
-            422242.186,
-            227778.33,
-            525745.67,
-            244780.636,
-            339921.145,
-            424639.355,
-            256340.925,
-            319188.434,
-            167634.202,
-            397160.491,
-            // 267056.768,
-            // 9587.909,
-            // 71713.132,
-            151968.652,
-            299721.891,
-            330398.323,
-            261596.778,
-            180862.461,
-            421300.525,
-            440725.073,
-            395999.668
-        ];
-        let osgb36_n_vec = [
-            // 11318.804,
-            11572.405,
-            62016.569,
-            75335.861,
-            114792.25,
-            168003.465,
-            169565.858,
-            169978.69,
-            178388.464,
-            220332.641,
-            225722.826,
-            261912.153,
-            262047.755,
-            319784.995,
-            340834.943,
-            383290.436,
-            393492.909,
-            393495.583,
-            431920.794,
-            433818.701,
-            468847.388,
-            470703.214,
-            495254.887,
-            556034.761,
-            565012.703,
-            664697.269,
-            670947.534,
-            797067.144,
-            805349.736,
-            // 846176.972,
-            // 899448.996,
-            // 938516.404,
-            966483.78,
-            967202.992,
-            1017347.016,
-            1025447.602,
-            1029604.114,
-            1072147.239,
-            1107878.448,
-            1138728.951
-        ];
+        let osgb36_e_vec = [// 91492.146,
+                            170370.718,
+                            250359.811,
+                            449816.371,
+                            438710.92,
+                            292184.87,
+                            639821.835,
+                            362269.991,
+                            530624.974,
+                            241124.584,
+                            599445.59,
+                            389544.19,
+                            474335.969,
+                            562180.547,
+                            454002.834,
+                            357455.843,
+                            247958.971,
+                            247959.241,
+                            331534.564,
+                            422242.186,
+                            227778.33,
+                            525745.67,
+                            244780.636,
+                            339921.145,
+                            424639.355,
+                            256340.925,
+                            319188.434,
+                            167634.202,
+                            397160.491,
+                            // 267056.768,
+                            // 9587.909,
+                            // 71713.132,
+                            151968.652,
+                            299721.891,
+                            330398.323,
+                            261596.778,
+                            180862.461,
+                            421300.525,
+                            440725.073,
+                            395999.668];
+        let osgb36_n_vec = [// 11318.804,
+                            11572.405,
+                            62016.569,
+                            75335.861,
+                            114792.25,
+                            168003.465,
+                            169565.858,
+                            169978.69,
+                            178388.464,
+                            220332.641,
+                            225722.826,
+                            261912.153,
+                            262047.755,
+                            319784.995,
+                            340834.943,
+                            383290.436,
+                            393492.909,
+                            393495.583,
+                            431920.794,
+                            433818.701,
+                            468847.388,
+                            470703.214,
+                            495254.887,
+                            556034.761,
+                            565012.703,
+                            664697.269,
+                            670947.534,
+                            797067.144,
+                            805349.736,
+                            // 846176.972,
+                            // 899448.996,
+                            // 938516.404,
+                            966483.78,
+                            967202.992,
+                            1017347.016,
+                            1025447.602,
+                            1029604.114,
+                            1072147.239,
+                            1107878.448,
+                            1138728.951];
         let e_arr = Array::from(etrs89_lons_vec);
         let n_arr = Array::from(etrs89_lats_vec);
         let (osgb36_eastings, osgb36_northings) = convert_to_bng_threaded(e_arr, n_arr);
@@ -420,8 +412,8 @@ mod tests {
 
     #[test]
     fn test_threaded_bng_conversion_single() {
-        let lon_vec: &mut[f64] = &mut[1.716073973];
-        let lat_vec: &mut[f64] = &mut[52.65800783];
+        let lon_vec: &mut [f64] = &mut [1.716073973];
+        let lat_vec: &mut [f64] = &mut [52.65800783];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
@@ -432,8 +424,8 @@ mod tests {
     #[test]
     fn test_threaded_lonlat_conversion_single() {
         // Caister Water Tower OSGB36 coords
-        let easting_vec: &mut[f64] = &mut[651409.804];
-        let northing_vec: &mut[f64] = &mut[313177.450];
+        let easting_vec: &mut [f64] = &mut [651409.804];
+        let northing_vec: &mut [f64] = &mut [313177.450];
 
 
         let easting_arr = Array::from(easting_vec);
@@ -448,8 +440,8 @@ mod tests {
 
     #[test]
     fn test_threaded_osgb36_conversion_single() {
-        let lon_vec: &mut[f64] = &mut[1.716073973];
-        let lat_vec: &mut[f64] = &mut[52.65800783];
+        let lon_vec: &mut [f64] = &mut [1.716073973];
+        let lat_vec: &mut [f64] = &mut [52.65800783];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_osgb36_threaded(lon_arr, lat_arr);
@@ -459,8 +451,8 @@ mod tests {
 
     #[test]
     fn test_threaded_etrs89_to_osgb36_conversion_single() {
-        let e_vec: &mut[f64] = &mut[651307.003];
-        let n_vec: &mut[f64]= &mut[313255.686];
+        let e_vec: &mut [f64] = &mut [651307.003];
+        let n_vec: &mut [f64] = &mut [313255.686];
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
         let (eastings, _) = convert_etrs89_to_osgb36_threaded(e_arr, n_arr);
@@ -471,8 +463,8 @@ mod tests {
     #[test]
     fn test_threaded_osgb36_to_etrs89_conversion_single() {
         // Caister Water Tower OSGB36, see p21
-        let e_vec: &mut[f64] = &mut[651409.804];
-        let n_vec: &mut[f64] = &mut[313177.450];
+        let e_vec: &mut [f64] = &mut [651409.804];
+        let n_vec: &mut [f64] = &mut [313177.450];
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
         let (eastings, _) = convert_osgb36_to_etrs89_threaded(e_arr, n_arr);
@@ -483,8 +475,8 @@ mod tests {
 
     #[test]
     fn test_threaded_etrs89_conversion_single() {
-        let lon_vec: &mut[f64] = &mut[1.716073973];
-        let lat_vec: &mut[f64] = &mut[52.65800783];
+        let lon_vec: &mut [f64] = &mut [1.716073973];
+        let lat_vec: &mut [f64] = &mut [52.65800783];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_etrs89_threaded(lon_arr, lat_arr);
@@ -494,8 +486,8 @@ mod tests {
 
     #[test]
     fn test_threaded_etrs89_to_ll_conversion_single() {
-        let e_vec: &mut[f64] = &mut[651307.003];
-        let n_vec: &mut[f64] = &mut[313255.686];
+        let e_vec: &mut [f64] = &mut [651307.003];
+        let n_vec: &mut [f64] = &mut [313255.686];
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
         let (lon, lat) = convert_etrs89_to_ll_threaded(e_arr, n_arr);
@@ -509,8 +501,8 @@ mod tests {
     #[test]
     fn test_threaded_osgb36_to_ll_conversion_single() {
         // Caister Water Tower
-        let e_vec: &mut[f64] = &mut[651409.804];
-        let n_vec: &mut[f64] = &mut[313177.450];
+        let e_vec: &mut [f64] = &mut [651409.804];
+        let n_vec: &mut [f64] = &mut [313177.450];
 
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
@@ -524,8 +516,8 @@ mod tests {
 
     #[test]
     fn test_drop_float_array() {
-        let lon_vec: &mut[f64] = &mut[-2.0183041005533306];
-        let lat_vec: &mut[f64] = &mut[54.589097162646141];
+        let lon_vec: &mut [f64] = &mut [-2.0183041005533306];
+        let lat_vec: &mut [f64] = &mut [54.589097162646141];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
@@ -534,8 +526,8 @@ mod tests {
 
     #[test]
     fn test_empty_lon_array() {
-        let lon_vec: &mut[f64] = &mut[];
-        let lat_vec: &mut[f64] = &mut[];
+        let lon_vec: &mut [f64] = &mut [];
+        let lat_vec: &mut [f64] = &mut [];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (mut eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
@@ -545,8 +537,8 @@ mod tests {
 
     #[test]
     fn test_empty_lat_array() {
-        let lon_vec: &mut[f64] = &mut[];
-        let lat_vec: &mut[f64] = &mut[];
+        let lon_vec: &mut [f64] = &mut [];
+        let lat_vec: &mut [f64] = &mut [];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, mut northings) = convert_to_bng_threaded(lon_arr, lat_arr);
@@ -557,8 +549,8 @@ mod tests {
     #[test]
     fn test_bad_threaded_conversion() {
         // above maximum longitude
-        let lon_vec: &mut[f64] = &mut[1.85];
-        let lat_vec: &mut[f64] = &mut[55.811741];
+        let lon_vec: &mut [f64] = &mut [1.85];
+        let lat_vec: &mut [f64] = &mut [55.811741];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);

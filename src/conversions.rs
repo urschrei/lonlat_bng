@@ -525,8 +525,7 @@ mod tests {
         let easting = 651409.804;
         let northing = 313177.450;
         let expected = (1.71607397, 52.65800783);
-        assert_eq!(expected,
-                   convert_osgb36_to_ll(&easting, &northing).unwrap());
+        assert_eq!(expected, convert_osgb36_to_ll(&easting, &northing).unwrap());
     }
 
     #[test]
