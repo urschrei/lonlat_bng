@@ -85,10 +85,10 @@ A CProfile [benchmark](remote_bench.py) was run, comparing 50 runs of converting
 
 | EC2 Instance Type    | Processors (vCPU) | Rust Ctypes (s) | Rust Cython (s) | Pyproj (s) | Ctypes vs Pyproj | Cython vs Pyproj |
 |:----------|:----------:|:----------:|:----------:|:----------:|:----------:|----------:|
-| c4.xlarge            | 4                 | 23.075          | 21.964          |  18.73     |   23.39%         |  17.45%          |
-| c4.2xlarge           | 8                 | 13.35           | 11.160          |  19.055    |  -29.93%         |  -41.43%         |
-| c4.4xlarge           | 16                | 8.73            | 6.117           |  18.797    |  -53.55%         |  -67.45%         |
-| c4.8xlarge           | 36                | 6.016           | 3.667           |  17.883    |  -66.35%         |  -79.49%         |
+| c4.xlarge            | 4                 | 14.432          | 12.114          |  18.358    |  -21.38%         |  -34.01%         |
+| c4.2xlarge           | 8                 | 8.699           | 6.417           |  18.03     |  -52.46%         |  -64.97%         |
+| c4.4xlarge           | 16                | 6.470           | 3.716           |  18.561    |  -65.14%         |  -79.97%         |
+| c4.8xlarge           | 36                | 4.913           | 2.501           |  17.965    |  -72.652%        |  -86.07%         |
 
 
 ## Conclusion
