@@ -126,7 +126,7 @@ pub fn convert_epsg3857_to_wgs84_threaded_vec<'a>(x: &'a mut [f64],
 
 // Generic function which applies conversion functions to vector or slice chunks within threads
 // As opposed to the earlier convert_vec, we're directly modifying and returning the
-// input vectors here, at the cost of having to use lifetime annotations
+// inputs here, at the cost of having to use lifetime annotations
 fn convert_vec_direct<'a, F>(ex: &'a mut [f64],
                              ny: &'a mut [f64],
                              func: F)
