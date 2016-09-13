@@ -8,7 +8,7 @@ S = 51.28676016315085
 W = -0.5103750689005356
 
 # osgb36 = Proj(init='epsg:27700')
-osgb36 = Proj('+init=EPSG:27700 +nadgrids=OSTN02_NTv2.gsb')
+osgb36 = Proj('+init=EPSG:27700 +nadgrids=OSTN15_NTv2.gsb')
 wgs84 = Proj(init='epsg:4326')
 num_coords = 1000000
 lon_ls = np.random.uniform(W, E, [num_coords])
