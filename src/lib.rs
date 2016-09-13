@@ -131,7 +131,7 @@ fn convert_vec_direct<'a, F>(ex: &'a mut [f64],
                              ny: &'a mut [f64],
                              func: F)
                              -> (&'a mut [f64], &'a mut [f64])
-    where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy + Sync
+    where F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Copy
 {
     let numthreads = num_cpus::get() as usize;
     let mut size = ex.len() / numthreads;
