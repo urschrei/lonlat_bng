@@ -85,15 +85,14 @@ A CProfile [benchmark](remote_bench.py) was run, comparing 50 runs of converting
 
 | EC2 Instance Type    | Processors (vCPU) | Rust Ctypes (s) | Rust Cython (s) | Pyproj (s) | Ctypes vs Pyproj | Cython vs Pyproj |
 |:----------|:----------:|:----------:|:----------:|:----------:|:----------:|----------:|
-| c4.xlarge            | 4                 | 14.432          | 12.114          |  18.358    |  -21.38%         |  -34.01%         |
-| c4.2xlarge           | 8                 | 8.699           | 6.417           |  18.03     |  -52.46%         |  -64.97%         |
-| c4.4xlarge           | 16                | 6.470           | 3.716           |  18.561    |  -65.14%         |  -79.97%         |
-| c4.8xlarge           | 36                | 4.913           | 2.501           |  17.965    |  -72.652%        |  -86.07%         |
+| c4.xlarge            | 4                 | 14.782          | 11.714          |  9.379     |   58.36%         |   24.97%         |
+| c4.2xlarge           | 8                 | 8.647           | 6.421           |  9.256     |  -6.57%          |  -30.62%         |
+| c4.4xlarge           | 16                | 6.470           | 3.716           |  9.398     |  -31.49%         |  -60.25%         |
+| c4.8xlarge           | 36                | 4.913           | 2.501           |  9.308     |  -48.05%         |  -73.35%         |
 
 
 ## Conclusion
-Using multithreading gives excellent performance; Pyproj – which is a compiled [Cython](http://cython.org) binary – is less than 20% faster than Rust + Ctypes on a 16-CPU system, and gives identical performance on 36 CPUs.  
-A compiled Cython binary + Rust is faster than Pyproj on an 8-CPU system, and outperforms Pyproj by greater margins as the number of CPUs increase: at 36 CPUs, it is over 300% faster.
+Rust is faster than PROJ.4 on an 8-CPU system – even using `ctypes` – and outperforms it by greater margins as the number of CPUs increase: at 36 CPUs, Rust + Cython is over 3.7x faster.
 
 # Comparing Crossbeam and Rayon
 Comparing how varying threads and weights affects overall speed, using [`cargo bench`](benches/benchmarks.rs)  
