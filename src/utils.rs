@@ -85,10 +85,10 @@ pub fn ostn15_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     let t = dx / 1000.;
     let u = dy / 1000.;
 
-    let f0 = (1. - t as f64) * (1. - u as f64);
-    let f1 = t as f64 * (1. - u as f64);
-    let f2 = (1. - t as f64) * u as f64;
-    let f3 = t as f64 * u as f64;
+    let f0 = (1. - t) * (1. - u);
+    let f1 = t * (1. - u);
+    let f2 = (1. - t) * u;
+    let f3 = t * u;
 
     // bilinear interpolation, to obtain the actual shifts
     let se = f0 * s0.0 + f1 * s1.0 + f2 * s2.0 + f3 * s3.0;
