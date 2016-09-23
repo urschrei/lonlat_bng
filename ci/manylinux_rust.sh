@@ -9,7 +9,7 @@ export TARGET=x86_64-unknown-linux-gnu
 
 export PATH="$PATH:$HOME/.cargo/bin"
 # we always produce release artifacts using stable
-export TRAVIS_RUST_VERSION=nightly
+export TRAVIS_RUST_VERSION=beta
 # Native CPU support
 export RUSTFLAGS="-C target-cpu=native"
 
@@ -23,7 +23,7 @@ install_rustup() {
 
 # Generate artifacts for release
 mk_artifacts() {
-    cargo build --manifest-path=/io/Cargo.toml --target $TARGET --release --features simd-accel
+    RUSTFLAGS="-C target-cpu=native" cargo build --manifest-path=/io/Cargo.toml --target $TARGET --release
 }
 
 mk_tarball() {
