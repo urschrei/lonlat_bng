@@ -1,4 +1,3 @@
-use std::mem;
 use std::slice;
 
 extern crate libc;
@@ -63,7 +62,6 @@ impl<'a, T> From<&'a mut [T]> for Array {
             data: sl.as_ptr() as *const libc::c_void,
             len: sl.len() as libc::size_t,
         };
-        mem::forget(sl);
         array
     }
 }
