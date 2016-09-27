@@ -19,7 +19,7 @@ ostn15_phf = { git = "https://github.com/urschrei/ostn15_phf.git" }
 
 [lib]
 name = "lonlat_bng"
-crate-type = ["dylib"]
+crate-type = ["cdylib"]
 test = true
 doctest = false
 doc = true
