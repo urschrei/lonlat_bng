@@ -24,12 +24,3 @@ fn bench_threads(b: &mut Bencher) {
         );
     });
 }
-
-#[bench]
-fn bench_hex_lookup(b: &mut Bencher) {
-    let eastings = 651;
-    let northings = 313;
-    b.iter(||{
-        get_ostn_ref(&eastings, &northings);
-    });
-}
