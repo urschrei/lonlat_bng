@@ -97,13 +97,7 @@ matrix:
   allow_failures:
     # Target `i686-unknown-linux-musl` is currently only available on the nightly channel
     - os: linux
-      rust: stable
-      env: TARGET=i686-unknown-linux-musl
-    - os: linux
-      rust: beta
-      env: TARGET=i686-unknown-linux-musl
-    - os: linux
-      rust: stable
+      rust: nightly
       env: TARGET=x86_64-unknown-linux-gnu
 
 before_install:
@@ -153,7 +147,7 @@ deploy:
     # channel to use to produce the release artifacts
     # NOTE make sure you only release *once* per target
     # TODO you may want to pick a different channel
-    condition: $TRAVIS_RUST_VERSION = beta
+    condition: $TRAVIS_RUST_VERSION = stable
     tags: true
 
 branches:
