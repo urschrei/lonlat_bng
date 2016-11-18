@@ -20,7 +20,7 @@ environment:
     - TARGET: i686-pc-windows-gnu
       CHANNEL: nightly
     - TARGET: x86_64-pc-windows-gnu
-      CHANNEL: beta
+      CHANNEL: nightly
     # Nightly channel
     # - TARGET: i686-pc-windows-msvc
     #   CHANNEL: nightly
@@ -76,7 +76,7 @@ deploy:
   prerelease: false
   on:
     appveyor_repo_tag: true
-    CHANNEL: beta
+    CHANNEL: nightly
 
 branches:
   only:
