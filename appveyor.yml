@@ -18,14 +18,14 @@ environment:
     #   CHANNEL: stable
     # Beta channel
     - TARGET: i686-pc-windows-gnu
-      CHANNEL: beta
+      CHANNEL: nightly
     - TARGET: x86_64-pc-windows-gnu
       CHANNEL: beta
     # Nightly channel
     # - TARGET: i686-pc-windows-msvc
     #   CHANNEL: nightly
     - TARGET: x86_64-pc-windows-gnu
-      CHANNEL: nightly
+      CHANNEL: beta
 
 # Install Rust and Cargo
 # (Based on https://github.com/rust-lang/libc/blob/master/appveyor.yml)
