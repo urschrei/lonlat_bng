@@ -46,7 +46,7 @@ test_script:
   - cargo test
   - cargo rustc --release -- -C link-args=-Wl,--out-implib,lonlat_bng.a
   - set OLDPATH=%PATH%
-  - set %PATH%=%PATH%;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin
+  - set %PATH%=%PATH%;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64
   - dumpbin /exports target/release/lonlat_bng.dll
   - set %PATH%=%OLDPATH%
 
