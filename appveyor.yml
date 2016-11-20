@@ -44,6 +44,8 @@ build: false
 # TODO modify this phase as you see fit
 test_script:
   - cargo test
+  - cargo rustc --release -- -C link-args=-Wl,--out-implib,lonlat_bng.a
+  - "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\dumpbin.exe" /exports foo.dll
 
 artifacts:
   # Archive the generated packages in the ci.appveyor.com build report.
