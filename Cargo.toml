@@ -18,7 +18,7 @@ rayon = "0.4.0"
 
 [lib]
 name = "lonlat_bng"
-crate-type = ["dylib"]
+crate-type = ["cdylib"]
 test = true
 doctest = false
 doc = true
