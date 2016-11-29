@@ -57,9 +57,7 @@ The FFI C-compatible functions exposed by the library are:
 `convert_epsg3857_to_wgs84_threaded(Array, Array) -> Array`  
 
 ### FFI and Memory Management
-If your library, module, or script uses the FFI functions, it **must** implement `drop_float_array`. **Failing to do so may result in memory leaks**. It has the following signature: `drop_float_array(ar1: Array, ar2: Array)`  
-
-The Array structs you pass to `drop_float_array` must be those you receive from the FFI function. For examples, see the `Array` struct and tests in [ffi.rs](src/ffi.rs), and the `_FFIArray` class in [convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).
+The library does not allocate memory using new vectors or arrays; the longitude and latitude arrays you pass to it via FFI are converted into mutable [slices](https://doc.rust-lang.org/std/slice/) (an inherently [`unsafe`](https://doc.rust-lang.org/std/slice/fn.from_raw_parts_mut.html) operation), then mutated in-place before being passed back across the FFI boundary as C-compatible arrays. Thus, the calling code retains ownership of the allocated memory at all times – it is up to the calling program to ensure that the data passed to `lonlat_bng` live long enough, and are correctly freed (in practice, they will be freed automatically if using a dynamic language).
 
 ### Building the Shared Library
 Running `cargo build --release` will build an artefact called `liblonlat_bng.dylib` on OSX, and `liblonlat_bng.a` on `*nix` systems. Note that you'll have to generate `liblonlat_bng.so` for `*nix` hosts using the following steps:
