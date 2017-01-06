@@ -5,29 +5,11 @@
 A Rust library with FFI bindings for fast conversion between WGS84 longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary. Conversions use a standard 7-element Helmert transform with the addition of OSTN15 corrections for [accuracy](#accuracy).
 
 # Motivation
-Python (etc.) is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement using FFI saves both time and energy.
+Python (etc.) is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement using FFI saves both time and energy.  
+[Convertbng](https://github.com/urschrei/convertbng) is an example Python Wheel which uses this binary via `ctypes` and `cython`.
 
 # Accuracy
 Conversions which solely use Helmert transforms are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying. Thus, we use the OSTN15 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN15 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
-
-The OSTN15-enabled functions are:
-
-- convert_bng_threaded (an alias for convert_osgb36_threaded)
-- convert_bng_threaded_vec ← FFI version of the above
-- convert_lonlat_threaded (an alias for convert_osgb36_to_ll)
-- convert_lonlat_threaded_vec ← FFI version of the above
-- convert_osgb36
-- convert_etrs89_to_osgb36
-- convert_to_osgb36_threaded ← FFI
-- convert_to_osgb36_threaded_vec
-- convert_etrs89_to_osgb36_threaded ← FFI
-- convert_etrs89_to_osgb36_threaded_vec
-- convert_osgb36_to_ll_threaded ← FFI
-- convert_osgb36_to_ll_threaded_vec
-- convert_osgb36_to_etrs89_threaded ← FFI
-- convert_osgb36_to_etrs89_threaded_vec
-
-[![OSTN15](ostn002_s.gif)]( "OSTN15")
 
 # Library Use
 ## As a Rust Library
@@ -41,7 +23,7 @@ Full library documentation is available [here](http://urschrei.github.io/lonlat_
 
 The functions exposed by the library can be found [here](http://urschrei.github.io/lonlat_bng/lonlat_bng/index.html#functions)
 
-## As an FFI Library
+## FFI
 The FFI C-compatible functions exposed by the library are:  
 `convert_to_bng_threaded(Array, Array) -> Array`  
 `convert_to_lonlat_threaded(Array, Array) -> Array`  
@@ -68,7 +50,7 @@ Running `cargo build --release` will build an artefact called `liblonlat_bng.dyl
 ## As a Python Package
 `convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI for OSX and *nix:  
 `pip install convertbng`  
-More information is available in its [repository](https://github.com/urschrei/rust_bng)
+More information is available in its [repository](https://github.com/urschrei/convertbng)
 
 # Benchmark
 A CProfile [benchmark](remote_bench.py) was run, comparing 50 runs of converting 1m random lon, lat pairs in NumPy arrays.
