@@ -22,9 +22,6 @@
 //!
 //! **An example FFI implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng)**.
 //!
-//! # Note
-//!
-//! FFI implementations **must** implement [`lonlat_bng::drop_float_array`](fn.drop_float_array.html), in order to free memory which has been allocated across the FFI boundary. Failure to do so may result in memory leaks.
 
 use std::marker::Send;
 
