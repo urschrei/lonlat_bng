@@ -25,4 +25,6 @@ doc = true
 
 [profile.release]
 rpath = true
-# debug = true
+lto = true
+[profile.bench]
+lto = true
