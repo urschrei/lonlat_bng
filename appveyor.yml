@@ -56,7 +56,7 @@ artifacts:
 before_deploy:
   # Generate artifacts for release
   # build artifacts for generating a .def, needed by the MinGW Python build
-  - cargo rustc --release -- -C link-args=-Wl,--out-implib,lonlat_bng.a
+  - cargo rustc --release -- -C target-cpu=native -C link-args=-Wl,lonlat_bng.a
   - ps: ls target\release
   - dlltool -z target\release\lonlat_bng.def --export-all-symbols target\release\lonlat_bng.dll
   - ps: ls target\release
