@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["check","Bounds checking for input values"],["get_ostn_ref","Try to get OSTN15 shift parameters, and calculate offsets"],["ostn15_shifts","Calculate OSTN15 shifts for a given coordinate"],["round_to_eight","Round a float to eight decimal places"]],"trait":[["ToMm","Round an Easting or Northing coordinate to the nearest millimetre"]]});
