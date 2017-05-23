@@ -1,8 +1,6 @@
 #!/bin/bash
 set -ex
 
-. /io/ci/utils.sh
-
 export CRATE_NAME=lonlat_bng
 # we pass {TRAVIS_TAG} into Docker from Travis
 export TARGET=x86_64-unknown-linux-gnu
@@ -16,10 +14,11 @@ export FORCE_UNSAFE_CONFIGURE=1
 
 install_rustup() {
     curl https://sh.rustup.rs -sSf | sh -s -- -y
+    source ~/.cargo/env || true
     rustc -V
 }
 
-# Generate artifacts for release
+# Generate artefacts for release
 mk_artifacts() {
     ls $HOME/.cargo/bin
     RUSTFLAGS='-C target-cpu=native' cargo build --manifest-path=/io/Cargo.toml --target $TARGET --release

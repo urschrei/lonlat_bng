@@ -13,91 +13,41 @@ env:
     - secure: bW+621HpryUdRObWedUlzgwrQ+lRrqN2S4MiMNJX9oa2I1/B4AM26QQDn604q9Hb+lRSO3S8SPqzvj7RqyCL+dmhR+vwf5Evyk+StR3aDAIAvXk1pl6w37ZoEJu4LPEUMpFjyTsOZ9CWj7KY1dqLo5fXV0iMd71m3yrNMLLaRRH6p9lV3tpIHu3IET5KrGcP4w1UNJtur116RAjtxS/lrraUUanTVepUidmnYdQGtpY1f1/1WDh4+J/oRyUws08FplUqsB1EFX0/zkVJbhShV1G85WUeZSFqZc7ij9H//3DJy05fzPhWbxUe4SXAMuaNaR1bOPiSUe+5HJbIgsg4vocBixRKkwj/I6hSzn35ODo/OyviWcb6u+DCJfq7ihhliH5JnKoX3Zn0RmTd4DL0jQNwsm136htpb7j1GeJ5GPT89lVZEss2pXBQhJWw4RU0goLbsgef3iw+RQ8r38TALh+MUGm8CjOjo8ESGQFkTIF3+9yJxF9XWuVx1sliI6dVgfbygFsRJWj2sas+TJJAT6gFqKYkGTZT6xkSds5JVfFVLIUDoSyJoJYwjpHnoBbPQfcQr8tRaw3XlhZpiSBnA/qCmjhTJ3W4VQEbhJtP4Ikf6GZmjMKuajW47pQHCf+egqgaYXiOAWZZ+iXzSB4R9OHi2inz1Lvw8YaIUe6p0o0=
 
 
-# AFAICT There are a few ways to set up the build jobs. This one is not the DRYest but I feel is the
-# easiest to reason about.
-# TODO Feel free to remove the channels/targets you don't need
-# NOTE Make *sure* you don't remove a reference (&foo) if you are going to dereference it (*foo)
 matrix:
   include:
-    # Stable channel
-    # - os: osx
-    #   rust: stable
-    #   env: TARGET=i686-apple-darwin
-    # - os: linux
-    #   rust: stable
-    #   env: TARGET=i686-unknown-linux-gnu
-    #   addons:
-    #     apt:
-    #       packages: &i686_unknown_linux_gnu
-    #         # Cross compiler and cross compiled C libraries
-    #         - gcc-multilib
-
-    ###############################
+    # STABLE
     - os: osx
-      osx_image: xcode7.3
+      osx_image: xcode8.3
       rust: stable
       env: TARGET=x86_64-apple-darwin
+
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
       services: docker
-    # Beta channel
-    # - os: osx
-    #   rust: beta
-    #   env: TARGET=i686-apple-darwin
-    # - os: linux
-    #   rust: beta
-    #   env: TARGET=i686-unknown-linux-gnu
-    #   addons:
-    #     apt:
-    #       packages: *i686_unknown_linux_gnu
-    ############################
+
+    # BETA
     - os: osx
       rust: beta
-      osx_image: xcode7.3
+      osx_image: xcode8.3
       env: TARGET=x86_64-apple-darwin
+
     - os: linux
       rust: beta
       env: TARGET=x86_64-unknown-linux-gnu
 
-
-    # Nightly channel
-    # - os: osx
-    #   rust: nightly
-    #   env: TARGET=i686-apple-darwin
-    # - os: linux
-    #   rust: nightly
-    #   env: TARGET=i686-unknown-linux-gnu
-    #   addons:
-    #     apt:
-    #       packages: *i686_unknown_linux_gnu
-
-    ############
+    # NIGHTLY
     - os: osx
-      osx_image: xcode7.3
+      osx_image: xcode8.3
       rust: nightly
       env: TARGET=x86_64-apple-darwin
+
     - os: linux
       rust: nightly
       env: TARGET=x86_64-unknown-linux-gnu
-
-  allow_failures:
-    # Target `i686-unknown-linux-gnu` is currently only available on the nightly channel
-    - os: linux
-      rust: stable
-      env: TARGET=i686-unknown-linux-gnu
-    - os: linux
-      rust: beta
-      env: TARGET=i686-unknown-linux-gnu
 
 before_install:
   - set -e
-
-before_script: |
-  PKGNAME="${TRAVIS_REPO_SLUG}" # must match with cargo.toml
-  LOCAL="~/.local" # install here to avoid `sudo`
-  pip install travis-cargo --user &&
-  export PATH=$HOME/.local/bin:$PATH
 
 install:
   - bash ci/install.sh
@@ -108,14 +58,13 @@ script:
 
 after_script: set +e
 
-after_success:
-  - if [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then docker pull $DOCKER_IMAGE; fi
-
 before_deploy:
-  - if [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then sudo docker run -e TRAVIS_TAG="$TRAVIS_TAG" --rm -v `pwd`:/io $DOCKER_IMAGE /io/ci/manylinux_rust.sh; fi
+  # OSX deploy doesn't need a Dockerised manylinux1 build
   - if ! [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then bash ci/before_deploy.sh; fi
-  # - sudo chown $USER ${CRATE_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz
-  
+  # Linux deploy needs Dockerised manylinux1 artefacts
+  - if [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then docker pull $DOCKER_IMAGE; fi
+  - if [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then sudo docker run -e TRAVIS_TAG="$TRAVIS_TAG" --rm -v `pwd`:/io $DOCKER_IMAGE /io/ci/manylinux_rust.sh; fi
+
 deploy:
   # TODO Regenerate this api_key for your project, this one won't work for you. Here's how:
   # - Go to 'https://github.com/settings/tokens/new' and generate a Token with only the
