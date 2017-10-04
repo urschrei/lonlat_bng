@@ -2,6 +2,7 @@
 
 # Introduction
 <img alt="Map of the UK showing OS control points" style="float: left;" src="points.png">
+
 A Rust library with FFI bindings for fast conversion between WGS84 longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary. Conversions use a standard 7-element Helmert transform with the addition of OSTN15 corrections for [accuracy](#accuracy).
 
 # Motivation
@@ -48,7 +49,7 @@ Running `cargo build --release` will build an artefact called `liblonlat_bng.dyl
 - `gcc -shared *.o -o target/release/liblonlat_bng.so -lrt` 
 
 ## As a Python Package
-`convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI for OSX and *nix:  
+`convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI for OSX, Windows, and *nix:  
 `pip install convertbng`  
 More information is available in its [repository](https://github.com/urschrei/convertbng)
 
