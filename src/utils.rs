@@ -50,7 +50,7 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
 pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
     let key = x + (y * 701) + 1;
     // Some or None, so convert to Result, which we can try!
-    let result = try!(ostn15_lookup(&key).ok_or(()));
+    let result = ostn15_lookup(&key).ok_or(())?;
     Ok((result.0, result.1, result.2))
 }
 
@@ -70,13 +70,13 @@ pub fn ostn15_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     // any of these could be Err, so use try!
 
     // bottom-left grid intersection
-    let s0: (f64, f64, f64) = try!(get_ostn_ref(&(e_index), &(n_index)));
+    let s0: (f64, f64, f64) = get_ostn_ref(&(e_index), &(n_index))?;
     // bottom-right
-    let s1: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 1), &(n_index + 0)));
+    let s1: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 0))?;
     // top-left
-    let s2: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 0), &(n_index + 1)));
+    let s2: (f64, f64, f64) = get_ostn_ref(&(e_index + 0), &(n_index + 1))?;
     // top-right
-    let s3: (f64, f64, f64) = try!(get_ostn_ref(&(e_index + 1), &(n_index + 1)));
+    let s3: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 1))?;
 
     // offset within square
     let dx = x - (x0 as f64);

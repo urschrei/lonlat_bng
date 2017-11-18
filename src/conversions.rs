@@ -71,8 +71,8 @@ fn curvature(a: f64, f0: f64, e2: f64, lat: f64) -> f64 {
 pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()> {
     // Input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))).to_radians();
-    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))).to_radians();
+    let lon_1: f64 = check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))?.to_radians();
+    let lat_1: f64 = check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))?.to_radians();
     // ellipsoid squared eccentricity constant
     let e2 = (GRS80_SEMI_MAJOR.powi(2) - GRS80_SEMI_MINOR.powi(2)) / GRS80_SEMI_MAJOR.powi(2);
     let n = (GRS80_SEMI_MAJOR - GRS80_SEMI_MINOR) / (GRS80_SEMI_MAJOR + GRS80_SEMI_MINOR);
@@ -117,10 +117,10 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
 #[allow(non_snake_case)]
 pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64, f64), ()> {
     // ensure that we're within the boundaries
-    try!(check(*eastings, (0.000, MAX_EASTING)));
-    try!(check(*northings, (0.000, MAX_NORTHING)));
+    check(*eastings, (0.000, MAX_EASTING))?;
+    check(*northings, (0.000, MAX_NORTHING))?;
     // obtain OSTN02 corrections, and incorporate
-    let (e_shift, n_shift, _) = try!(ostn15_shifts(&eastings, &northings));
+    let (e_shift, n_shift, _) = ostn15_shifts(&eastings, &northings)?;
     Ok(((eastings + e_shift).round_to_mm(), (northings + n_shift).round_to_mm()))
 
 }
@@ -134,10 +134,10 @@ pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64,
 /// assert_eq!((651409.792, 313177.448), convert_etrs89(&1.716073973, &52.658007833).unwrap());
 #[allow(non_snake_case)]
 pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()> {
-    // convert input to ETRS89 (this also does a bounds check)
-    let (eastings, northings) = try!(convert_etrs89(longitude, latitude));
+    // convert input to ETRS89
+    let (eastings, northings) = convert_etrs89(longitude, latitude)?;
     // obtain OSTN02 corrections, and incorporate
-    let (e_shift, n_shift, _) = try!(ostn15_shifts(&eastings, &northings));
+    let (e_shift, n_shift, _) = ostn15_shifts(&eastings, &northings)?;
     Ok(((eastings + e_shift).round_to_mm(), (northings + n_shift).round_to_mm()))
 }
 
@@ -162,8 +162,8 @@ fn convert_to_ll(eastings: &f64,
                  ell_b: f64)
                  -> Result<(f64, f64), ()> {
     // ensure that we're within the boundaries
-    try!(check(*eastings, (0.000, MAX_EASTING)));
-    try!(check(*northings, (0.000, MAX_NORTHING)));
+    check(*eastings, (0.000, MAX_EASTING))?;
+    check(*northings, (0.000, MAX_NORTHING))?;
     // ellipsoid squared eccentricity constant
     let a = ell_a;
     let b = ell_b;
@@ -220,12 +220,12 @@ pub fn convert_etrs89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN02 adustments
     let epsilon = 0.009;
-    let (mut dx, mut dy, _) = try!(ostn15_shifts(&E, &N));
+    let (mut dx, mut dy, _) = ostn15_shifts(&E, &N)?;
     let (mut x, mut y) = (E - dx, N - dy);
     let (mut last_dx, mut last_dy) = (dx, dy);
     let mut res;
     loop {
-        res = try!(ostn15_shifts(&x, &y));
+        res = ostn15_shifts(&x, &y)?;
         dx = res.0;
         dy = res.1;
         x = E - dx;
@@ -249,12 +249,12 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN15 adustments
     let epsilon = 0.00001;
-    let (mut dx, mut dy, _) = try!(ostn15_shifts(&E, &N));
+    let (mut dx, mut dy, _) = ostn15_shifts(&E, &N)?;
     let (mut x, mut y) = (E - dx, N - dy);
     let (mut last_dx, mut last_dy) = (dx, dy);
     let mut res;
     loop {
-        res = try!(ostn15_shifts(&x, &y));
+        res = ostn15_shifts(&x, &y)?;
         dx = res.0;
         dy = res.1;
         x = E - dx;
@@ -284,8 +284,8 @@ pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_double), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = try!(check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))).to_radians();
-    let lat_1: f64 = try!(check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))).to_radians();
+    let lon_1: f64 = check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))?.to_radians();
+    let lat_1: f64 = check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))?.to_radians();
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1 = GRS80_SEMI_MAJOR;
     let b_1 = GRS80_SEMI_MINOR;

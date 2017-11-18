@@ -389,7 +389,6 @@ mod tests {
     // Lat: 56, 10, 31.115299
     fn test_ostn_invalid_outside_2() {
         let _ = convert_osgb36(&2.375291, &56.17531).unwrap();
-
     }
 
     #[test]
