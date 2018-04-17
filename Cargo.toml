@@ -10,11 +10,11 @@ documentation = "https://urschrei.github.io/lonlat_bng/"
 readme = "README.md"
 
 [dependencies]
-libc = "0.2.22"
-rand = "0.3.14"
+libc = "0.2.40"
+rand = "0.4.2"
 # nalgebra = "0.5.1"
 ostn15_phf = { git = "https://github.com/urschrei/ostn15_phf.git" }
-rayon = "0.7.0"
+rayon = "1.0.0"
 
 [lib]
 name = "lonlat_bng"
