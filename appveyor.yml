@@ -52,7 +52,7 @@ install:
 # TODO modify this phase as you see fit
 test_script:
   - if [%APPVEYOR_REPO_TAG%]==[false] (
-      cargo test
+      cargo test --verbose
     )
 
 artifacts:
