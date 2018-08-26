@@ -58,11 +58,10 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
 // Build an Array from &mut[T], so it can be leaked across the FFI boundary
 impl<'a, T> From<&'a mut [T]> for Array {
     fn from(sl: &mut [T]) -> Self {
-        let array = Array {
+        Array {
             data: sl.as_ptr() as *const libc::c_void,
             len: sl.len() as libc::size_t,
-        };
-        array
+        }
     }
 }
 

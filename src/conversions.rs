@@ -331,7 +331,7 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_doubl
     let e2 = 1. - b.powi(2) / a.powi(2);
     let p = (x_2.powi(2) + y_2.powi(2)).sqrt();
     // Initial value
-    let mut lat = z_2.atan2((p * (1. - e2)));
+    let mut lat = z_2.atan2(p * (1. - e2));
     let mut latold = 2. * PI;
     // this is cheating, but not sure how else to initialise nu
     let mut nu: f64 = 1.;
@@ -484,7 +484,7 @@ pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
 
     // Lat is obtained by iterative procedure
     // Initial value
-    let mut lat = z_2.atan2((p * (1. - e2_2)));
+    let mut lat = z_2.atan2(p * (1. - e2_2));
     let mut latold = 2. * PI;
     let mut nu_2: f64;
     while (lat - latold).abs() > (10. as f64).powi(-16) {

@@ -73,15 +73,15 @@ pub fn ostn15_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     // bottom-left grid intersection
     let s0: (f64, f64, f64) = get_ostn_ref(&(e_index), &(n_index))?;
     // bottom-right
-    let s1: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 0))?;
+    let s1: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index))?;
     // top-left
-    let s2: (f64, f64, f64) = get_ostn_ref(&(e_index + 0), &(n_index + 1))?;
+    let s2: (f64, f64, f64) = get_ostn_ref(&(e_index), &(n_index + 1))?;
     // top-right
     let s3: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 1))?;
 
     // offset within square
-    let dx = x - (x0 as f64);
-    let dy = y - (y0 as f64);
+    let dx = x - f64::from(x0);
+    let dy = y - f64::from(y0);
 
     let t = dx / 1000.;
     let u = dy / 1000.;
