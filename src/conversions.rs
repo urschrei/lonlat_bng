@@ -45,12 +45,12 @@ const F0: f64 = 0.9996012717;
 
 extern crate libc;
 use self::libc::c_double;
-use std::mem;
 use std::f64;
+use std::mem;
 
 use utils::check;
-use utils::round_to_eight;
 use utils::ostn15_shifts;
+use utils::round_to_eight;
 use utils::ToMm;
 
 /// Calculate the meridional radius of curvature
@@ -121,8 +121,10 @@ pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64,
     check(*northings, (0.000, MAX_NORTHING))?;
     // obtain OSTN02 corrections, and incorporate
     let (e_shift, n_shift, _) = ostn15_shifts(&eastings, &northings)?;
-    Ok(((eastings + e_shift).round_to_mm(), (northings + n_shift).round_to_mm()))
-
+    Ok((
+        (eastings + e_shift).round_to_mm(),
+        (northings + n_shift).round_to_mm(),
+    ))
 }
 
 /// Perform Longitude, Latitude to OSGB36 conversion, using [OSTN15](https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html) data
@@ -138,7 +140,10 @@ pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     let (eastings, northings) = convert_etrs89(longitude, latitude)?;
     // obtain OSTN02 corrections, and incorporate
     let (e_shift, n_shift, _) = ostn15_shifts(&eastings, &northings)?;
-    Ok(((eastings + e_shift).round_to_mm(), (northings + n_shift).round_to_mm()))
+    Ok((
+        (eastings + e_shift).round_to_mm(),
+        (northings + n_shift).round_to_mm(),
+    ))
 }
 
 // Intermediate calculation used for lon, lat to ETRS89 and reverse conversion
@@ -146,21 +151,22 @@ fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
     let p_plus = *phi + PHI0;
     let p_minus = *phi - PHI0;
 
-    *b * F0 *
-    ((1. + *n * (1. + 5. / 4. * *n * (1. + *n))) * p_minus -
-     3. * *n * (1. + *n * (1. + 7. / 8. * *n)) * p_minus.sin() * p_plus.cos() +
-     (15. / 8. * *n * (*n * (1. + *n))) * (2. * p_minus).sin() * (2. * p_plus).cos() -
-     35. / 24. * n.powi(3) * (3. * p_minus).sin() * (3. * p_plus).cos())
+    *b * F0
+        * ((1. + *n * (1. + 5. / 4. * *n * (1. + *n))) * p_minus
+            - 3. * *n * (1. + *n * (1. + 7. / 8. * *n)) * p_minus.sin() * p_plus.cos()
+            + (15. / 8. * *n * (*n * (1. + *n))) * (2. * p_minus).sin() * (2. * p_plus).cos()
+            - 35. / 24. * n.powi(3) * (3. * p_minus).sin() * (3. * p_plus).cos())
 }
 
 // Easting and Northing to Lon, Lat conversion using a Helmert transform
 // Note that either GRS80 or Airy 1830 ellipsoids can be passed
 #[allow(non_snake_case)]
-fn convert_to_ll(eastings: &f64,
-                 northings: &f64,
-                 ell_a: f64,
-                 ell_b: f64)
-                 -> Result<(f64, f64), ()> {
+fn convert_to_ll(
+    eastings: &f64,
+    northings: &f64,
+    ell_a: f64,
+    ell_b: f64,
+) -> Result<(f64, f64), ()> {
     // ensure that we're within the boundaries
     check(*eastings, (0.000, MAX_EASTING))?;
     check(*northings, (0.000, MAX_NORTHING))?;
@@ -347,26 +353,31 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_doubl
     let eta2 = nu * F0 / rho - 1.;
 
     let M1 = (1. + n + (5. / 4.) * n.powi(2) + (5. / 4.) * n.powi(3)) * (lat - lat0);
-    let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) *
-             ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin())).ln_1p().exp_m1() *
-             (lat + lat0).cos();
-    let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3)) * (2. * (lat - lat0)).sin() *
-             (2. * (lat + lat0)).cos();
+    let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3))
+        * ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin()))
+            .ln_1p()
+            .exp_m1() * (lat + lat0).cos();
+    let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3))
+        * (2. * (lat - lat0)).sin()
+        * (2. * (lat + lat0)).cos();
     let M4 = (35. / 24.) * n.powi(3) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
     let M = b * F0 * (M1 - M2 + M3 - M4);
 
     let I = M + N0;
     let II = nu * F0 * lat.sin() * lat.cos() / 2.;
     let III = nu * F0 * lat.sin() * lat.cos().powi(3) * (5. - lat.tan().powi(2) + 9. * eta2) / 24.;
-    let IIIA = nu * F0 * lat.sin() * lat.cos().powi(5) *
-               (61. - 58. * lat.tan().powi(2) + lat.tan().powi(4)) / 720.;
+    let IIIA = nu
+        * F0
+        * lat.sin()
+        * lat.cos().powi(5)
+        * (61. - 58. * lat.tan().powi(2) + lat.tan().powi(4)) / 720.;
     let IV = nu * F0 * lat.cos();
     let V = nu * F0 * lat.cos().powi(3) * (nu / rho - lat.tan().powi(2)) / 6.;
-    let VI = nu * F0 * lat.cos().powi(5) *
-             (5. - 18. * lat.tan().powi(2) + lat.tan().powi(4) + 14. * eta2 -
-              58. * eta2 * lat.tan().powi(2)) / 120.;
-    let N = I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) +
-            IIIA * (lon - lon0).powi(6);
+    let VI = nu * F0 * lat.cos().powi(5)
+        * (5. - 18. * lat.tan().powi(2) + lat.tan().powi(4) + 14. * eta2
+            - 58. * eta2 * lat.tan().powi(2)) / 120.;
+    let N =
+        I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) + IIIA * (lon - lon0).powi(6);
     let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
 
     Ok((E.round_to_mm(), N.round_to_mm()))
@@ -403,11 +414,13 @@ pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
     while (*northing - N0 - M) >= 0.00001 {
         lat += (*northing - N0 - M) / (a * F0);
         let M1 = (1. + n + (5. / 4.) * n.powi(3) + (5. / 4.) * n.powi(3)) * (lat - lat0);
-        let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3)) *
-                 ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin())).ln_1p().exp_m1() *
-                 (lat + lat0).cos();
-        let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3)) * (2. * (lat - lat0)).sin() *
-                 (2. * (lat + lat0)).cos();
+        let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3))
+            * ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin()))
+                .ln_1p()
+                .exp_m1() * (lat + lat0).cos();
+        let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3))
+            * (2. * (lat - lat0)).sin()
+            * (2. * (lat + lat0)).cos();
         let M4 = (35. / 24.) * n.powi(3) * (3. * (lat - lat0)).sin() * (3. * (lat + lat0)).cos();
         // Meridional arc!
         M = b * F0 * (M1 - M2 + M3 - M4);
@@ -420,17 +433,16 @@ pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
 
     let secLat = 1. / lat.cos();
     let VII = lat.tan() / (2. * rho * nu);
-    let VIII = lat.tan() / (24. * rho * nu.powi(3)) *
-               (5. + 3. * lat.tan().powi(2) + eta2 - 9. * lat.tan().powi(2) * eta2);
-    let IX = lat.tan() / (720. * rho * nu.powi(5)) *
-             (61. + 90. * lat.tan().powi(2) + 45. * lat.tan().powi(4));
+    let VIII = lat.tan() / (24. * rho * nu.powi(3))
+        * (5. + 3. * lat.tan().powi(2) + eta2 - 9. * lat.tan().powi(2) * eta2);
+    let IX = lat.tan() / (720. * rho * nu.powi(5))
+        * (61. + 90. * lat.tan().powi(2) + 45. * lat.tan().powi(4));
     let X = secLat / nu;
     let XI = secLat / (6. * nu.powi(3)) * (nu / rho + 2. * lat.tan().powi(2));
-    let XII = secLat / (120. * nu.powi(5)) *
-              (5. + 28. * lat.tan().powi(2) + 24. * lat.tan().powi(4));
-    let XIIA = secLat / (5040. * nu.powi(7)) *
-               (61. + 662. * lat.tan().powi(2) + 1320. * lat.tan().powi(4) +
-                720. * lat.tan().powi(6));
+    let XII =
+        secLat / (120. * nu.powi(5)) * (5. + 28. * lat.tan().powi(2) + 24. * lat.tan().powi(4));
+    let XIIA = secLat / (5040. * nu.powi(7))
+        * (61. + 662. * lat.tan().powi(2) + 1320. * lat.tan().powi(4) + 720. * lat.tan().powi(6));
     let dE = *easting - E0;
     // These are on the wrong ellipsoid currently: Airy1830 (Denoted by _1)
     let lat_1 = lat - VII * dE.powi(2) + VIII * dE.powi(4) - IX * dE.powi(6);
@@ -445,7 +457,7 @@ pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
 
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
     let minus_s = -S; // The scale factor -1
-    // The translations along x, y, z axes respectively
+                      // The translations along x, y, z axes respectively
     let tx = TX.abs();
     let ty = TY * -1.;
     let tz = TZ.abs();
@@ -499,14 +511,14 @@ pub fn convert_epsg3857_to_wgs84(x: &f64, y: &f64) -> Result<(f64, f64), ()> {
 #[cfg(test)]
 mod tests {
 
-    use super::convert_etrs89;
-    use super::convert_osgb36;
-    use super::convert_etrs89_to_osgb36;
-    use super::convert_etrs89_to_ll;
-    use super::convert_osgb36_to_ll;
     use super::convert_bng;
-    use super::convert_lonlat;
     use super::convert_epsg3857_to_wgs84;
+    use super::convert_etrs89;
+    use super::convert_etrs89_to_ll;
+    use super::convert_etrs89_to_osgb36;
+    use super::convert_lonlat;
+    use super::convert_osgb36;
+    use super::convert_osgb36_to_ll;
 
     #[test]
     fn test_gmaps_to_wgs() {
@@ -514,7 +526,6 @@ mod tests {
         let y = 6887893.4928337997;
         let expected = (-5.625000000783013, 52.48278022732355);
         assert_eq!(expected, convert_epsg3857_to_wgs84(&x, &y).unwrap());
-
     }
 
     #[test]
@@ -533,8 +544,10 @@ mod tests {
         // Caister Water Tower, ETRS89. See p20
         let easting = 651307.003;
         let northing = 313255.686;
-        assert_eq!((1.71607397, 52.65800783),
-                   convert_etrs89_to_ll(&easting, &northing).unwrap());
+        assert_eq!(
+            (1.71607397, 52.65800783),
+            convert_etrs89_to_ll(&easting, &northing).unwrap()
+        );
     }
 
     #[test]
@@ -561,8 +574,10 @@ mod tests {
         let eastings = 651307.003;
         let northings = 313255.686;
         let expected = (651409.804, 313177.450);
-        assert_eq!(expected,
-                   convert_etrs89_to_osgb36(&eastings, &northings).unwrap());
+        assert_eq!(
+            expected,
+            convert_etrs89_to_osgb36(&eastings, &northings).unwrap()
+        );
     }
 
     #[test]
@@ -586,8 +601,10 @@ mod tests {
     #[test]
     fn test_bng_conversion() {
         // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-        assert_eq!((516275.973, 173141.092),
-                   convert_bng(&-0.32824866, &51.44533267).unwrap());
+        assert_eq!(
+            (516275.973, 173141.092),
+            convert_bng(&-0.32824866, &51.44533267).unwrap()
+        );
     }
 
     #[test]
@@ -613,15 +630,19 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_bad_lon() {
-        assert_eq!((516276.000, 173141.000),
-                   convert_bng(&181., &51.44533267).unwrap());
+        assert_eq!(
+            (516276.000, 173141.000),
+            convert_bng(&181., &51.44533267).unwrap()
+        );
     }
 
     #[test]
     #[should_panic]
     fn test_bad_lat() {
-        assert_eq!((516276.000, 173141.000),
-                   convert_bng(&-0.32824866, &-90.01).unwrap());
+        assert_eq!(
+            (516276.000, 173141.000),
+            convert_bng(&-0.32824866, &-90.01).unwrap()
+        );
     }
 
 }

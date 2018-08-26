@@ -1,8 +1,8 @@
 #![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
 //! This module provides utilities to the conversions module
+use ostn15_phf::ostn15_lookup;
 use std;
 use std::fmt;
-use ostn15_phf::ostn15_lookup;
 
 // fn helmert(lon_vec: [&f64], lat_vec: [&f64]) -> (Vec<f64>, Vec<f64>) {
 //     let t_array = Vec3::new(TX, TY, TZ);
@@ -20,7 +20,8 @@ use ostn15_phf::ostn15_lookup;
 
 /// Bounds checking for input values
 pub fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
-    where T: std::cmp::PartialOrd + fmt::Display + Copy
+where
+    T: std::cmp::PartialOrd + fmt::Display + Copy,
 {
     match to_check {
         to_check if bounds.0 <= to_check && to_check <= bounds.1 => Ok(to_check),
@@ -96,7 +97,6 @@ pub fn ostn15_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     let sg = f0 * s0.2 + f1 * s1.2 + f2 * s2.2 + f3 * s3.2;
 
     Ok((se.round_to_mm(), sn.round_to_mm(), sg.round_to_mm()))
-
 }
 
 #[cfg(test)]

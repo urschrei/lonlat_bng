@@ -9,15 +9,15 @@ pub struct Array {
     pub len: libc::size_t,
 }
 
+use super::convert_epsg3857_to_wgs84_threaded_vec;
+use super::convert_etrs89_to_ll_threaded_vec;
+use super::convert_etrs89_to_osgb36_threaded_vec;
+use super::convert_osgb36_to_etrs89_threaded_vec;
+use super::convert_osgb36_to_ll_threaded_vec;
 use super::convert_to_bng_threaded_vec;
+use super::convert_to_etrs89_threaded_vec;
 use super::convert_to_lonlat_threaded_vec;
 use super::convert_to_osgb36_threaded_vec;
-use super::convert_to_etrs89_threaded_vec;
-use super::convert_etrs89_to_osgb36_threaded_vec;
-use super::convert_etrs89_to_ll_threaded_vec;
-use super::convert_osgb36_to_ll_threaded_vec;
-use super::convert_osgb36_to_etrs89_threaded_vec;
-use super::convert_epsg3857_to_wgs84_threaded_vec;
 
 /// Free memory which Rust has allocated across the FFI boundary (f64 values)
 ///
@@ -123,8 +123,8 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
 pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> (Array, Array) {
-    let (res_eastings, res_northings) = convert_to_lonlat_threaded_vec(eastings.into(),
-                                                                       northings.into());
+    let (res_eastings, res_northings) =
+        convert_to_lonlat_threaded_vec(eastings.into(), northings.into());
     (res_eastings.into(), res_northings.into())
 }
 
@@ -138,9 +138,10 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
-pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
-                                             latitudes: Array)
-                                             -> (Array, Array) {
+pub extern "C" fn convert_to_osgb36_threaded(
+    longitudes: Array,
+    latitudes: Array,
+) -> (Array, Array) {
     let (res_lon, res_lat) = convert_to_osgb36_threaded_vec(longitudes.into(), latitudes.into());
     (res_lon.into(), res_lat.into())
 }
@@ -155,9 +156,10 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array,
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
-pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
-                                             latitudes: Array)
-                                             -> (Array, Array) {
+pub extern "C" fn convert_to_etrs89_threaded(
+    longitudes: Array,
+    latitudes: Array,
+) -> (Array, Array) {
     let (res_lon, res_lat) = convert_to_etrs89_threaded_vec(longitudes.into(), latitudes.into());
     (res_lon.into(), res_lat.into())
 }
@@ -172,11 +174,12 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array,
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
-pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
-                                                    northings: Array)
-                                                    -> (Array, Array) {
-    let (res_eastings, res_northings) = convert_etrs89_to_osgb36_threaded_vec(eastings.into(),
-                                                                              northings.into());
+pub extern "C" fn convert_etrs89_to_osgb36_threaded(
+    eastings: Array,
+    northings: Array,
+) -> (Array, Array) {
+    let (res_eastings, res_northings) =
+        convert_etrs89_to_osgb36_threaded_vec(eastings.into(), northings.into());
     (res_eastings.into(), res_northings.into())
 }
 
@@ -190,11 +193,12 @@ pub extern "C" fn convert_etrs89_to_osgb36_threaded(eastings: Array,
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
-pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
-                                                northings: Array)
-                                                -> (Array, Array) {
-    let (res_eastings, res_northings) = convert_etrs89_to_ll_threaded_vec(eastings.into(),
-                                                                          northings.into());
+pub extern "C" fn convert_etrs89_to_ll_threaded(
+    eastings: Array,
+    northings: Array,
+) -> (Array, Array) {
+    let (res_eastings, res_northings) =
+        convert_etrs89_to_ll_threaded_vec(eastings.into(), northings.into());
     (res_eastings.into(), res_northings.into())
 }
 
@@ -208,11 +212,12 @@ pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array,
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
-pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
-                                                northings: Array)
-                                                -> (Array, Array) {
-    let (res_eastings, res_northings) = convert_osgb36_to_ll_threaded_vec(eastings.into(),
-                                                                          northings.into());
+pub extern "C" fn convert_osgb36_to_ll_threaded(
+    eastings: Array,
+    northings: Array,
+) -> (Array, Array) {
+    let (res_eastings, res_northings) =
+        convert_osgb36_to_ll_threaded_vec(eastings.into(), northings.into());
     (res_eastings.into(), res_northings.into())
 }
 
@@ -226,11 +231,12 @@ pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array,
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
 #[no_mangle]
-pub extern "C" fn convert_osgb36_to_etrs89_threaded(eastings: Array,
-                                                    northings: Array)
-                                                    -> (Array, Array) {
-    let (res_eastings, res_northings) = convert_osgb36_to_etrs89_threaded_vec(eastings.into(),
-                                                                              northings.into());
+pub extern "C" fn convert_osgb36_to_etrs89_threaded(
+    eastings: Array,
+    northings: Array,
+) -> (Array, Array) {
+    let (res_eastings, res_northings) =
+        convert_osgb36_to_etrs89_threaded_vec(eastings.into(), northings.into());
     (res_eastings.into(), res_northings.into())
 }
 

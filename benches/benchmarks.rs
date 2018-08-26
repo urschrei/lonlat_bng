@@ -17,10 +17,7 @@ fn bench_threads(b: &mut Bencher) {
     let mut rng = rand::thread_rng();
     let mut lon_vec = vec![between_lon.ind_sample(&mut rng); num_coords];
     let mut lat_vec = vec![between_lat.ind_sample(&mut rng); num_coords];
-    b.iter(||{
-        convert_to_bng_threaded_vec(
-            &mut lon_vec,
-            &mut lat_vec
-        );
+    b.iter(|| {
+        convert_to_bng_threaded_vec(&mut lon_vec, &mut lat_vec);
     });
 }
