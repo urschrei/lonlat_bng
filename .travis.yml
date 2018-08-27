@@ -9,8 +9,6 @@ env:
     - CRATE_NAME=lonlat_bng
     - TRAVIS_CARGO_NIGHTLY_FEATURE=""
     - DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
-    # GH_TOKEN
-    - secure: DTWgwQjhzyIMwvdv6Sy+sLh0FoBOczxmRUO7wrBeahYK+wIz7ZfDkFp4j1pEeQYgHtB6hxEaYSKojNxHHvqCWkM5WtDm/cdU9tGkyVsTHsh54DQGyardiV704eiIWkFtFrCSKYHcJ/CMuTTwmbNIZZG281puJoHhtAoutTAPXrFzYtAC2zYWx+cODs9UXbq3yus6UBQJ8srHTYbKJDUQYGSDpXI0QSKj5O9CUzrmd11sZ6ol7+Xjykv6me2YjHKX9NnxYfplVLnEgDHZeAD8GKIYpb8Lb0AgKtkZh4EU+hC/9+5bqFQukeSVczEnTQKkHOyM36rbqnXJz9U7ar4JTYLaRIz5Uawcn4Mk2gStx3V+8TvzOd4rGpdRhFPVSiZzS+nwvTgmSowuo2bY/x8nXVEP2BqBUp98I4H36GtAk+xmRTl8ORmg+TytQJUGgnN1cmT0NAaGLdqfNUJ+eNBHP+hc0lLDelaYlEEOMq4G3NyTrYHgrDCcm9dmvB2znZLJGvVOZqLkH90DRxIpQ6VSFnt2n59oa2fKas6gjeWpsMY3OwrBj5lSe7yWM4cZvSmoBHQO1kAr13HrP8y/opFV+HeXWva9hwWSWAo8W7Lib8XXC+uBYwKPfO83QP2N+mr6gwdjgd5HTAMmmnAoRjOrcGlNIk3HfAXClGNcz3sLk3I=
 
 
 matrix:
@@ -75,8 +73,8 @@ deploy:
   # - Call `travis encrypt $github_token` where $github_token is the token you got in the previous
   # step and `travis` is the official Travis CI gem (see https://rubygems.org/gems/travis/)
   # - Enter the "encrypted value" below
-  api_key:
-        - secure: DTWgwQjhzyIMwvdv6Sy+sLh0FoBOczxmRUO7wrBeahYK+wIz7ZfDkFp4j1pEeQYgHtB6hxEaYSKojNxHHvqCWkM5WtDm/cdU9tGkyVsTHsh54DQGyardiV704eiIWkFtFrCSKYHcJ/CMuTTwmbNIZZG281puJoHhtAoutTAPXrFzYtAC2zYWx+cODs9UXbq3yus6UBQJ8srHTYbKJDUQYGSDpXI0QSKj5O9CUzrmd11sZ6ol7+Xjykv6me2YjHKX9NnxYfplVLnEgDHZeAD8GKIYpb8Lb0AgKtkZh4EU+hC/9+5bqFQukeSVczEnTQKkHOyM36rbqnXJz9U7ar4JTYLaRIz5Uawcn4Mk2gStx3V+8TvzOd4rGpdRhFPVSiZzS+nwvTgmSowuo2bY/x8nXVEP2BqBUp98I4H36GtAk+xmRTl8ORmg+TytQJUGgnN1cmT0NAaGLdqfNUJ+eNBHP+hc0lLDelaYlEEOMq4G3NyTrYHgrDCcm9dmvB2znZLJGvVOZqLkH90DRxIpQ6VSFnt2n59oa2fKas6gjeWpsMY3OwrBj5lSe7yWM4cZvSmoBHQO1kAr13HrP8y/opFV+HeXWva9hwWSWAo8W7Lib8XXC+uBYwKPfO83QP2N+mr6gwdjgd5HTAMmmnAoRjOrcGlNIk3HfAXClGNcz3sLk3I=
+  dd:
+    secure: OVAF973cYB32f0vMh5v1PWftZYBUCiUb1YZBA9IAbpMQbpa1+OD05fC+iq5Bw1O8ePsKAAoym3f9RlnFe70XXVlxqwXeZIG50T/QWg0urV9OEyPV6/sJUUjv5v5vCNlHkpGxskdCj3opbmtXQUegbnBFPYMo87PWx++680omRyUWoizkV/0a0PH549LfZEN3yn7wuzH+YfHlxg7MGBskbBxYUaveujTQeDfReoke9ckhJ6YbMD0FCeomsZObZXMxf+RsdLhHKmPXS6oo0jb34CY8wnTmrXO9l+DKnoK4bIOSkU4RqlBNtmbGJLQwng9yLKd9oAnQ2mKfYN9ajqEpU8w3uy03C/oHVYC87pL/bkBrMDhK/uCZgU6Y8tjo0eUBofA1x2kIEWAryrjsc9KvS5/zE1jm7ZJ1z8X2P07oDK9+Py5236nHrfSaOJF4q3cWtxkRHNKuzvLoJuwxBoqkhTeHE0nI+dNNNXX+2zW7qORcU3avniZABdZDo7zkiYXWcqyct2CBJmk8FZ8jHJz7RzvF3ZUw4oVznOZHY157uH9UPnUoZd+IuwGEG5SHGtYF/AGTN75wvVCr2QVjDLfXL+0On3goKE6EAYx51JumILKfqyRAEOrGAKxUsjHTiWeWo6TtQrmaxIyOTTbgms0f2bXXtWsewy6DsNtpAhIxwSk=
   file_glob: true
   file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
   # don't delete the artifacts from previous phases
