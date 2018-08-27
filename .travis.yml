@@ -38,7 +38,7 @@ matrix:
 
     # NIGHTLY
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode9.4
       rust: nightly
       env: TARGET=x86_64-apple-darwin
 
@@ -59,6 +59,7 @@ script:
 after_script: set +e
 
 before_deploy:
+  - rvm get stable
   # OSX deploy doesn't need a Dockerised manylinux1 build
   - if ! [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then bash ci/before_deploy.sh; fi
   # Linux deploy needs Dockerised manylinux1 artefacts
