@@ -17,7 +17,7 @@ matrix:
   include:
     # STABLE
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode9.4
       rust: stable
       env: TARGET=x86_64-apple-darwin
 
@@ -29,7 +29,7 @@ matrix:
     # BETA
     - os: osx
       rust: beta
-      osx_image: xcode8.3
+      osx_image: xcode9.4
       env: TARGET=x86_64-apple-darwin
 
     - os: linux
@@ -59,6 +59,7 @@ script:
 after_script: set +e
 
 before_deploy:
+  - curl -sSL https://rvm.io/mpapis.asc | gpg --import -
   - rvm get stable
   # OSX deploy doesn't need a Dockerised manylinux1 build
   - if ! [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then bash ci/before_deploy.sh; fi
