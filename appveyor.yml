@@ -45,7 +45,7 @@ install:
       } Else {
         $Env:BTARGET = $Env:TARGET
       }
-  - rustup-init.exe -y --default-host %BTARGET% --default-toolchain $env:RUST_VERSION
+  - rustup-init.exe -y --default-host %BTARGET% --default-toolchain %RUST_VERSION%
   - rustup target add %BTARGET%
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
   - set PATH=%PATH%;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin
