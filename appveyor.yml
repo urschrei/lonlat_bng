@@ -13,7 +13,7 @@ environment:
     - TARGET: x86_64-pc-windows-msvc
       RUST_VERSION: stable
     - TARGET: i686-pc-windows-msvc
-      RUST_VERSION: stable
+      RUST_VERSION: nightly
     # Beta channel
     - TARGET: x86_64-pc-windows-msvc
       RUST_VERSION: beta
