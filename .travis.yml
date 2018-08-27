@@ -10,7 +10,7 @@ env:
     - TRAVIS_CARGO_NIGHTLY_FEATURE=""
     - DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
     # GH_TOKEN
-    - secure: FCIbI4NGniodYftwW7yb0vVLHlWkARnKUmmOsKkgCMJVmcmVOD7YWJLWP6ICTTOUubWiljckjv8MVNu61e2+dSWNbG6s2VVAMpUo0052I3yB4Ws8ZOC1eOAbinq5OAFv8ZRVRkowtct77/UAcuj0eVI3V2EMR2VXcOfm1Wnv+loPsjXgf6+b+8UMYS7roluGZ14wVno+5d37YCftDAVPvLYwFudrUIyR55XizmNVjEU7YIVb8373Ae7VzZztPDPW80vJwHHXvA+UGKRwaUyQlYjd1ececNx024/Nd1I0ECkmUhR67jrUHt0gXnCVWm/WasqOMvTzt+hdBq6AeORB/C3YTuQ6i937by61ttOrT9A3jF3oIzZR1j3Sg6Y7/Wd5cHWtTw4bVdDYjpHXBKlSFIq9dFjK5TDd75KaRQNBfcDwWL0od+oLSZ9Z59r4xRqLEPIWWwAKhGPaNDNBlJ8/0qfIxXK++/BbCuSGG8j3AXmVbpmyvNKMf+xHhY+oW1vj42pgG/aMZE3OlfMD3hMp9fti3EFjQScY1/mbDkvN6RknfMfDZuF0AdxUEtwhu2+X0tTZfe6dFsnEBLcqJH0ng5WPo/HRGVrjSc8nbZ7kUb5kkx946Emr1Mka+jRGVA+U3r7JpF62gasEwSZL8kZgvsRhAhJhinagHAeTlyywmhQ=
+    - secure: DTWgwQjhzyIMwvdv6Sy+sLh0FoBOczxmRUO7wrBeahYK+wIz7ZfDkFp4j1pEeQYgHtB6hxEaYSKojNxHHvqCWkM5WtDm/cdU9tGkyVsTHsh54DQGyardiV704eiIWkFtFrCSKYHcJ/CMuTTwmbNIZZG281puJoHhtAoutTAPXrFzYtAC2zYWx+cODs9UXbq3yus6UBQJ8srHTYbKJDUQYGSDpXI0QSKj5O9CUzrmd11sZ6ol7+Xjykv6me2YjHKX9NnxYfplVLnEgDHZeAD8GKIYpb8Lb0AgKtkZh4EU+hC/9+5bqFQukeSVczEnTQKkHOyM36rbqnXJz9U7ar4JTYLaRIz5Uawcn4Mk2gStx3V+8TvzOd4rGpdRhFPVSiZzS+nwvTgmSowuo2bY/x8nXVEP2BqBUp98I4H36GtAk+xmRTl8ORmg+TytQJUGgnN1cmT0NAaGLdqfNUJ+eNBHP+hc0lLDelaYlEEOMq4G3NyTrYHgrDCcm9dmvB2znZLJGvVOZqLkH90DRxIpQ6VSFnt2n59oa2fKas6gjeWpsMY3OwrBj5lSe7yWM4cZvSmoBHQO1kAr13HrP8y/opFV+HeXWva9hwWSWAo8W7Lib8XXC+uBYwKPfO83QP2N+mr6gwdjgd5HTAMmmnAoRjOrcGlNIk3HfAXClGNcz3sLk3I=
 
 
 matrix:
@@ -59,8 +59,9 @@ script:
 after_script: set +e
 
 before_deploy:
-  - curl -sSL https://rvm.io/mpapis.asc | gpg --import -
-  - rvm get stable
+  - shell_session_update() { :; };
+  # - curl -sSL https://rvm.io/mpapis.asc | gpg --import -
+  # - rvm get stable
   # OSX deploy doesn't need a Dockerised manylinux1 build
   - if ! [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then bash ci/before_deploy.sh; fi
   # Linux deploy needs Dockerised manylinux1 artefacts
