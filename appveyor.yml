@@ -41,11 +41,12 @@ install:
   # for i686, we want to run in 64-bit, but target 32-bit
   - ps: >-
       If ($Env:TARGET -eq 'i686-pc-windows-msvc') {
-        rustup-init.exe -y --default-host x86_64-pc-windows-msvc --default-toolchain $env:RUST_VERSION
-        rustup target add $Env:TARGET
+        $Env:BTARGET = 'x86_64-pc-windows-msvc'
       } Else {
-        rustup-init.exe -y --default-host $env:TARGET --default-toolchain $env:RUST_VERSION
+        $Env:BTARGET = $Env:TARGET
       }
+  - rustup-init.exe -y --default-host %BTARGET% --default-toolchain $env:RUST_VERSION
+  - rustup target add %BTARGET%
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
   - set PATH=%PATH%;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin
   - set PATH=%PATH%
