@@ -119,7 +119,7 @@ pub fn convert_etrs89_to_osgb36(eastings: f64, northings: f64) -> Result<(f64, f
     // ensure that we're within the boundaries
     check(eastings, (0.000, MAX_EASTING))?;
     check(northings, (0.000, MAX_NORTHING))?;
-    // obtain OSTN02 corrections, and incorporate
+    // obtain OSTN15 corrections, and incorporate
     let (e_shift, n_shift, _) = ostn15_shifts(eastings, northings)?;
     Ok((
         (eastings + e_shift).round_to_mm(),
@@ -138,7 +138,7 @@ pub fn convert_etrs89_to_osgb36(eastings: f64, northings: f64) -> Result<(f64, f
 pub fn convert_osgb36(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
     // convert input to ETRS89
     let (eastings, northings) = convert_etrs89(longitude, latitude)?;
-    // obtain OSTN02 corrections, and incorporate
+    // obtain OSTN15 corrections, and incorporate
     let (e_shift, n_shift, _) = ostn15_shifts(eastings, northings)?;
     Ok((
         (eastings + e_shift).round_to_mm(),
@@ -219,7 +219,7 @@ pub fn convert_etrs89_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
 /// Convert OSGB36 coordinates to Lon, Lat using OSTN15 data
 #[allow(non_snake_case)]
 pub fn convert_osgb36_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
-    // Apply reverse OSTN02 adustments
+    // Apply reverse OSTN15 adustments
     let epsilon = 0.009;
     let (mut dx, mut dy, _) = ostn15_shifts(E, N)?;
     let (mut x, mut y) = (E - dx, N - dy);
