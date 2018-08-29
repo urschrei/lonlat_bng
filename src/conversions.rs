@@ -161,12 +161,7 @@ fn compute_m(phi: f64, b: f64, n: f64) -> f64 {
 // Easting and Northing to Lon, Lat conversion using a Helmert transform
 // Note that either GRS80 or Airy 1830 ellipsoids can be passed
 #[allow(non_snake_case)]
-fn convert_to_ll(
-    eastings: f64,
-    northings: f64,
-    ell_a: f64,
-    ell_b: f64,
-) -> Result<(f64, f64), ()> {
+fn convert_to_ll(eastings: f64, northings: f64, ell_a: f64, ell_b: f64) -> Result<(f64, f64), ()> {
     // ensure that we're within the boundaries
     check(eastings, (0.000, MAX_EASTING))?;
     check(northings, (0.000, MAX_NORTHING))?;
