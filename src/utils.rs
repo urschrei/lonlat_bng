@@ -48,7 +48,7 @@ pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
 }
 
 /// Try to get OSTN15 shift parameters, and calculate offsets
-pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
+pub fn get_ostn_ref(x: i32, y: i32) -> Result<(f64, f64, f64), ()> {
     let key = x + (y * 701) + 1;
     // Some or None, so convert to Result, which we can try!
     let result = ostn15_lookup(&key).ok_or(())?;
@@ -59,9 +59,9 @@ pub fn get_ostn_ref(x: &i32, y: &i32) -> Result<(f64, f64, f64), ()> {
 // See p20 of the transformation user guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
 /// Calculate OSTN15 shifts for a given coordinate
-pub fn ostn15_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
-    let e_index = (*x / 1000.) as i32;
-    let n_index = (*y / 1000.) as i32;
+pub fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
+    let e_index = (x / 1000.) as i32;
+    let n_index = (y / 1000.) as i32;
 
     // eastings and northings of the south-west corner of the cell
     let x0 = e_index as i32 * 1000;
@@ -71,13 +71,13 @@ pub fn ostn15_shifts(x: &f64, y: &f64) -> Result<(f64, f64, f64), ()> {
     // any of these could be Err, so use try!
 
     // bottom-left grid intersection
-    let s0: (f64, f64, f64) = get_ostn_ref(&(e_index), &(n_index))?;
+    let s0: (f64, f64, f64) = get_ostn_ref(e_index, n_index)?;
     // bottom-right
-    let s1: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index))?;
+    let s1: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index)?;
     // top-left
-    let s2: (f64, f64, f64) = get_ostn_ref(&(e_index), &(n_index + 1))?;
+    let s2: (f64, f64, f64) = get_ostn_ref(e_index, n_index + 1)?;
     // top-right
-    let s3: (f64, f64, f64) = get_ostn_ref(&(e_index + 1), &(n_index + 1))?;
+    let s3: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index + 1)?;
 
     // offset within square
     let dx = x - f64::from(x0);
@@ -109,7 +109,7 @@ mod tests {
         let eastings = 651;
         let northings = 313;
         let expected = (102.787, -78.242, 44.236);
-        assert_eq!(expected, get_ostn_ref(&eastings, &northings).unwrap());
+        assert_eq!(expected, get_ostn_ref(eastings, northings).unwrap());
     }
 
     #[test]
@@ -119,7 +119,7 @@ mod tests {
         let eastings = 999;
         let northings = 999;
         let expected = (1., 1., 1.);
-        assert_eq!(expected, get_ostn_ref(&eastings, &northings).unwrap());
+        assert_eq!(expected, get_ostn_ref(eastings, northings).unwrap());
     }
 
     #[test]
@@ -128,7 +128,7 @@ mod tests {
         let eastings = 651307.003;
         let northings = 313255.686;
         let expected = (102.801, -78.236, 44.228);
-        assert_eq!(expected, ostn15_shifts(&eastings, &northings).unwrap());
+        assert_eq!(expected, ostn15_shifts(eastings, northings).unwrap());
     }
 
     #[test]

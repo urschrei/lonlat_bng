@@ -140,10 +140,10 @@ fn convert_vec_direct<'a, F>(
     func: F,
 ) -> (&'a mut [f64], &'a mut [f64])
 where
-    F: Fn(&f64, &f64) -> Result<(f64, f64), ()> + Send + Sync + Copy,
+    F: Fn(f64, f64) -> Result<(f64, f64), ()> + Send + Sync + Copy,
 {
     ex.par_iter_mut().zip(ny.par_iter_mut()).for_each(|p| {
-        match func(p.0, p.1) {
+        match func(*p.0, *p.1) {
             // mutate values, or assign default error values
             Ok(res) => {
                 *p.0 = res.0;
@@ -375,7 +375,7 @@ mod tests {
     // Lon: 4, 51, 3.503091
     // Lat: 53,20, 49.312599
     fn test_ostn_invalid_outside_1() {
-        let _ = convert_osgb36(&4.850973, &53.347031).unwrap();
+        let _ = convert_osgb36(4.850973, 53.347031).unwrap();
     }
 
     #[test]
@@ -384,7 +384,7 @@ mod tests {
     // Lon: 2, 22, 31.048596
     // Lat: 56, 10, 31.115299
     fn test_ostn_invalid_outside_2() {
-        let _ = convert_osgb36(&2.375291, &56.17531).unwrap();
+        let _ = convert_osgb36(2.375291, 56.17531).unwrap();
     }
 
     #[test]

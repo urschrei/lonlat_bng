@@ -68,11 +68,11 @@ fn curvature(a: f64, f0: f64, e2: f64, lat: f64) -> f64 {
 /// assert_eq!((651307.003, 313255.686), convert_etrs89(&1.716073973, &52.658007833).unwrap());
 #[allow(non_snake_case)]
 // See Annexe B (p23) of the transformation user guide for instructions
-pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()> {
+pub fn convert_etrs89(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
     // Input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))?.to_radians();
-    let lat_1: f64 = check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))?.to_radians();
+    let lon_1: f64 = check(longitude, (MIN_LONGITUDE, MAX_LONGITUDE))?.to_radians();
+    let lat_1: f64 = check(latitude, (MIN_LATITUDE, MAX_LATITUDE))?.to_radians();
     // ellipsoid squared eccentricity constant
     let e2 = (GRS80_SEMI_MAJOR.powi(2) - GRS80_SEMI_MINOR.powi(2)) / GRS80_SEMI_MAJOR.powi(2);
     let n = (GRS80_SEMI_MAJOR - GRS80_SEMI_MINOR) / (GRS80_SEMI_MAJOR + GRS80_SEMI_MINOR);
@@ -84,7 +84,7 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
     let rho = GRS80_SEMI_MAJOR * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
     let eta2 = nu / rho - 1.;
 
-    let m = compute_m(&phi, &GRS80_SEMI_MINOR, &n);
+    let m = compute_m(phi, GRS80_SEMI_MINOR, n);
 
     let cp = phi.cos();
     let sp = phi.sin();
@@ -115,12 +115,12 @@ pub fn convert_etrs89(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
 /// use lonlat_bng::convert_ETRS89_to_OSGB36
 /// assert_eq!((651409.792, 313177.448), convert_ETRS89_to_OSGB36(&651307.003, &313255.686).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64, f64), ()> {
+pub fn convert_etrs89_to_osgb36(eastings: f64, northings: f64) -> Result<(f64, f64), ()> {
     // ensure that we're within the boundaries
-    check(*eastings, (0.000, MAX_EASTING))?;
-    check(*northings, (0.000, MAX_NORTHING))?;
+    check(eastings, (0.000, MAX_EASTING))?;
+    check(northings, (0.000, MAX_NORTHING))?;
     // obtain OSTN02 corrections, and incorporate
-    let (e_shift, n_shift, _) = ostn15_shifts(&eastings, &northings)?;
+    let (e_shift, n_shift, _) = ostn15_shifts(eastings, northings)?;
     Ok((
         (eastings + e_shift).round_to_mm(),
         (northings + n_shift).round_to_mm(),
@@ -135,11 +135,11 @@ pub fn convert_etrs89_to_osgb36(eastings: &f64, northings: &f64) -> Result<(f64,
 /// use lonlat_bng::convert_osgb36
 /// assert_eq!((651409.792, 313177.448), convert_etrs89(&1.716073973, &52.658007833).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()> {
+pub fn convert_osgb36(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
     // convert input to ETRS89
     let (eastings, northings) = convert_etrs89(longitude, latitude)?;
     // obtain OSTN02 corrections, and incorporate
-    let (e_shift, n_shift, _) = ostn15_shifts(&eastings, &northings)?;
+    let (e_shift, n_shift, _) = ostn15_shifts(eastings, northings)?;
     Ok((
         (eastings + e_shift).round_to_mm(),
         (northings + n_shift).round_to_mm(),
@@ -147,14 +147,14 @@ pub fn convert_osgb36(longitude: &f64, latitude: &f64) -> Result<(f64, f64), ()>
 }
 
 // Intermediate calculation used for lon, lat to ETRS89 and reverse conversion
-fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
-    let p_plus = *phi + PHI0;
-    let p_minus = *phi - PHI0;
+fn compute_m(phi: f64, b: f64, n: f64) -> f64 {
+    let p_plus = phi + PHI0;
+    let p_minus = phi - PHI0;
 
-    *b * F0
-        * ((1. + *n * (1. + 5. / 4. * *n * (1. + *n))) * p_minus
-            - 3. * *n * (1. + *n * (1. + 7. / 8. * *n)) * p_minus.sin() * p_plus.cos()
-            + (15. / 8. * *n * (*n * (1. + *n))) * (2. * p_minus).sin() * (2. * p_plus).cos()
+    b * F0
+        * ((1. + n * (1. + 5. / 4. * n * (1. + n))) * p_minus
+            - 3. * n * (1. + n * (1. + 7. / 8. * n)) * p_minus.sin() * p_plus.cos()
+            + (15. / 8. * n * (n * (1. + n))) * (2. * p_minus).sin() * (2. * p_plus).cos()
             - 35. / 24. * n.powi(3) * (3. * p_minus).sin() * (3. * p_plus).cos())
 }
 
@@ -162,26 +162,26 @@ fn compute_m(phi: &f64, b: &f64, n: &f64) -> f64 {
 // Note that either GRS80 or Airy 1830 ellipsoids can be passed
 #[allow(non_snake_case)]
 fn convert_to_ll(
-    eastings: &f64,
-    northings: &f64,
+    eastings: f64,
+    northings: f64,
     ell_a: f64,
     ell_b: f64,
 ) -> Result<(f64, f64), ()> {
     // ensure that we're within the boundaries
-    check(*eastings, (0.000, MAX_EASTING))?;
-    check(*northings, (0.000, MAX_NORTHING))?;
+    check(eastings, (0.000, MAX_EASTING))?;
+    check(northings, (0.000, MAX_NORTHING))?;
     // ellipsoid squared eccentricity constant
     let a = ell_a;
     let b = ell_b;
     let e2 = (a.powi(2) - b.powi(2)) / a.powi(2);
     let n = (a - b) / (a + b);
 
-    let dN = *northings - N0;
+    let dN = northings - N0;
     let mut phi = PHI0 + dN / (a * F0);
-    let mut m = compute_m(&phi, &b, &n);
+    let mut m = compute_m(phi, b, n);
     while (dN - m) >= 0.001 {
         phi += (dN - m) / (a * F0);
-        m = compute_m(&phi, &b, &n);
+        m = compute_m(phi, b, n);
     }
     let sp2 = phi.sin().powi(2);
     let nu = a * F0 * (1. - e2 * sp2).powf(-0.5);
@@ -204,7 +204,7 @@ fn convert_to_ll(
     let XII = sp / (120. * nu.powi(5)) * (5. + 28. * tp2 + 24. * tp4);
     let XIIA = sp / (5040. * nu.powi(7)) * (61. + 662. * tp2 + 1320. * tp4 + 720. * tp6);
 
-    let e = *eastings - E0;
+    let e = eastings - E0;
 
     phi = phi - VII * e.powi(2) + VIII * e.powi(4) - IX * e.powi(6);
     let mut lambda = LAM0 + X * e - XI * e.powi(3) + XII * e.powi(5) - XIIA * e.powi(7);
@@ -216,22 +216,22 @@ fn convert_to_ll(
 
 /// Convert ETRS89 coordinates to Lon, Lat
 #[allow(non_snake_case)]
-pub fn convert_etrs89_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
+pub fn convert_etrs89_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
     // ETRS89 uses the WGS84 / GRS80 ellipsoid constants
     convert_to_ll(E, N, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
 }
 
 /// Convert OSGB36 coordinates to Lon, Lat using OSTN15 data
 #[allow(non_snake_case)]
-pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
+pub fn convert_osgb36_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN02 adustments
     let epsilon = 0.009;
-    let (mut dx, mut dy, _) = ostn15_shifts(&E, &N)?;
+    let (mut dx, mut dy, _) = ostn15_shifts(E, N)?;
     let (mut x, mut y) = (E - dx, N - dy);
     let (mut last_dx, mut last_dy) = (dx, dy);
     let mut res;
     loop {
-        res = ostn15_shifts(&x, &y)?;
+        res = ostn15_shifts(x, y)?;
         dx = res.0;
         dy = res.1;
         x = E - dx;
@@ -247,20 +247,20 @@ pub fn convert_osgb36_to_ll(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
     let x = (E - dx).round_to_mm();
     let y = (N - dy).round_to_mm();
     // We've converted to ETRS89, so we need to use the WGS84/ GRS80 ellipsoid constants
-    convert_to_ll(&x, &y, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
+    convert_to_ll(x, y, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
 }
 
 /// Convert OSGB36 coordinates to ETRS89 using OSTN15 data
 #[allow(non_snake_case)]
-pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
+pub fn convert_osgb36_to_etrs89(E: f64, N: f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN15 adustments
     let epsilon = 0.00001;
-    let (mut dx, mut dy, _) = ostn15_shifts(&E, &N)?;
+    let (mut dx, mut dy, _) = ostn15_shifts(E, N)?;
     let (mut x, mut y) = (E - dx, N - dy);
     let (mut last_dx, mut last_dy) = (dx, dy);
     let mut res;
     loop {
-        res = ostn15_shifts(&x, &y)?;
+        res = ostn15_shifts(x, y)?;
         dx = res.0;
         dy = res.1;
         x = E - dx;
@@ -287,11 +287,11 @@ pub fn convert_osgb36_to_etrs89(E: &f64, N: &f64) -> Result<(f64, f64), ()> {
 /// assert_eq!((516276.000, 173141.000), convert_bng(&-0.32824866, &51.44533267).unwrap());
 #[allow(non_snake_case)]
 #[allow(dead_code)]
-pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_double), ()> {
+pub fn convert_bng(longitude: f64, latitude: f64) -> Result<(c_double, c_double), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = check(*longitude, (MIN_LONGITUDE, MAX_LONGITUDE))?.to_radians();
-    let lat_1: f64 = check(*latitude, (MIN_LATITUDE, MAX_LATITUDE))?.to_radians();
+    let lon_1: f64 = check(longitude, (MIN_LONGITUDE, MAX_LONGITUDE))?.to_radians();
+    let lat_1: f64 = check(latitude, (MIN_LATITUDE, MAX_LATITUDE))?.to_radians();
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1 = GRS80_SEMI_MAJOR;
     let b_1 = GRS80_SEMI_MINOR;
@@ -394,7 +394,7 @@ pub fn convert_bng(longitude: &f64, latitude: &f64) -> Result<(c_double, c_doubl
 /// assert_eq!((-0.328248, 51.44534), convert_lonlat(&516276, &173141));
 #[allow(non_snake_case)]
 #[allow(dead_code)]
-pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
+pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), ()> {
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a = AIRY_1830_SEMI_MAJOR;
     let b = AIRY_1830_SEMI_MINOR;
@@ -411,8 +411,8 @@ pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
 
     let mut lat = lat0;
     let mut M: f64 = 0.0;
-    while (*northing - N0 - M) >= 0.00001 {
-        lat += (*northing - N0 - M) / (a * F0);
+    while (northing - N0 - M) >= 0.00001 {
+        lat += (northing - N0 - M) / (a * F0);
         let M1 = (1. + n + (5. / 4.) * n.powi(3) + (5. / 4.) * n.powi(3)) * (lat - lat0);
         let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3))
             * ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin()))
@@ -443,7 +443,7 @@ pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
         secLat / (120. * nu.powi(5)) * (5. + 28. * lat.tan().powi(2) + 24. * lat.tan().powi(4));
     let XIIA = secLat / (5040. * nu.powi(7))
         * (61. + 662. * lat.tan().powi(2) + 1320. * lat.tan().powi(4) + 720. * lat.tan().powi(6));
-    let dE = *easting - E0;
+    let dE = easting - E0;
     // These are on the wrong ellipsoid currently: Airy1830 (Denoted by _1)
     let lat_1 = lat - VII * dE.powi(2) + VIII * dE.powi(4) - IX * dE.powi(6);
     let lon_1 = lon0 + X * dE - XI * dE.powi(3) + XII * dE.powi(5) - XIIA * dE.powi(7);
@@ -501,7 +501,7 @@ pub fn convert_lonlat(easting: &f64, northing: &f64) -> Result<(f64, f64), ()> {
 
 /// Convert Web Mercator (from Google Maps or Bing Maps) to WGS84
 // from https://alastaira.wordpress.com/2011/01/23/the-google-maps-bing-maps-spherical-mercator-projection/
-pub fn convert_epsg3857_to_wgs84(x: &f64, y: &f64) -> Result<(f64, f64), ()> {
+pub fn convert_epsg3857_to_wgs84(x: f64, y: f64) -> Result<(f64, f64), ()> {
     let lon = (x / 20037508.34) * 180.;
     let mut lat = (y / 20037508.34) * 180.;
     lat = 180. / PI * (2. * (lat * PI / 180.).exp().atan() - PI / 2.);
@@ -525,7 +525,7 @@ mod tests {
         let x = -626172.1357121646;
         let y = 6887893.4928337997;
         let expected = (-5.625000000783013, 52.48278022732355);
-        assert_eq!(expected, convert_epsg3857_to_wgs84(&x, &y).unwrap());
+        assert_eq!(expected, convert_epsg3857_to_wgs84(x, y).unwrap());
     }
 
     #[test]
@@ -536,7 +536,7 @@ mod tests {
         let easting = 651409.804;
         let northing = 313177.450;
         let expected = (1.71607397, 52.65800783);
-        assert_eq!(expected, convert_osgb36_to_ll(&easting, &northing).unwrap());
+        assert_eq!(expected, convert_osgb36_to_ll(easting, northing).unwrap());
     }
 
     #[test]
@@ -546,7 +546,7 @@ mod tests {
         let northing = 313255.686;
         assert_eq!(
             (1.71607397, 52.65800783),
-            convert_etrs89_to_ll(&easting, &northing).unwrap()
+            convert_etrs89_to_ll(easting, northing).unwrap()
         );
     }
 
@@ -556,7 +556,7 @@ mod tests {
         let longitude = 1.716073973;
         let latitude = 52.658007833;
         let expected = (651307.003, 313255.686);
-        assert_eq!(expected, convert_etrs89(&longitude, &latitude).unwrap());
+        assert_eq!(expected, convert_etrs89(longitude, latitude).unwrap());
     }
 
     #[test]
@@ -565,7 +565,7 @@ mod tests {
         let longitude = 1.716073973;
         let latitude = 52.658007833;
         let expected = (651409.804, 313177.450);
-        assert_eq!(expected, convert_osgb36(&longitude, &latitude).unwrap());
+        assert_eq!(expected, convert_osgb36(longitude, latitude).unwrap());
     }
 
     #[test]
@@ -576,7 +576,7 @@ mod tests {
         let expected = (651409.804, 313177.450);
         assert_eq!(
             expected,
-            convert_etrs89_to_osgb36(&eastings, &northings).unwrap()
+            convert_etrs89_to_osgb36(eastings, northings).unwrap()
         );
     }
 
@@ -586,7 +586,7 @@ mod tests {
         let max_easting = 700001.000;
         let max_northing = 1250000.000;
         // above max lat
-        convert_etrs89_to_osgb36(&max_easting, &max_northing).unwrap();
+        convert_etrs89_to_osgb36(max_easting, max_northing).unwrap();
     }
 
     #[test]
@@ -595,7 +595,7 @@ mod tests {
         let max_easting = 700000.000;
         let max_northing = 1250000.001;
         // above max lat
-        convert_etrs89_to_osgb36(&max_easting, &max_northing).unwrap();
+        convert_etrs89_to_osgb36(max_easting, max_northing).unwrap();
     }
 
     #[test]
@@ -603,13 +603,13 @@ mod tests {
         // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
         assert_eq!(
             (516275.973, 173141.092),
-            convert_bng(&-0.32824866, &51.44533267).unwrap()
+            convert_bng(-0.32824866, 51.44533267).unwrap()
         );
     }
 
     #[test]
     fn test_lonlat_conversion() {
-        let res = convert_lonlat(&516276.000, &173141.000).unwrap();
+        let res = convert_lonlat(516276.000, 173141.000).unwrap();
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
         // epsilon is .000001 here, because BNG coords are 6 digits, so
@@ -622,7 +622,7 @@ mod tests {
     #[test]
     // TrainTrick reported that this coordinate doesn't converge at an epsilon of 0.00001
     fn test_traintrick() {
-        let res = convert_osgb36_to_ll(&515415.0, &202612.0).unwrap();
+        let res = convert_osgb36_to_ll(515415.0, 202612.0).unwrap();
         assert_eq!(res.0, -0.33093489);
         assert_eq!(res.1, 51.71038497);
     }
@@ -632,7 +632,7 @@ mod tests {
     fn test_bad_lon() {
         assert_eq!(
             (516276.000, 173141.000),
-            convert_bng(&181., &51.44533267).unwrap()
+            convert_bng(181., 51.44533267).unwrap()
         );
     }
 
@@ -641,7 +641,7 @@ mod tests {
     fn test_bad_lat() {
         assert_eq!(
             (516276.000, 173141.000),
-            convert_bng(&-0.32824866, &-90.01).unwrap()
+            convert_bng(-0.32824866, -90.01).unwrap()
         );
     }
 
