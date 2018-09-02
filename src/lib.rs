@@ -25,8 +25,6 @@
 //! **An example FFI implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng)**.
 //!
 
-use std::marker::Send;
-
 extern crate ostn15_phf;
 extern crate rand;
 extern crate rayon;
@@ -134,14 +132,11 @@ pub fn convert_epsg3857_to_wgs84_threaded_vec<'a>(
 // Generic function which applies conversion functions to vector or slice chunks within threads
 // As opposed to the earlier convert_vec, we're directly modifying and returning the
 // inputs here, at the cost of having to use lifetime annotations
-fn convert_vec_direct<'a, F>(
+fn convert_vec_direct<'a>(
     ex: &'a mut [f64],
     ny: &'a mut [f64],
-    func: F,
-) -> (&'a mut [f64], &'a mut [f64])
-where
-    F: Fn(f64, f64) -> Result<(f64, f64), ()> + Send + Sync + Copy,
-{
+    func: impl Fn(f64, f64) -> Result<(f64, f64), ()> + Sync,
+) -> (&'a mut [f64], &'a mut [f64]) {
     ex.par_iter_mut().zip(ny.par_iter_mut()).for_each(|p| {
         match func(*p.0, *p.1) {
             // mutate values, or assign default error values
@@ -297,16 +292,15 @@ mod tests {
 
         let osgb36_e_vec = [
             // 91492.146,
-            170370.718, 250359.811, 449816.371, 438710.92, 292184.87,
-            639821.835, 362269.991, 530624.974, 241124.584, 599445.59, 389544.19, 474335.969,
-            562180.547, 454002.834, 357455.843, 247958.971, 247959.241, 331534.564, 422242.186,
-            227778.33, 525745.67, 244780.636, 339921.145, 424639.355, 256340.925, 319188.434,
-            167634.202, 397160.491,
+            170370.718, 250359.811, 449816.371, 438710.92, 292184.87, 639821.835, 362269.991,
+            530624.974, 241124.584, 599445.59, 389544.19, 474335.969, 562180.547, 454002.834,
+            357455.843, 247958.971, 247959.241, 331534.564, 422242.186, 227778.33, 525745.67,
+            244780.636, 339921.145, 424639.355, 256340.925, 319188.434, 167634.202, 397160.491,
             // 267056.768,
             // 9587.909,
             // 71713.132,
-            151968.652,
-            299721.891, 330398.323, 261596.778, 180862.461, 421300.525, 440725.073, 395999.668,
+            151968.652, 299721.891, 330398.323, 261596.778, 180862.461, 421300.525, 440725.073,
+            395999.668,
         ];
         let osgb36_n_vec = [
             // 11318.804,
