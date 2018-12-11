@@ -3,7 +3,7 @@
 extern crate test;
 use test::Bencher;
 
-use lonlat_bng::convert_to_bng_threaded_vec;
+use lonlat_bng;
 use rand::distributions::{IndependentSample, Range};
 
 #[bench]
@@ -15,6 +15,6 @@ fn bench_threads(b: &mut Bencher) {
     let mut lon_vec = vec![between_lon.ind_sample(&mut rng); num_coords];
     let mut lat_vec = vec![between_lat.ind_sample(&mut rng); num_coords];
     b.iter(|| {
-        crate::convert_to_bng_threaded_vec(&mut lon_vec, &mut lat_vec);
+        lonlat_bng::convert_to_bng_threaded_vec(&mut lon_vec, &mut lat_vec);
     });
 }
