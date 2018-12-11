@@ -155,7 +155,7 @@ mod tests {
     use super::*;
     use crate::conversions::convert_bng;
 
-    extern crate libc;
+    use libc;
     use std::ptr;
 
     #[test]
