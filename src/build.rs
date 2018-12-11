@@ -1,4 +1,4 @@
-extern crate phf_codegen;
+use phf_codegen;
 
 use std::fs::File;
 use std::io::prelude::*;

@@ -1,7 +1,6 @@
 use std::slice;
 
-extern crate libc;
-use self::libc::c_void;
+use libc::c_void;
 
 #[repr(C)]
 pub struct Array {
@@ -24,7 +23,7 @@ use super::convert_to_osgb36_threaded_vec;
 /// # Examples
 ///
 /// ```
-/// # extern crate libc;
+/// # use libc;
 /// let lon_vec: Vec<f64> = vec![-2.0183041005533306];
 /// let lat_vec: Vec<f64> = vec![54.589097162646141];
 /// let lon_arr = Array {
@@ -77,7 +76,7 @@ impl<'a> From<Array> for &'a mut [f64] {
 /// # Examples
 ///
 /// ```
-/// extern crate libc;
+/// use libc;
 /// let lon_vec: Vec<f64> = vec![-2.0183041005533306,
 ///                              0.95511887434519682,
 ///                              0.44975855518383501,
