@@ -19,7 +19,7 @@ rayon = "1.0.0"
 
 [lib]
 name = "lonlat_bng"
-crate-type = ["cdylib"]
+crate-type = ["rlib", "cdylib"]
 test = true
 doctest = false
 doc = true
