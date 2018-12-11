@@ -24,10 +24,6 @@
 //!
 //! **An example FFI implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng)**.
 //!
-
-extern crate ostn15_phf;
-extern crate rand;
-extern crate rayon;
 use rayon::prelude::*;
 
 mod conversions;
