@@ -43,8 +43,7 @@ const N0: f64 = TRUE_ORIGIN_NORTHING;
 // convergence factor
 const F0: f64 = 0.9996012717;
 
-extern crate libc;
-use self::libc::c_double;
+use libc::c_double;
 use std::f64;
 use std::mem;
 

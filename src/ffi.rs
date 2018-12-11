@@ -1,7 +1,6 @@
 use std::slice;
 
-extern crate libc;
-use self::libc::c_void;
+use libc::c_void;
 
 #[repr(C)]
 pub struct Array {
