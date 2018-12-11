@@ -34,25 +34,25 @@ mod conversions;
 mod ffi;
 pub mod utils;
 
-pub use ffi::convert_epsg3857_to_wgs84_threaded;
-pub use ffi::convert_etrs89_to_ll_threaded;
-pub use ffi::convert_etrs89_to_osgb36_threaded;
-pub use ffi::convert_osgb36_to_etrs89_threaded;
-pub use ffi::convert_osgb36_to_ll_threaded;
-pub use ffi::convert_to_bng_threaded;
-pub use ffi::convert_to_etrs89_threaded;
-pub use ffi::convert_to_lonlat_threaded;
-pub use ffi::convert_to_osgb36_threaded;
-pub use ffi::drop_float_array;
-pub use ffi::Array;
+pub use crate::ffi::convert_epsg3857_to_wgs84_threaded;
+pub use crate::ffi::convert_etrs89_to_ll_threaded;
+pub use crate::ffi::convert_etrs89_to_osgb36_threaded;
+pub use crate::ffi::convert_osgb36_to_etrs89_threaded;
+pub use crate::ffi::convert_osgb36_to_ll_threaded;
+pub use crate::ffi::convert_to_bng_threaded;
+pub use crate::ffi::convert_to_etrs89_threaded;
+pub use crate::ffi::convert_to_lonlat_threaded;
+pub use crate::ffi::convert_to_osgb36_threaded;
+pub use crate::ffi::drop_float_array;
+pub use crate::ffi::Array;
 
-pub use conversions::convert_epsg3857_to_wgs84;
-pub use conversions::convert_etrs89;
-pub use conversions::convert_etrs89_to_ll;
-pub use conversions::convert_etrs89_to_osgb36;
-pub use conversions::convert_osgb36;
-pub use conversions::convert_osgb36_to_etrs89;
-pub use conversions::convert_osgb36_to_ll;
+pub use crate::conversions::convert_epsg3857_to_wgs84;
+pub use crate::conversions::convert_etrs89;
+pub use crate::conversions::convert_etrs89_to_ll;
+pub use crate::conversions::convert_etrs89_to_osgb36;
+pub use crate::conversions::convert_osgb36;
+pub use crate::conversions::convert_osgb36_to_etrs89;
+pub use crate::conversions::convert_osgb36_to_ll;
 
 use std::f64;
 pub const NAN: f64 = f64::NAN;
@@ -155,9 +155,9 @@ fn convert_vec_direct<'a>(
 
 #[cfg(test)]
 mod tests {
-    use super::convert_vec_direct;
+    // use super::convert_vec_direct;
     use super::*;
-    use conversions::convert_bng;
+    use crate::conversions::convert_bng;
 
     extern crate libc;
     use std::ptr;

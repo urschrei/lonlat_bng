@@ -48,10 +48,10 @@ use self::libc::c_double;
 use std::f64;
 use std::mem;
 
-use utils::check;
-use utils::ostn15_shifts;
-use utils::round_to_eight;
-use utils::ToMm;
+use crate::utils::check;
+use crate::utils::ostn15_shifts;
+use crate::utils::round_to_eight;
+use crate::utils::ToMm;
 
 /// Calculate the meridional radius of curvature
 #[allow(non_snake_case)]
