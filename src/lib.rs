@@ -154,8 +154,6 @@ mod tests {
     // use super::convert_vec_direct;
     use super::*;
     use crate::conversions::convert_bng;
-
-    use libc;
     use std::ptr;
 
     #[test]
