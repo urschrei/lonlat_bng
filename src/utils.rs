@@ -70,6 +70,8 @@ pub fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
     // The easting, northing and geoid shifts for the four corners of the cell
     // any of these could be Err, so use try!
 
+    // intersections
+    // this is a 3 x 4 matrix (using column-major order)
     // bottom-left grid intersection
     let s0: (f64, f64, f64) = get_ostn_ref(e_index, n_index)?;
     // bottom-right
@@ -86,14 +88,19 @@ pub fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
     let t = dx / 1000.;
     let u = dy / 1000.;
 
+    // Calculation of the weights for each intersection (W)
+    // this is a 4 x 1 matrix
     let f0 = (1. - t) * (1. - u);
     let f1 = t * (1. - u);
     let f2 = (1. - t) * u;
     let f3 = t * u;
 
     // bilinear interpolation, to obtain the actual shifts
+    // We could also do a dot product:
+    // weights.dot(offsets)
     let se = f0 * s0.0 + f1 * s1.0 + f2 * s2.0 + f3 * s3.0;
     let sn = f0 * s0.1 + f1 * s1.1 + f2 * s2.1 + f3 * s3.1;
+    // this isn't needed for this library, since it's a height offset
     let sg = f0 * s0.2 + f1 * s1.2 + f2 * s2.2 + f3 * s3.2;
 
     Ok((se.round_to_mm(), sn.round_to_mm(), sg.round_to_mm()))
