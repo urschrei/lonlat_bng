@@ -30,17 +30,7 @@ mod conversions;
 mod ffi;
 pub mod utils;
 
-pub use crate::ffi::convert_epsg3857_to_wgs84_threaded;
-pub use crate::ffi::convert_etrs89_to_ll_threaded;
-pub use crate::ffi::convert_etrs89_to_osgb36_threaded;
-pub use crate::ffi::convert_osgb36_to_etrs89_threaded;
-pub use crate::ffi::convert_osgb36_to_ll_threaded;
-pub use crate::ffi::convert_to_bng_threaded;
-pub use crate::ffi::convert_to_etrs89_threaded;
-pub use crate::ffi::convert_to_lonlat_threaded;
-pub use crate::ffi::convert_to_osgb36_threaded;
-pub use crate::ffi::drop_float_array;
-pub use crate::ffi::Array;
+pub use crate::ffi::*;
 
 pub use crate::conversions::convert_epsg3857_to_wgs84;
 pub use crate::conversions::convert_etrs89;
@@ -163,9 +153,9 @@ mod tests {
         let y: &mut [f64] = &mut [6887893.4928337997];
         let x_arr = Array::from(x);
         let y_arr = Array::from(y);
-        let (lon, lat) = convert_epsg3857_to_wgs84_threaded(x_arr, y_arr);
-        let retval: &mut [f64] = lon.into();
-        let retval2: &mut [f64] = lat.into();
+        let rtp = convert_epsg3857_to_wgs84_threaded(x_arr, y_arr);
+        let retval: &mut [f64] = rtp.e.into();
+        let retval2: &mut [f64] = rtp.n.into();
         let expected = (-5.625000000783013, 52.48278022732355);
         assert_eq!(expected, (retval[0], retval2[0]));
     }
@@ -340,9 +330,9 @@ mod tests {
         ];
         let e_arr = Array::from(etrs89_lons_vec);
         let n_arr = Array::from(etrs89_lats_vec);
-        let (osgb36_eastings, osgb36_northings) = convert_to_bng_threaded(e_arr, n_arr);
-        let retval: &mut [f64] = osgb36_eastings.into();
-        let retval2: &mut [f64] = osgb36_northings.into();
+        let rtp = convert_to_bng_threaded(e_arr, n_arr);
+        let retval: &mut [f64] = rtp.e.into();
+        let retval2: &mut [f64] = rtp.n.into();
         // We're using absolute error margins here, but it should be OK
         // test eastings
         for (expect, result) in osgb36_e_vec.iter().zip(retval.iter()) {
@@ -381,8 +371,8 @@ mod tests {
         let lat_vec: &mut [f64] = &mut [52.65800783];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
-        let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
-        let retval: &mut [f64] = eastings.into();
+        let rtp = convert_to_bng_threaded(lon_arr, lat_arr);
+        let retval: &mut [f64] = rtp.e.into();
         assert_eq!(651409.804, retval[0]);
     }
 
@@ -394,8 +384,8 @@ mod tests {
 
         let easting_arr = Array::from(easting_vec);
         let northing_arr = Array::from(northing_vec);
-        let (lons, _) = convert_to_lonlat_threaded(easting_arr, northing_arr);
-        let retval: &mut [f64] = lons.into();
+        let rtp= convert_to_lonlat_threaded(easting_arr, northing_arr);
+        let retval: &mut [f64] = rtp.e.into();
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
         // http://floating-point-gui.de/errors/comparison/
@@ -408,8 +398,8 @@ mod tests {
         let lat_vec: &mut [f64] = &mut [52.65800783];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
-        let (eastings, _) = convert_to_osgb36_threaded(lon_arr, lat_arr);
-        let retval: &mut [f64] = eastings.into();
+        let rtp = convert_to_osgb36_threaded(lon_arr, lat_arr);
+        let retval: &mut [f64] = rtp.e.into();
         assert_eq!(651409.804, retval[0]);
     }
 
@@ -419,8 +409,8 @@ mod tests {
         let n_vec: &mut [f64] = &mut [313255.686];
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
-        let (eastings, _) = convert_etrs89_to_osgb36_threaded(e_arr, n_arr);
-        let retval: &mut [f64] = eastings.into();
+        let rtp = convert_etrs89_to_osgb36_threaded(e_arr, n_arr);
+        let retval: &mut [f64] = rtp.e.into();
         assert_eq!(651409.804, retval[0]);
     }
 
@@ -431,8 +421,8 @@ mod tests {
         let n_vec: &mut [f64] = &mut [313177.450];
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
-        let (eastings, _) = convert_osgb36_to_etrs89_threaded(e_arr, n_arr);
-        let retval: &mut [f64] = eastings.into();
+        let rtp = convert_osgb36_to_etrs89_threaded(e_arr, n_arr);
+        let retval: &mut [f64] = rtp.e.into();
         // Caister Water Tower ETRS89, see p20
         assert_eq!(651307.003, retval[0]);
     }
@@ -443,8 +433,8 @@ mod tests {
         let lat_vec: &mut [f64] = &mut [52.65800783];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
-        let (eastings, _) = convert_to_etrs89_threaded(lon_arr, lat_arr);
-        let retval: &mut [f64] = eastings.into();
+        let rtp = convert_to_etrs89_threaded(lon_arr, lat_arr);
+        let retval: &mut [f64] = rtp.e.into();
         assert_eq!(651307.003, retval[0]);
     }
 
@@ -454,9 +444,9 @@ mod tests {
         let n_vec: &mut [f64] = &mut [313255.686];
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
-        let (lon, lat) = convert_etrs89_to_ll_threaded(e_arr, n_arr);
-        let retval: &mut [f64] = lon.into();
-        let retval2: &mut [f64] = lat.into();
+        let rtp = convert_etrs89_to_ll_threaded(e_arr, n_arr);
+        let retval: &mut [f64] = rtp.e.into();
+        let retval2: &mut [f64] = rtp.n.into();
         assert_eq!(1.71607397, retval[0]);
         assert_eq!(52.65800783, retval2[0]);
     }
@@ -469,9 +459,9 @@ mod tests {
 
         let e_arr = Array::from(e_vec);
         let n_arr = Array::from(n_vec);
-        let (lon, lat) = convert_osgb36_to_ll_threaded(e_arr, n_arr);
-        let retval: &mut [f64] = lon.into();
-        let retval2: &mut [f64] = lat.into();
+        let rtp = convert_osgb36_to_ll_threaded(e_arr, n_arr);
+        let retval: &mut [f64] = rtp.e.into();
+        let retval2: &mut [f64] = rtp.n.into();
         assert_eq!(1.71607397, retval[0]);
         assert_eq!(52.65800783, retval2[0]);
     }
@@ -482,8 +472,8 @@ mod tests {
         let lat_vec: &mut [f64] = &mut [54.589097162646141];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
-        let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
-        drop_float_array(eastings, northings);
+        let rtp = convert_to_bng_threaded(lon_arr, lat_arr);
+        drop_float_array(rtp.e, rtp.n);
     }
 
     #[test]
@@ -492,9 +482,9 @@ mod tests {
         let lat_vec: &mut [f64] = &mut [];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
-        let (mut eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
-        eastings.data = ptr::null();
-        drop_float_array(eastings, northings);
+        let mut rtp = convert_to_bng_threaded(lon_arr, lat_arr);
+        rtp.e.data = ptr::null();
+        drop_float_array(rtp.e, rtp.n);
     }
 
     #[test]
@@ -503,9 +493,9 @@ mod tests {
         let lat_vec: &mut [f64] = &mut [];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
-        let (eastings, mut northings) = convert_to_bng_threaded(lon_arr, lat_arr);
-        northings.data = ptr::null();
-        drop_float_array(eastings, northings);
+        let mut rtp = convert_to_bng_threaded(lon_arr, lat_arr);
+        rtp.n.data = ptr::null();
+        drop_float_array(rtp.e, rtp.n);
     }
 
     #[test]
@@ -515,8 +505,8 @@ mod tests {
         let lat_vec: &mut [f64] = &mut [55.811741];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
-        let (eastings, _) = convert_to_bng_threaded(lon_arr, lat_arr);
-        let retval: &mut [f64] = eastings.into();
+        let rtp = convert_to_bng_threaded(lon_arr, lat_arr);
+        let retval: &mut [f64] = rtp.e.into();
         assert!(retval[0].is_nan());
     }
 
