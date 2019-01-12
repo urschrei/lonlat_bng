@@ -36,6 +36,9 @@ typedef struct Array {
     size_t len;
 } Array;
 
+/**
+ * A simple struct that can be leaked across the FFI boundary in lieu of an actual tuple
+ */
 typedef struct ResultTuple {
     Array e;
     Array n;
