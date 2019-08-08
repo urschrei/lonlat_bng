@@ -119,7 +119,7 @@ ResultTuple convert_osgb36_to_ll_threaded(Array eastings,
  * data: lat_vec.as_ptr() as *const libc::c_void,
  * len: lat_vec.len() as libc::size_t,
  * };
- * let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
+ * let rtp = convert_to_bng_threaded(lon_arr, lat_arr);
  * ```
  * For an FFI implementation, see the code at [Convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py).
  * # Safety
@@ -173,8 +173,8 @@ ResultTuple convert_to_osgb36_threaded(Array longitudes,
  * data: lat_vec.as_ptr() as *const libc::c_void,
  * len: lat_vec.len() as libc::size_t,
  * };
- * let (eastings, northings) = convert_to_bng_threaded(lon_arr, lat_arr);
- * drop_float_array(eastings, northings);
+ * let rtp = convert_to_bng_threaded(lon_arr, lat_arr);
+ * drop_float_array(rtp.e, rtp.n);
  * ```
  * An example FFI implementation is available at [Convertbng](https://github.com/urschrei/convertbng/blob/master/convertbng/util.py), specifically in the `_void_array_to_list` function.
  * # Safety
