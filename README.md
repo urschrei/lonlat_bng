@@ -79,7 +79,7 @@ Rust is faster than PROJ.4 on an 8-CPU system – even using `ctypes` – and ou
 Comparing how varying threads and weights affects overall speed, using [`cargo bench`](benches/benchmarks.rs)  
 On both 2- and 8-core i7 machines, running `convert_bng_threaded_vec` using one thread per core gives optimum performance, whereas Rayon does a good job at choosing its own optimum weight.
 
-<img src="crossbeam_v_rayon.png" alt="Comparison" style="width: 789px;"/>
+<img src="crossbeam_v_rayon.png" alt="Comparison"/>
 
 # License
 [MIT](license.txt)  
