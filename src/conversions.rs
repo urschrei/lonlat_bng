@@ -173,9 +173,9 @@ fn convert_to_ll(eastings: f64, northings: f64, ell_a: f64, ell_b: f64) -> Resul
     let dN = northings - N0;
     let mut phi = PHI0 + dN / (a * F0);
     let mut m = compute_m(phi, b, n);
-    while (dN - m) >= 0.001 {
-        phi += (dN - m) / (a * F0);
+    while (dN - m) >= 0.00001 {
         m = compute_m(phi, b, n);
+        phi += (dN - m) / (a * F0);
     }
     let sp2 = phi.sin().powi(2);
     let nu = a * F0 * (1. - e2 * sp2).powf(-0.5);
