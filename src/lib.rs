@@ -186,11 +186,9 @@ mod tests {
 
     #[test]
     fn test_os_etrs89_to_osgb36() {
-        // these are the values from the OSTN15 NTv2 download
-        // they exclude the two values which fall outside the bounding box
-        // several values differ by one digit in the third decimal place (mm)
+        // these are the test values (TP01 to TP40, inclusive) from the OSTN15 Developer Pack download
         let etrs89_lons_vec: &mut [f64] = &mut [
-            // -6.29977752,
+            -6.29977752,
             -5.2030461,
             -4.108645636,
             -1.297822772,
@@ -219,9 +217,9 @@ mod tests {
             -3.294792193,
             -5.828366919,
             -2.048560307,
-            // -4.219263986,
+            -4.219263986,
             // -8.578544561,
-            // -7.592555606,
+            -7.592555606,
             -6.260914555,
             -3.726310221,
             -3.214540011,
@@ -232,7 +230,7 @@ mod tests {
             -2.073828228,
         ];
         let etrs89_lats_vec: &mut [f64] = &mut [
-            // 49.92226394,
+            49.92226394,
             49.96006138,
             50.43885826,
             50.57563665,
@@ -261,9 +259,9 @@ mod tests {
             55.92478266,
             57.00606696,
             57.13902519,
-            // 57.48625001,
+            57.48625001,
             // 57.81351838,
-            // 58.21262247,
+            58.21262247,
             58.51560361,
             58.58120461,
             59.03743871,
@@ -275,19 +273,20 @@ mod tests {
         ];
 
         let osgb36_e_vec = [
-            // 91492.146,
-            170370.718, 250359.811, 449816.371, 438710.92, 292184.87, 639821.835, 362269.991,
-            530624.974, 241124.584, 599445.59, 389544.19, 474335.969, 562180.547, 454002.834,
-            357455.843, 247958.971, 247959.241, 331534.564, 422242.186, 227778.33, 525745.67,
-            244780.636, 339921.145, 424639.355, 256340.925, 319188.434, 167634.202, 397160.491,
-            // 267056.768,
+            91492.146,
+            170370.718, 250359.811, 449816.371, 438710.92, 292184.87, 639821.835,
+            362269.991, 530624.974, 241124.584, 599445.59, 389544.19, 474335.969, 562180.547,
+            454002.834, 357455.843, 247958.971, 247959.241, 331534.564, 422242.186, 227778.33,
+            525745.67, 244780.636, 339921.145, 424639.355, 256340.925, 319188.434, 167634.202,
+            397160.491, 267056.768,
             // 9587.909,
-            // 71713.132,
-            151968.652, 299721.891, 330398.323, 261596.778, 180862.461, 421300.525, 440725.073,
-            395999.668,
+            71713.132,
+            151968.652,
+            299721.891, 330398.323,
+            261596.778, 180862.461, 421300.525, 440725.073, 395999.668,
         ];
         let osgb36_n_vec = [
-            // 11318.804,
+            11318.804,
             11572.405,
             62016.569,
             75335.861,
@@ -316,9 +315,9 @@ mod tests {
             670947.534,
             797067.144,
             805349.736,
-            // 846176.972,
+            846176.972,
             // 899448.996,
-            // 938516.404,
+            938516.404,
             966483.78,
             967202.992,
             1017347.016,
@@ -347,6 +346,13 @@ mod tests {
         // assert_eq!(osgb36_n_vec, retval2);
     }
 
+    #[test]
+    fn test_foo() {
+        let lon = -8.578544561;
+        let lat = 57.81351838;
+        let res = convert_osgb36(lon, lat);
+        println!("{:?}", res);
+    }
     #[test]
     #[should_panic]
     // This should panic because the OSTN02 test suite specifies it as outside the polygon: Outside#1
@@ -384,7 +390,7 @@ mod tests {
 
         let easting_arr = Array::from(easting_vec);
         let northing_arr = Array::from(northing_vec);
-        let rtp= convert_to_lonlat_threaded(easting_arr, northing_arr);
+        let rtp = convert_to_lonlat_threaded(easting_arr, northing_arr);
         let retval: &mut [f64] = rtp.e.into();
         // We shouldn't really be using error margins, but it should be OK because
         // neither number is zero, or very close to, and on opposite sides of zero
@@ -509,5 +515,4 @@ mod tests {
         let retval: &mut [f64] = rtp.e.into();
         assert!(retval[0].is_nan());
     }
-
 }

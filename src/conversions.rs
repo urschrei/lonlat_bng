@@ -28,9 +28,9 @@ pub const RAD: f64 = PI / 180.;
 pub const MAX_EASTING: f64 = 700000.000;
 pub const MAX_NORTHING: f64 = 1250000.000;
 
-pub const MIN_LONGITUDE: f64 = -7.5600;
+pub const MIN_LONGITUDE: f64 = -8.5790;
 pub const MAX_LONGITUDE: f64 = 1.7800;
-pub const MIN_LATITUDE: f64 = 49.9600;
+pub const MIN_LATITUDE: f64 = 49.922;
 pub const MAX_LATITUDE: f64 = 60.8400;
 
 // lon and lat of true origin
@@ -120,6 +120,7 @@ pub fn convert_etrs89_to_osgb36(eastings: f64, northings: f64) -> Result<(f64, f
     check(northings, (0.000, MAX_NORTHING))?;
     // obtain OSTN15 corrections, and incorporate
     let (e_shift, n_shift, _) = ostn15_shifts(eastings, northings)?;
+    println!("{:?}", (e_shift, n_shift));
     Ok((
         (eastings + e_shift).round_to_mm(),
         (northings + n_shift).round_to_mm(),
