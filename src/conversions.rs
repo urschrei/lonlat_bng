@@ -21,7 +21,8 @@ pub const RXS: f64 = -0.1502;
 pub const RYS: f64 = -0.2470;
 pub const RZS: f64 = -0.8421;
 
-pub const S: f64 = 20.4894 * 0.000001;
+// scale factor, referred to as "S" in OSTN15, but some C compilers do not like that
+pub const CS: f64 = 20.4894 * 0.000001;
 // etc
 pub const PI: f64 = f64::consts::PI;
 pub const RAD: f64 = PI / 180.;
@@ -315,9 +316,9 @@ pub fn convert_bng(longitude: f64, latitude: f64) -> Result<(c_double, c_double)
     let rz = rzs * PI / (180. * 3600.);
 
     // TODO solve this for all lat and lon using matrices in an intermediate step?
-    let x_2 = tx + (1. + S) * x_1 + -rz * y_1 + ry * z_1;
-    let y_2 = ty + rz * x_1 + (1. + S) * y_1 + -rx * z_1;
-    let z_2 = tz + -ry * x_1 + rx * y_1 + (1. + S) * z_1;
+    let x_2 = tx + (1. + CS) * x_1 + -rz * y_1 + ry * z_1;
+    let y_2 = ty + rz * x_1 + (1. + CS) * y_1 + -rx * z_1;
+    let z_2 = tz + -ry * x_1 + rx * y_1 + (1. + CS) * z_1;
 
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a = AIRY_1830_SEMI_MAJOR;
@@ -451,7 +452,7 @@ pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), ()> {
     let z_1 = ((1. - e2) * nu / F0 + H) * lat_1.sin();
 
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
-    let minus_s = -S; // The scale factor -1
+    let minus_s = -CS; // The scale factor -1
                       // The translations along x, y, z axes respectively
     let tx = TX.abs();
     let ty = TY * -1.;

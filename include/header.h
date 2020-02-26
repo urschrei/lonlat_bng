@@ -11,6 +11,8 @@
 
 #define AIRY_1830_SEMI_MINOR 6356256.909
 
+#define CS (20.4894 * 0.000001)
+
 #define GRS80_SEMI_MAJOR 6378137.000
 
 #define GRS80_SEMI_MINOR 6356752.3141
@@ -34,8 +36,6 @@
 #define RYS -0.2470
 
 #define RZS -0.8421
-
-#define S (20.4894 * 0.000001)
 
 #define TRUE_ORIGIN_EASTING 400000.
 
