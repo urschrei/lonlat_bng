@@ -341,18 +341,18 @@ mod tests {
         for (expect, result) in osgb36_n_vec.iter().zip(retval2.iter()) {
             assert!(((expect - result) / result).abs() < 0.0000001)
         }
-        // This will fail because 11 results differ by .001 (so 1 mm)
-        // assert_eq!(osgb36_e_vec, retval);
-        // assert_eq!(osgb36_n_vec, retval2);
     }
 
-    #[test]
-    fn test_foo() {
-        let lon = -8.578544561;
-        let lat = 57.81351838;
-        let res = convert_osgb36(lon, lat);
-        println!("{:?}", res);
-    }
+    // #[test]
+    // // This specifically tests test point 31, which is still "wrong" by 1 mm
+    // // I suspect this is due to my rounding logic
+    // fn test_p31() {
+    //     let lon = -8.578544561;
+    //     let lat = 57.81351838;
+    //     let res = convert_osgb36(lon, lat);
+    //     assert_eq!(res.unwrap(), (9587.909, 899448.996));
+    // }
+    
     #[test]
     #[should_panic]
     // This should panic because the OSTN02 test suite specifies it as outside the polygon: Outside#1
