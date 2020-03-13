@@ -19,7 +19,7 @@ main() {
 
     cross rustc --target $TARGET --release
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        for lib in /io/target/$TARGET/release/*.so; do
+        for lib in target/$TARGET/release/*.so; do
             strip -s $lib
         done
         cp target/$TARGET/release/*.so $stage
