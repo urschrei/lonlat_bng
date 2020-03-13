@@ -60,11 +60,7 @@ before_deploy:
   - shell_session_update() { :; };
   # - curl -sSL https://rvm.io/mpapis.asc | gpg --import -
   # - rvm get stable
-  # OSX deploy doesn't need a Dockerised manylinux2010 build
-  - if ! [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then bash ci/before_deploy.sh; fi
-  # Linux deploy needs Dockerised manylinux2010 artefacts
-  - if [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then docker pull $DOCKER_IMAGE; fi
-  - if [[ "$TARGET" == "x86_64-unknown-linux-gnu" ]]; then sudo docker run -e TRAVIS_TAG="$TRAVIS_TAG" --rm -v `pwd`:/io $DOCKER_IMAGE /io/ci/manylinux_rust.sh; fi
+  - bash ci/before_deploy.sh
 
 deploy:
   # TODO Regenerate this api_key for your project, this one won't work for you. Here's how:
