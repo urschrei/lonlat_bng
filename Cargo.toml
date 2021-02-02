@@ -16,7 +16,7 @@ cbindgen = "0.13.1"
 
 [dependencies]
 libc = "0.2.74"
-rand = "0.7.3"
+rand = "0.8.3"
 ostn15_phf = { git = "https://github.com/urschrei/ostn15_phf.git" }
 rayon = "1.3.1"
 
