@@ -12,7 +12,7 @@ edition = "2018"
 build = "src/build.rs"
 
 [build-dependencies]
-cbindgen = "0.17.0"
+cbindgen = "0.18.0"
 
 [dependencies]
 libc = "0.2.74"
