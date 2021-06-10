@@ -93,7 +93,7 @@ deploy:
   description: 'Binaries'
   provider: GitHub
   auth_token:
-    secure: asX234eNqUxr0QYjujIhqXMZv7e/RPhAIJkJ9FyoEl/gkqc5OWgo5TeVtGzcwV0E
+    secure: znRnHyOxfqP+U05ChEJlAlmEx+GCGg1ELBR5yTfn7z3WiguOiBkmY9ocHfFkBLp1
   artifact: /.*\.zip/
   draft: false
   prerelease: false
