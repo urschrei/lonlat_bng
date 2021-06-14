@@ -16,8 +16,7 @@ main() {
     esac
 
     test -f Cargo.lock || cargo generate-lockfile
-
-    cross rustc --target $TARGET --release
+    RUSTFLAGS='-C rpath' cross rustc --target $TARGET --features=headers --release
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         for lib in target/$TARGET/release/*.so; do
             strip -s $lib
