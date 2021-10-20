@@ -1,4 +1,3 @@
-#![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
 //! This module provides all the conversion algorithms
 
 // Constants used for coordinate conversions
