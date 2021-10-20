@@ -1,7 +1,5 @@
-#![doc(html_root_url = "https://urschrei.github.io/lonlat_bng/")]
 //! This module provides utilities to the conversions module
 use ostn15_phf::ostn15_lookup;
-use std;
 use std::fmt;
 
 // fn helmert(lon_vec: [&f64], lat_vec: [&f64]) -> (Vec<f64>, Vec<f64>) {
