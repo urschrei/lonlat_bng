@@ -9,7 +9,6 @@ repository = "https://github.com/urschrei/lonlat_bng"
 documentation = "https://urschrei.github.io/lonlat_bng/"
 readme = "README.md"
 edition = "2018"
-build = "src/build.rs"
 
 [build-dependencies]
 cbindgen = "0.20.0"
