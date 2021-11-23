@@ -1,0 +1,8 @@
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "rpath"]
+
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "rpath"]
+
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
