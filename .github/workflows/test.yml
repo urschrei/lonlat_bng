@@ -11,9 +11,46 @@ env:
 name: Test and Cross-compile
 
 jobs:
-  build_windows_macos:
+  test:
+    if: github.event_name == 'push' && !contains(github.ref, 'refs/tags/')
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - build: linux
+          os: ubuntu-latest
+          rust: stable
+          target: x86_64-unknown-linux-gnu
+          use-cross: false
+        - build: macos
+          os: macos-11
+          rust: stable
+          target: x86_64-apple-darwin
+          use-cross: false
+        - build: windows
+          os: windows-latest
+          rust: stable
+          target: x86_64-pc-windows-msvc
+          use-cross: false
+    steps:
+      - uses: actions/checkout@v2
+        steps:
+          - uses: actions/checkout@v2
+          - uses: actions-rs/toolchain@v1
+            with:
+              toolchain: stable
+              target: ${{ matrix.target }}
+          - uses: actions-rs/cargo@v1
+            with:
+              use-cross: ${{ matrix.use-cross }}
+              command: test
+              args: --target=${{ matrix.target }}
+
+  build:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    name: Build on ${{ matrix.os }}
+    name: Build releases on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
