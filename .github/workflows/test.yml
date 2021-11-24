@@ -36,17 +36,15 @@ jobs:
           use-cross: false
     steps:
       - uses: actions/checkout@v2
-        steps:
-          - uses: actions/checkout@v2
-          - uses: actions-rs/toolchain@v1
-            with:
-              toolchain: stable
-              target: ${{ matrix.target }}
-          - uses: actions-rs/cargo@v1
-            with:
-              use-cross: ${{ matrix.use-cross }}
-              command: test
-              args: --target=${{ matrix.target }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.use-cross }}
+          command: test
+          args: --target=${{ matrix.target }}
 
   build:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
