@@ -6,6 +6,7 @@ defaults:
 
 env:
   cratename: lonlat_bng
+  MACOSX_DEPLOYMENT_TARGET: 10.9
 
 name: Test and Cross-compile
 
