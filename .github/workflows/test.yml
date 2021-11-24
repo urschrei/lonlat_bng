@@ -48,7 +48,7 @@ jobs:
 
   build:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    name: Build on ${{ matrix.os }}
+    name: Build and release on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
