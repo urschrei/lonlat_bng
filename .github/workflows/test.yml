@@ -6,14 +6,13 @@ defaults:
 
 env:
   cratename: lonlat_bng
-  MACOSX_DEPLOYMENT_TARGET: 10.9
 
 name: Test and Build
 
 jobs:
   test:
     if: github.event_name == 'push' && !contains(github.ref, 'refs/tags/')
-    name: Test on ${{ matrix.os }}
+    name: Test on ${{ matrix.os }} (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -25,10 +24,11 @@ jobs:
           target: x86_64-unknown-linux-gnu
           use-cross: false
         - build: macos
-          os: macos-11
+          os: macos-latest
           rust: stable
           target: x86_64-apple-darwin
           use-cross: false
+          deptarget: 10.9
         - build: windows
           os: windows-latest
           rust: stable
@@ -41,6 +41,8 @@ jobs:
           toolchain: stable
           target: ${{ matrix.target }}
       - uses: actions-rs/cargo@v1
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deptarget }}
         with:
           use-cross: ${{ matrix.use-cross }}
           command: test
@@ -48,7 +50,7 @@ jobs:
 
   build:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    name: Build and release on ${{ matrix.os }}
+    name: Build and release on ${{ matrix.os }} (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -64,22 +66,36 @@ jobs:
           rust: stable
           target: x86_64-apple-darwin
           use-cross: false
+          deptarget: 10.9
+        - build: macos
+          os: macos-latest
+          rust: stable
+          target: aarch64-apple-darwin
+          use-cross: false
+          deptarget: 11.0
         - build: windows
           os: windows-latest
           rust: stable
           target: x86_64-pc-windows-msvc
           use-cross: false
     steps:
+      - name: Switch to macOS 12.x SDK
+        if: matrix.target == 'aarch64-apple-darwin'
+        run: |
+          xcodebuild -showsdks
+          SDKROOT=$(xcrun -sdk macosx12.0 --show-sdk-path)
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           target: ${{ matrix.target }}
       - uses: actions-rs/cargo@v1
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deptarget }}
         with:
           use-cross: ${{ matrix.use-cross }}
           command: build
-          args: --release --target=${{ matrix.target }}
+          args: --release --target=${{ matrix.target }} --features headers
       - name: Gather Assets
         run: |
           src=$(pwd)
