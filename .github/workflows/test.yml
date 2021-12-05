@@ -6,6 +6,7 @@ defaults:
 
 env:
   cratename: lonlat_bng
+  rustflags: -C rpath
 
 name: Test and Build
 
