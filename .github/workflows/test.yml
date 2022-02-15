@@ -84,7 +84,7 @@ jobs:
         if: matrix.target == 'aarch64-apple-darwin'
         run: |
           xcodebuild -showsdks
-          SDKROOT=$(xcrun -sdk macosx12.0 --show-sdk-path)
+          SDKROOT=$(xcrun -sdk macosx12.1 --show-sdk-path)
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -131,6 +131,8 @@ jobs:
             echo "TYPE=tar" >> $GITHUB_ENV
             echo "EXTENSION=tar.gz" >> $GITHUB_ENV
             for lib in target/${{ matrix.target }}/release/*.dylib; do
+                install_name_tool -id "@rpath/librdp.dylib" $lib
+                otool -L $lib
                 strip -ur $lib
             done
             cp target/${{ matrix.target }}/release/*.dylib $stage/
