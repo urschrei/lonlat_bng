@@ -131,7 +131,7 @@ jobs:
             echo "TYPE=tar" >> $GITHUB_ENV
             echo "EXTENSION=tar.gz" >> $GITHUB_ENV
             for lib in target/${{ matrix.target }}/release/*.dylib; do
-                install_name_tool -id "@rpath/librdp.dylib" $lib
+                install_name_tool -id "@rpath/lib${{ env.cratename }}.dylib" $lib
                 otool -L $lib
                 strip -ur $lib
             done
