@@ -138,8 +138,10 @@ jobs:
             cp target/${{ matrix.target }}/release/*.dylib $stage/
           fi
           if [ "$RUNNER_OS" == "Windows" ]; then
-            echo "TYPE=zip" >> $GITHUB_ENV
-            echo "EXTENSION=zip" >> $GITHUB_ENV
+            echo "TYPE=tar" >> $GITHUB_ENV
+            echo "EXTENSION=tar.gz" >> $GITHUB_ENV
+            ls target/${{ matrix.target }}/release/
+            ls target/${{ matrix.target }}/release/deps
             cp target/${{ matrix.target }}/release/deps/${{ env.cratename }}.dll.lib target/${{ matrix.target }}/release/deps/${{ env.cratename }}.lib
             cp target/${{ matrix.target }}/release/${{ env.cratename }}* $stage/
             cp target/${{ matrix.target }}/release/deps/${{ env.cratename }}* $stage/
@@ -148,22 +150,12 @@ jobs:
           ls $stage
           cd $src
 
-      - name: Create macOS and Linux Archive
-        if: runner.os != 'Windows'
+      - name: Create archive
         run: |
           pushd ${{ env.STAGE }}
           tar -czf "${{ env.ASSET_NAME }}.${{ env.EXTENSION }}" *
           popd
           cp "${{ env.STAGE }}/${{ env.ASSET_NAME }}.${{ env.EXTENSION }}" zipped/
-
-      - name: Create Windows Archive
-        if: runner.os == 'Windows'
-        uses: thedoctor0/zip-release@master
-        with:
-          type: ${{ env.TYPE }}
-          filename: "${{ env.ASSET_NAME }}.${{ env.EXTENSION }}"
-          path: ${{ env.STAGE }}/*.*
-          directory: zipped
 
       - name: Release
         uses: softprops/action-gh-release@v1
