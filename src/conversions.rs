@@ -351,7 +351,8 @@ pub fn convert_bng(longitude: f64, latitude: f64) -> Result<(c_double, c_double)
     let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3))
         * ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin()))
             .ln_1p()
-            .exp_m1() * (lat + lat0).cos();
+            .exp_m1()
+        * (lat + lat0).cos();
     let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3))
         * (2. * (lat - lat0)).sin()
         * (2. * (lat + lat0)).cos();
@@ -365,12 +366,16 @@ pub fn convert_bng(longitude: f64, latitude: f64) -> Result<(c_double, c_double)
         * F0
         * lat.sin()
         * lat.cos().powi(5)
-        * (61. - 58. * lat.tan().powi(2) + lat.tan().powi(4)) / 720.;
+        * (61. - 58. * lat.tan().powi(2) + lat.tan().powi(4))
+        / 720.;
     let IV = nu * F0 * lat.cos();
     let V = nu * F0 * lat.cos().powi(3) * (nu / rho - lat.tan().powi(2)) / 6.;
-    let VI = nu * F0 * lat.cos().powi(5)
+    let VI = nu
+        * F0
+        * lat.cos().powi(5)
         * (5. - 18. * lat.tan().powi(2) + lat.tan().powi(4) + 14. * eta2
-            - 58. * eta2 * lat.tan().powi(2)) / 120.;
+            - 58. * eta2 * lat.tan().powi(2))
+        / 120.;
     let N =
         I + II * (lon - lon0).powi(2) + III * (lon - lon0).powi(4) + IIIA * (lon - lon0).powi(6);
     let E = E0 + IV * (lon - lon0) + V * (lon - lon0).powi(3) + VI * (lon - lon0).powi(5);
@@ -412,7 +417,8 @@ pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), ()> {
         let M2 = (3. * n + 3. * n.powi(2) + (21. / 8.) * n.powi(3))
             * ((lat.sin() * lat0.cos()) - (lat.cos() * lat0.sin()))
                 .ln_1p()
-                .exp_m1() * (lat + lat0).cos();
+                .exp_m1()
+            * (lat + lat0).cos();
         let M3 = ((15. / 8.) * n.powi(2) + (15. / 8.) * n.powi(3))
             * (2. * (lat - lat0)).sin()
             * (2. * (lat + lat0)).cos();
@@ -452,7 +458,7 @@ pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), ()> {
 
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
     let minus_s = -CS; // The scale factor -1
-                      // The translations along x, y, z axes respectively
+                       // The translations along x, y, z axes respectively
     let tx = TX.abs();
     let ty = TY * -1.;
     let tz = TZ.abs();
@@ -639,5 +645,4 @@ mod tests {
             convert_bng(-0.32824866, -90.01).unwrap()
         );
     }
-
 }
