@@ -85,7 +85,7 @@ jobs:
         run: |
           xcodebuild -showsdks
           SDKROOT=$(xcrun -sdk macosx12.1 --show-sdk-path)
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
