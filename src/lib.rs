@@ -150,7 +150,7 @@ mod tests {
     // Test Google/Bing Maps to WGS84 conversion
     fn test_epsg3857() {
         let x: &mut [f64] = &mut [-626172.1357121646];
-        let y: &mut [f64] = &mut [6887893.4928337997];
+        let y: &mut [f64] = &mut [6_887_893.492_833_8];
         let x_arr = Array::from(x);
         let y_arr = Array::from(y);
         let rtp = convert_epsg3857_to_wgs84_threaded(x_arr, y_arr);
@@ -165,19 +165,19 @@ mod tests {
     fn test_threading() {
         let mut lon = [
             -2.0183041005533306,
-            0.95511887434519682,
-            0.44975855518383501,
-            -0.096813621191803811,
+            0.955_118_874_345_196_8,
+            0.449_758_555_183_835,
+            -0.096_813_621_191_803_81,
             -0.36807065656416427,
-            0.63486335458665621,
+            0.634_863_354_586_656_2,
         ];
         let mut lat = [
-            54.589097162646141,
-            51.560873800587828,
-            50.431429161121699,
-            54.535021436247419,
-            50.839059313135706,
-            55.412189281234419,
+            54.589_097_162_646_14,
+            51.560_873_800_587_83,
+            50.431_429_161_121_7,
+            54.535_021_436_247_42,
+            50.839_059_313_135_71,
+            55.412_189_281_234_42,
         ];
         convert_vec_direct(&mut lon, &mut lat, convert_bng);
         assert_eq!(398915.033, lon[0]);
@@ -475,7 +475,7 @@ mod tests {
     #[test]
     fn test_drop_float_array() {
         let lon_vec: &mut [f64] = &mut [-2.0183041005533306];
-        let lat_vec: &mut [f64] = &mut [54.589097162646141];
+        let lat_vec: &mut [f64] = &mut [54.589_097_162_646_14];
         let lon_arr = Array::from(lon_vec);
         let lat_arr = Array::from(lat_vec);
         let rtp = convert_to_bng_threaded(lon_arr, lat_arr);

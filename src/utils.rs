@@ -34,14 +34,14 @@ pub trait ToMm {
 
 impl ToMm for f64 {
     fn round_to_mm(self) -> f64 {
-        (self * 1000.).round() as f64 / 1000.
+        (self * 1000.).round() / 1000.
     }
 }
 
 /// Round a float to eight decimal places
 pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
-    let new_x = (x * 100000000.).round() as f64 / 100000000.;
-    let new_y = (y * 100000000.).round() as f64 / 100000000.;
+    let new_x = (x * 100000000.).round() / 100000000.;
+    let new_y = (y * 100000000.).round() / 100000000.;
     (new_x, new_y)
 }
 
@@ -62,8 +62,8 @@ pub fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
     let n_index = (y / 1000.) as i32;
 
     // eastings and northings of the south-west corner of the cell
-    let x0 = e_index as i32 * 1000;
-    let y0 = n_index as i32 * 1000;
+    let x0 = e_index * 1000;
+    let y0 = n_index * 1000;
 
     // The easting, northing and geoid shifts for the four corners of the cell
     // any of these could be Err, so use try!

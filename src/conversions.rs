@@ -331,7 +331,7 @@ pub fn convert_bng(longitude: f64, latitude: f64) -> Result<(c_double, c_double)
     // this is cheating, but not sure how else to initialise nu
     let mut nu: f64 = 1.;
     // Latitude is obtained by iterative procedure
-    while (lat - latold).abs() > (10. as f64).powi(-16) {
+    while (lat - latold).abs() > 10_f64.powi(-16) {
         mem::swap(&mut lat, &mut latold);
         nu = a / (1. - e2 * latold.sin().powi(2)).sqrt();
         lat = (z_2 + e2 * nu * latold.sin()).atan2(p);
@@ -482,7 +482,7 @@ pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), ()> {
     let mut lat = z_2.atan2(p * (1. - e2_2));
     let mut latold = 2. * PI;
     let mut nu_2: f64;
-    while (lat - latold).abs() > (10. as f64).powi(-16) {
+    while (lat - latold).abs() > 10_f64.powi(-16) {
         mem::swap(&mut lat, &mut latold);
         nu_2 = a_2 / (1. - e2_2 * latold.sin().powi(2)).sqrt();
         lat = (z_2 + e2_2 * nu_2 * latold.sin()).atan2(p);
@@ -518,7 +518,7 @@ mod tests {
     #[test]
     fn test_gmaps_to_wgs() {
         let x = -626172.1357121646;
-        let y = 6887893.4928337997;
+        let y = 6_887_893.492_833_8;
         let expected = (-5.625000000783013, 52.48278022732355);
         assert_eq!(expected, convert_epsg3857_to_wgs84(x, y).unwrap());
     }
