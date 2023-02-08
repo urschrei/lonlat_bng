@@ -14,10 +14,10 @@ edition = "2018"
 cbindgen = "0.24.2"
 
 [dependencies]
-libc = "0.2.104"
-rand = "0.8.4"
+libc = "0.2.139"
+rand = "0.8.5"
 ostn15_phf = { git = "https://github.com/urschrei/ostn15_phf.git" }
-rayon = "1.5.1"
+rayon = "1.6.1"
 
 [features]
 headers = []
