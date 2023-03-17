@@ -1,3 +1,10 @@
+#![deny(
+    clippy::cast_slice_from_raw_parts,
+    clippy::cast_slice_different_sizes,
+    clippy::invalid_null_ptr_usage,
+    clippy::ptr_as_ptr,
+    clippy::transmute_ptr_to_ref
+)]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/urschrei/lonlat_bng/master/points.png",
     html_root_url = "https://urschrei.github.io/lonlat_bng/"
