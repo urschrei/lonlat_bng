@@ -10,6 +10,9 @@ documentation = "https://urschrei.github.io/lonlat_bng/"
 readme = "README.md"
 edition = "2018"
 
+[dev-dependencies]
+criterion = "0.4.0"
+
 [build-dependencies]
 cbindgen = "0.24.2"
 
@@ -35,3 +38,8 @@ codegen-units = 1
 [profile.bench]
 lto = true
 codegen-units = 1
+
+[[bench]]
+name = "benchmarks"
+harness = false
+

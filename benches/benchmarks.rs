@@ -1,20 +1,33 @@
-#![feature(test)]
-
-extern crate test;
-use test::Bencher;
+#[macro_use]
+extern crate criterion;
+use criterion::Criterion;
 
 use lonlat_bng;
-use rand::distributions::{IndependentSample, Range};
+use rand::distributions::Distribution;
+use rand::distributions::Uniform;
+use rand::thread_rng;
 
-#[bench]
-fn bench_threads(b: &mut Bencher) {
-    let num_coords = 100000;
-    let between_lon = Range::new(-6.379880, 1.768960);
-    let between_lat = Range::new(49.871159, 55.811741);
-    let mut rng = rand::thread_rng();
-    let mut lon_vec = vec![between_lon.ind_sample(&mut rng); num_coords];
-    let mut lat_vec = vec![between_lat.ind_sample(&mut rng); num_coords];
-    b.iter(|| {
-        lonlat_bng::convert_to_bng_threaded_vec(&mut lon_vec, &mut lat_vec);
+#[allow(unused_must_use)]
+fn bench_encode(c: &mut Criterion) {
+    let mut rng = thread_rng();
+    // These coordinates cover London, approximately
+    let between_lon = Uniform::from(-6.379880..1.768960);
+    let between_lat = Uniform::from(49.871159..55.811741);
+    let mut lon_vec: Vec<f64> = vec![];
+    let mut lat_vec: Vec<f64> = vec![];
+    (0..100000).for_each(|_| {
+        lon_vec.push(between_lon.sample(&mut rng));
+        lat_vec.push(between_lat.sample(&mut rng));
+    });
+    c.bench_function("bench encode: 100000 coordinates", move |b| {
+        b.iter(|| {
+            lonlat_bng::convert_to_bng_threaded_vec(&mut lon_vec, &mut lat_vec);
+        })
     });
 }
+
+criterion_group!(
+    benches,
+    bench_encode,
+);
+criterion_main!(benches);
