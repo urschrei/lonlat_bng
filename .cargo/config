@@ -6,3 +6,7 @@ rustflags = ["-C", "rpath"]
 
 [target.x86_64-pc-windows-msvc]
 rustflags = ["-C", "target-feature=+crt-static"]
+
+[target.aarch64-unknown-linux-gnu]
+rustflags = ["-C", "rpath"]
+linker = "aarch64-unknown-linux-gnu-gcc"
