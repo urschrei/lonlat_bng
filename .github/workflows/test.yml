@@ -103,7 +103,7 @@ jobs:
           command: build
           args: --release --target=${{ matrix.target }} --features headers
       - name: Install aarch64 related packages
-        if: matrix.os == 'ubuntu-latest' && matrix.target = 'aarch64-unknown-linux-gnu'
+        if: matrix.os == 'ubuntu-latest' && matrix.target == 'aarch64-unknown-linux-gnu'
         run: sudo apt-get update && sudo apt-get install gcc-aarch64-linux-gnu qemu-system-arm
       - name: Gather Assets
         run: |
