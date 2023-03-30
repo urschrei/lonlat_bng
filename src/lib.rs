@@ -476,6 +476,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_drop_float_array() {
         let lon_vec: &mut [f64] = &mut [-2.0183041005533306];
         let lat_vec: &mut [f64] = &mut [54.589_097_162_646_14];
@@ -508,6 +509,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_bad_threaded_conversion() {
         // above maximum longitude
         let lon_vec: &mut [f64] = &mut [1.85];

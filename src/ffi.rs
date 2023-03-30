@@ -65,7 +65,7 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
 impl<'a, T> From<&'a mut [T]> for Array {
     fn from(sl: &mut [T]) -> Self {
         Array {
-            data: sl.as_ptr().cast::<libc::c_void>(),
+            data: sl.as_mut_ptr().cast::<libc::c_void>(),
             len: sl.len() as libc::size_t,
         }
     }
