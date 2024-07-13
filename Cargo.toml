@@ -1,7 +1,7 @@
 [package]
 name = "lonlat_bng"
 description = "Convert longitude and latitude coordinates to BNG coordinates, and vice versa"
-version = "0.6.34"
+version = "0.6.35"
 authors = ["Stephan Hügel <urschrei@gmail.com>"]
 license = "MIT"
 keywords = ["OSGB36", "BNG", "Geo", "ETRS89", "OSTN02", "OSTN15"]
@@ -35,6 +35,8 @@ doc = true
 [profile.release]
 lto = true
 codegen-units = 1
+strip = true
+
 [profile.bench]
 lto = true
 codegen-units = 1

@@ -36,7 +36,7 @@ jobs:
           target: x86_64-pc-windows-msvc
           use-cross: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -85,12 +85,12 @@ jobs:
           target: x86_64-pc-windows-msvc
           use-cross: false
     steps:
-      - name: Switch to macOS 13.x SDK
+      - name: Switch to macOS 14.x SDK
         if: matrix.target == 'aarch64-apple-darwin'
         run: |
           xcodebuild -showsdks
-          SDKROOT=$(xcrun -sdk macosx13.1 --show-sdk-path)
-      - uses: actions/checkout@v3
+          SDKROOT=$(xcrun -sdk macosx14.0 --show-sdk-path)
+      - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -130,13 +130,6 @@ jobs:
           if [ "$RUNNER_OS" == "Linux" ]; then
             echo "TYPE=tar" >> $GITHUB_ENV
             echo "EXTENSION=tar.gz" >> $GITHUB_ENV
-            for lib in target/${{ matrix.target }}/release/*.so; do
-                if [ "${{ matrix.target }}" == "aarch64-unknown-linux-gnu" ]; then
-                    aarch64-linux-gnu-strip -s $lib
-                else
-                    strip -s $lib
-                fi
-            done
             cp target/${{ matrix.target }}/release/*.so $stage/
           fi
           if [ "$RUNNER_OS" == "macOS" ]; then
@@ -145,7 +138,6 @@ jobs:
             for lib in target/${{ matrix.target }}/release/*.dylib; do
                 install_name_tool -id "@rpath/lib${{ env.cratename }}.dylib" $lib
                 otool -L $lib
-                strip -ur $lib
             done
             cp target/${{ matrix.target }}/release/*.dylib $stage/
           fi
@@ -155,7 +147,6 @@ jobs:
             cp target/${{ matrix.target }}/release/deps/${{ env.cratename }}.dll.lib target/${{ matrix.target }}/release/deps/${{ env.cratename }}.lib
             cp target/${{ matrix.target }}/release/${{ env.cratename }}* $stage/
             cp target/${{ matrix.target }}/release/deps/${{ env.cratename }}* $stage/
-            rm $stage/*.pdb
           fi
           ls $stage
           cd $src
