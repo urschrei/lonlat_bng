@@ -2,7 +2,6 @@
 extern crate criterion;
 use criterion::Criterion;
 
-use lonlat_bng;
 use rand::distributions::Distribution;
 use rand::distributions::Uniform;
 use rand::thread_rng;

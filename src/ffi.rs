@@ -49,7 +49,7 @@ use super::convert_to_osgb36_threaded_vec;
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
     if lons.data.is_null() {
         return;
@@ -62,7 +62,7 @@ pub extern "C" fn drop_float_array(lons: Array, lats: Array) {
 }
 
 // Build an Array so it can be leaked across the FFI boundary
-impl<'a> From<&'a mut [f64]> for Array {
+impl From<&mut [f64]> for Array {
     fn from(sl: &mut [f64]) -> Self {
         Array {
             data: sl.as_mut_ptr().cast::<libc::c_void>(),
@@ -72,7 +72,7 @@ impl<'a> From<&'a mut [f64]> for Array {
 }
 
 // Build &mut[f64] from an Array, so it can be dropped
-impl<'a> From<Array> for &'a mut [f64] {
+impl From<Array> for &mut [f64] {
     fn from(arr: Array) -> Self {
         unsafe { slice::from_raw_parts_mut(arr.data as *mut f64, arr.len) }
     }
@@ -124,7 +124,7 @@ where
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -> ResultTuple {
     convert_to_bng_threaded_vec(longitudes.into(), latitudes.into()).into()
 }
@@ -138,7 +138,7 @@ pub extern "C" fn convert_to_bng_threaded(longitudes: Array, latitudes: Array) -
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) -> ResultTuple {
     convert_to_lonlat_threaded_vec(eastings.into(), northings.into()).into()
 }
@@ -152,7 +152,7 @@ pub extern "C" fn convert_to_lonlat_threaded(eastings: Array, northings: Array) 
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array, latitudes: Array) -> ResultTuple {
     convert_to_osgb36_threaded_vec(longitudes.into(), latitudes.into()).into()
 }
@@ -166,7 +166,7 @@ pub extern "C" fn convert_to_osgb36_threaded(longitudes: Array, latitudes: Array
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array, latitudes: Array) -> ResultTuple {
     convert_to_etrs89_threaded_vec(longitudes.into(), latitudes.into()).into()
 }
@@ -180,7 +180,7 @@ pub extern "C" fn convert_to_etrs89_threaded(longitudes: Array, latitudes: Array
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn convert_etrs89_to_osgb36_threaded(
     eastings: Array,
     northings: Array,
@@ -197,7 +197,7 @@ pub extern "C" fn convert_etrs89_to_osgb36_threaded(
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array, northings: Array) -> ResultTuple {
     convert_etrs89_to_ll_threaded_vec(eastings.into(), northings.into()).into()
 }
@@ -211,7 +211,7 @@ pub extern "C" fn convert_etrs89_to_ll_threaded(eastings: Array, northings: Arra
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array, northings: Array) -> ResultTuple {
     convert_osgb36_to_ll_threaded_vec(eastings.into(), northings.into()).into()
 }
@@ -225,7 +225,7 @@ pub extern "C" fn convert_osgb36_to_ll_threaded(eastings: Array, northings: Arra
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn convert_osgb36_to_etrs89_threaded(
     eastings: Array,
     northings: Array,
@@ -242,7 +242,7 @@ pub extern "C" fn convert_osgb36_to_etrs89_threaded(
 /// # Safety
 ///
 /// This function is unsafe because it accesses a raw pointer which could contain arbitrary data
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn convert_epsg3857_to_wgs84_threaded(x: Array, y: Array) -> ResultTuple {
     convert_epsg3857_to_wgs84_threaded_vec(x.into(), y.into()).into()
 }
