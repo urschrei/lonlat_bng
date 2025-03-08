@@ -82,6 +82,6 @@ On both 2- and 8-core i7 machines, running `convert_bng_threaded_vec` using one 
 <img src="crossbeam_v_rayon.png" alt="Comparison"/>
 
 # License
-[MIT](license.txt)  
+[The Blue Oak Model License 1.0.0](LICENSE.md)  
 
 This software makes use of OSTN15 data, which is © Crown copyright, Ordnance Survey and the Ministry of Defence (MOD) 2016. All rights reserved. Provided under the BSD 2-clause [license](OSTN15_license.txt).
