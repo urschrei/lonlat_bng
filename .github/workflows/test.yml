@@ -89,7 +89,7 @@ jobs:
         if: matrix.target == 'aarch64-apple-darwin'
         run: |
           xcodebuild -showsdks
-          SDKROOT=$(xcrun -sdk macosx14.0 --show-sdk-path)
+          SDKROOT=$(xcrun -sdk macosx14.5 --show-sdk-path)
       - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
