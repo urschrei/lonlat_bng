@@ -72,7 +72,7 @@ jobs:
           rust: stable
           target: x86_64-apple-darwin
           use-cross: false
-          deptarget: 10.9
+          deptarget: 11.0
         - build: macos
           os: macos-latest
           rust: stable
