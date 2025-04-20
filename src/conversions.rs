@@ -146,6 +146,11 @@ pub fn convert_osgb36(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
 }
 
 // Intermediate calculation used for lon, lat to ETRS89 and reverse conversion
+// Specifically, this function computes meridional arc length
+// (in transverse mercator projections?)
+// Sources:
+// equation C3 on p49 of https://www.ordnancesurvey.co.uk/documents/resources/guide-coordinate-systems-great-britain.pdf
+// equation B6 in OSGM15 Transformation and user guide (they're the same equation)
 fn compute_m(phi: f64, b: f64, n: f64) -> f64 {
     let p_plus = phi + PHI0;
     let p_minus = phi - PHI0;
@@ -266,7 +271,7 @@ fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
 pub fn convert_osgb36_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
     // First convert OSGB36 to ETRS89
     let (etrs89_e, etrs89_n) = osgb36_to_etrs89_iterative(E, N)?;
-    
+
     // Then convert ETRS89 to Lon/Lat using WGS84/GRS80 ellipsoid constants
     convert_to_ll(etrs89_e, etrs89_n, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
 }
