@@ -47,10 +47,10 @@ use libc::c_double;
 use std::f64;
 use std::mem;
 
+use crate::utils::ToMm;
 use crate::utils::check;
 use crate::utils::ostn15_shifts;
 use crate::utils::round_to_eight;
-use crate::utils::ToMm;
 
 /// Calculate the meridional radius of curvature
 #[allow(non_snake_case)]
@@ -120,7 +120,6 @@ pub fn convert_etrs89_to_osgb36(eastings: f64, northings: f64) -> Result<(f64, f
     check(northings, (0.000, MAX_NORTHING))?;
     // obtain OSTN15 corrections, and incorporate
     let (e_shift, n_shift, _) = ostn15_shifts(eastings, northings)?;
-    println!("{:?}", (e_shift, n_shift));
     Ok((
         (eastings + e_shift).round_to_mm(),
         (northings + n_shift).round_to_mm(),
@@ -219,56 +218,94 @@ pub fn convert_etrs89_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
 /// Convert OSGB36 coordinates to Lon, Lat using OSTN15 data
 #[allow(non_snake_case)]
 pub fn convert_osgb36_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
-    // Apply reverse OSTN15 adustments
-    let epsilon = 0.009;
-    let (mut dx, mut dy, _) = ostn15_shifts(E, N)?;
-    let (mut x, mut y) = (E - dx, N - dy);
-    let (mut last_dx, mut last_dy) = (dx, dy);
-    let mut res;
+    // Apply reverse OSTN15 adjustments following the iterative approach described on p16
+    // of the OSGM15 Transformation and User Guide, v1.3
+    let epsilon = 0.0001; // 0.1mm convergence threshold
+
+    // Step 1: Compute the ETRS89 to OSGB36 shifts at the OSGB36 point
+    let (e_shift, n_shift, _) = ostn15_shifts(E, N)?;
+
+    // Subtract these shifts to get first estimate of ETRS89 coordinates
+    let mut etrs89_e = E - e_shift;
+    let mut etrs89_n = N - n_shift;
+
+    // Variables to track the shifts in each iteration
+    let mut last_e_shift = e_shift;
+    let mut last_n_shift = n_shift;
+
+    // Iterative process
     loop {
-        res = ostn15_shifts(x, y)?;
-        dx = res.0;
-        dy = res.1;
-        x = E - dx;
-        y = N - dy;
-        // If the difference […] is more than 0.00010m (User Guide, p15)
-        // TODO: invert this logic
-        if (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
+        // Step 2: Use the ETRS89 estimate to compute improved shift values
+        let (new_e_shift, new_n_shift, _) = ostn15_shifts(etrs89_e, etrs89_n)?;
+
+        // Update the ETRS89 coordinates using the new shifts
+        etrs89_e = E - new_e_shift;
+        etrs89_n = N - new_n_shift;
+
+        // Step 3: Check for convergence
+        if (new_e_shift - last_e_shift).abs() <= epsilon
+            && (new_n_shift - last_n_shift).abs() <= epsilon
+        {
             break;
         }
-        last_dx = dx;
-        last_dy = dy;
+
+        // Save current shifts for next iteration
+        last_e_shift = new_e_shift;
+        last_n_shift = new_n_shift;
     }
-    let x = (E - dx).round_to_mm();
-    let y = (N - dy).round_to_mm();
+
+    // Round to millimeters for final result
+    let etrs89_e = etrs89_e.round_to_mm();
+    let etrs89_n = etrs89_n.round_to_mm();
+
     // We've converted to ETRS89, so we need to use the WGS84/ GRS80 ellipsoid constants
-    convert_to_ll(x, y, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
+    convert_to_ll(etrs89_e, etrs89_n, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
 }
 
 /// Convert OSGB36 coordinates to ETRS89 using OSTN15 data
 #[allow(non_snake_case)]
 pub fn convert_osgb36_to_etrs89(E: f64, N: f64) -> Result<(f64, f64), ()> {
-    // Apply reverse OSTN15 adustments
-    let epsilon = 0.00001;
-    let (mut dx, mut dy, _) = ostn15_shifts(E, N)?;
-    let (mut x, mut y) = (E - dx, N - dy);
-    let (mut last_dx, mut last_dy) = (dx, dy);
-    let mut res;
+    // Apply reverse OSTN15 adjustments following the iterative approach described on p16
+    // of the OSGM15 Transformation and User Guide, v1.3
+    let epsilon = 0.0001; // 0.1mm convergence threshold
+
+    // Step 1: Compute the ETRS89 to OSGB36 shifts at the OSGB36 point
+    let (e_shift, n_shift, _) = ostn15_shifts(E, N)?;
+
+    // Subtract these shifts to get first estimate of ETRS89 coordinates
+    let mut etrs89_e = E - e_shift;
+    let mut etrs89_n = N - n_shift;
+
+    // Variables to track the shifts in each iteration
+    let mut last_e_shift = e_shift;
+    let mut last_n_shift = n_shift;
+
+    // Iterative process
     loop {
-        res = ostn15_shifts(x, y)?;
-        dx = res.0;
-        dy = res.1;
-        x = E - dx;
-        y = N - dy;
-        if (dx - last_dx).abs() < epsilon && (dy - last_dy).abs() < epsilon {
+        // Step 2: Use the ETRS89 estimate to compute improved shift values
+        let (new_e_shift, new_n_shift, _) = ostn15_shifts(etrs89_e, etrs89_n)?;
+
+        // Update the ETRS89 coordinates using the new shifts
+        etrs89_e = E - new_e_shift;
+        etrs89_n = N - new_n_shift;
+
+        // Step 3: Check for convergence
+        if (new_e_shift - last_e_shift).abs() <= epsilon
+            && (new_n_shift - last_n_shift).abs() <= epsilon
+        {
             break;
         }
-        last_dx = dx;
-        last_dy = dy;
+
+        // Save current shifts for next iteration
+        last_e_shift = new_e_shift;
+        last_n_shift = new_n_shift;
     }
-    let x = (E - dx).round_to_mm();
-    let y = (N - dy).round_to_mm();
-    Ok((x, y))
+
+    // Round to millimeters for final result
+    let etrs89_e = etrs89_e.round_to_mm();
+    let etrs89_n = etrs89_n.round_to_mm();
+
+    Ok((etrs89_e, etrs89_n))
 }
 
 /// **THIS FUNCTION IS DEPRECATED**
@@ -458,7 +495,7 @@ pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), ()> {
 
     // Perform Helmert transform (to go between Airy 1830 (_1) and GRS80 (_2))
     let minus_s = -CS; // The scale factor -1
-                       // The translations along x, y, z axes respectively
+    // The translations along x, y, z axes respectively
     let tx = TX.abs();
     let ty = TY * -1.;
     let tz = TZ.abs();
