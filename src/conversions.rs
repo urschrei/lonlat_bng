@@ -215,56 +215,9 @@ pub fn convert_etrs89_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
     convert_to_ll(E, N, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
 }
 
-/// Convert OSGB36 coordinates to Lon, Lat using OSTN15 data
+/// Helper function to convert OSGB36 coordinates to ETRS89 using iterative approach
 #[allow(non_snake_case)]
-pub fn convert_osgb36_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
-    // Apply reverse OSTN15 adjustments following the iterative approach described on p16
-    // of the OSGM15 Transformation and User Guide, v1.3
-    let epsilon = 0.0001; // 0.1mm convergence threshold
-
-    // Step 1: Compute the ETRS89 to OSGB36 shifts at the OSGB36 point
-    let (e_shift, n_shift, _) = ostn15_shifts(E, N)?;
-
-    // Subtract these shifts to get first estimate of ETRS89 coordinates
-    let mut etrs89_e = E - e_shift;
-    let mut etrs89_n = N - n_shift;
-
-    // Variables to track the shifts in each iteration
-    let mut last_e_shift = e_shift;
-    let mut last_n_shift = n_shift;
-
-    // Iterative process
-    loop {
-        // Step 2: Use the ETRS89 estimate to compute improved shift values
-        let (new_e_shift, new_n_shift, _) = ostn15_shifts(etrs89_e, etrs89_n)?;
-
-        // Update the ETRS89 coordinates using the new shifts
-        etrs89_e = E - new_e_shift;
-        etrs89_n = N - new_n_shift;
-
-        // Step 3: Check for convergence
-        if (new_e_shift - last_e_shift).abs() <= epsilon
-            && (new_n_shift - last_n_shift).abs() <= epsilon
-        {
-            break;
-        }
-
-        // Save current shifts for next iteration
-        last_e_shift = new_e_shift;
-        last_n_shift = new_n_shift;
-    }
-
-    // Round to millimeters for final result
-    let etrs89_e = etrs89_e.round_to_mm();
-    let etrs89_n = etrs89_n.round_to_mm();
-
-    // We've converted to ETRS89, so we need to use the WGS84/ GRS80 ellipsoid constants
-    convert_to_ll(etrs89_e, etrs89_n, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
-}
-
-/// Convert OSGB36 coordinates to ETRS89 using OSTN15 data
-#[allow(non_snake_case)]
-pub fn convert_osgb36_to_etrs89(E: f64, N: f64) -> Result<(f64, f64), ()> {
+fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN15 adjustments following the iterative approach described on p16
     // of the OSGM15 Transformation and User Guide, v1.3
     let epsilon = 0.0001; // 0.1mm convergence threshold
@@ -306,6 +259,22 @@ pub fn convert_osgb36_to_etrs89(E: f64, N: f64) -> Result<(f64, f64), ()> {
     let etrs89_n = etrs89_n.round_to_mm();
 
     Ok((etrs89_e, etrs89_n))
+}
+
+/// Convert OSGB36 coordinates to Lon, Lat using OSTN15 data
+#[allow(non_snake_case)]
+pub fn convert_osgb36_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
+    // First convert OSGB36 to ETRS89
+    let (etrs89_e, etrs89_n) = osgb36_to_etrs89_iterative(E, N)?;
+    
+    // Then convert ETRS89 to Lon/Lat using WGS84/GRS80 ellipsoid constants
+    convert_to_ll(etrs89_e, etrs89_n, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
+}
+
+/// Convert OSGB36 coordinates to ETRS89 using OSTN15 data
+#[allow(non_snake_case)]
+pub fn convert_osgb36_to_etrs89(E: f64, N: f64) -> Result<(f64, f64), ()> {
+    osgb36_to_etrs89_iterative(E, N)
 }
 
 /// **THIS FUNCTION IS DEPRECATED**
