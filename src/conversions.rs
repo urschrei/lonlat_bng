@@ -405,6 +405,10 @@ pub fn convert_bng(longitude: f64, latitude: f64) -> Result<(c_double, c_double)
 /// assert_eq!((-0.328248, 51.44534), convert_lonlat(&516276, &173141));
 #[allow(non_snake_case)]
 #[allow(dead_code)]
+#[deprecated(
+    since = "0.2.24",
+    note = "This function is deprecated and buggy. Use convert_osgb36_to_ll instead"
+)]
 pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), ()> {
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a = AIRY_1830_SEMI_MAJOR;
@@ -528,6 +532,7 @@ mod tests {
     use super::convert_etrs89;
     use super::convert_etrs89_to_ll;
     use super::convert_etrs89_to_osgb36;
+    #[allow(deprecated)]
     use super::convert_lonlat;
     use super::convert_osgb36;
     use super::convert_osgb36_to_ll;
@@ -620,6 +625,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_lonlat_conversion() {
         let res = convert_lonlat(516276.000, 173141.000).unwrap();
         // We shouldn't really be using error margins, but it should be OK because
