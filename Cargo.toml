@@ -14,7 +14,7 @@ edition = "2024"
 criterion = "0.4.0"
 
 [build-dependencies]
-cbindgen = "0.28.0"
+cbindgen = "0.29.0"
 
 [dependencies]
 libc = "0.2.147"
