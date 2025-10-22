@@ -225,7 +225,10 @@ pub fn convert_etrs89_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
 fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN15 adjustments following the iterative approach described on p16
     // of the OSGM15 Transformation and User Guide, v1.3
-    let epsilon = 0.0001; // 0.1mm convergence threshold
+
+    // this epsilon is higher than the guide, because a 0.1mm convergence threshold
+    // doesn't converge (or takes forever)
+    let epsilon = 0.002;
 
     // Step 1: Compute the ETRS89 to OSGB36 shifts at the OSGB36 point
     let (e_shift, n_shift, _) = ostn15_shifts(E, N)?;
