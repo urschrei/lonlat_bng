@@ -1,7 +1,7 @@
 #![deny(
     clippy::cast_slice_from_raw_parts,
     clippy::cast_slice_different_sizes,
-    clippy::invalid_null_ptr_usage,
+    invalid_null_arguments,
     clippy::ptr_as_ptr,
     clippy::transmute_ptr_to_ref
 )]
