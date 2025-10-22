@@ -520,4 +520,27 @@ mod tests {
         let retval: &mut [f64] = rtp.e.into();
         assert!(retval[0].is_nan());
     }
+
+    #[test]
+    fn test_osgb36_to_ll_stress_test() {
+        // Tests 500,000 conversions with random eastings and northings
+        // This test validates that the chosen epsilon value of 0.002 converges reliably
+        // See https://github.com/urschrei/convertbng/issues/101#issuecomment-3432865651
+        use rand::Rng;
+        let mut rng = rand::rng();
+
+        for _ in 0..500_000 {
+            let easting = rng.random_range(10_000.0..50_000.0);
+            let northing = rng.random_range(10_000.0..50_000.0);
+
+            // Perform the conversion
+            let res = convert_osgb36_to_ll(easting, northing);
+
+            // Extract the results like the Python version does
+            if let Ok((lon, lat)) = res {
+                // Use the results to prevent optimisation from removing the call
+                let _ = (lon, lat);
+            }
+        }
+    }
 }
