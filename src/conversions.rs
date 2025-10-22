@@ -478,12 +478,12 @@ pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), ()> {
     let minus_s = -CS; // The scale factor -1
     // The translations along x, y, z axes respectively
     let tx = TX.abs();
-    let ty = TY * -1.;
+    let ty = -TY;
     let tz = TZ.abs();
     // The rotations along x, y, z respectively, in seconds
-    let rxs = RXS * -1.;
-    let rys = RYS * -1.;
-    let rzs = RZS * -1.;
+    let rxs = -RXS;
+    let rys = -RYS;
+    let rzs = -RZS;
 
     let rx = rxs * PI / (180. * 3600.);
     let ry = rys * PI / (180. * 3600.);
