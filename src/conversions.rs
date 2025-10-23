@@ -226,9 +226,10 @@ fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
     // Apply reverse OSTN15 adjustments following the iterative approach described on p16
     // of the OSGM15 Transformation and User Guide, v1.3
 
-    // this epsilon is higher than the guide, because a 0.1mm convergence threshold
-    // doesn't converge (or takes forever)
-    let epsilon = 0.002;
+    // Convergence threshold from OSGM15 guide (0.0001 metres = 0.1mm)
+    const EPSILON: f64 = 0.0001;
+    // Maximum iterations with safety margin
+    const MAX_ITERATIONS: usize = 10;
 
     // Step 1: Compute the ETRS89 to OSGB36 shifts at the OSGB36 point
     let (e_shift, n_shift, _) = ostn15_shifts(E, N)?;
@@ -237,29 +238,42 @@ fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
     let mut etrs89_e = E - e_shift;
     let mut etrs89_n = N - n_shift;
 
-    // Variables to track the shifts in each iteration
+    // Variables to track shift values for convergence check (per OSGM15 guide Step 3)
     let mut last_e_shift = e_shift;
     let mut last_n_shift = n_shift;
 
-    // Iterative process
+    let mut iteration_count = 0;
+    let mut converged = false;
     loop {
+        if iteration_count >= MAX_ITERATIONS {
+            break;
+        }
+
         // Step 2: Use the ETRS89 estimate to compute improved shift values
         let (new_e_shift, new_n_shift, _) = ostn15_shifts(etrs89_e, etrs89_n)?;
 
-        // Update the ETRS89 coordinates using the new shifts
+        // Update the ETRS89 coordinates using the new shifts (subtract from original)
         etrs89_e = E - new_e_shift;
         etrs89_n = N - new_n_shift;
 
-        // Step 3: Check for convergence
-        if (new_e_shift - last_e_shift).abs() <= epsilon
-            && (new_n_shift - last_n_shift).abs() <= epsilon
+        // Step 3: Check for convergence using shift deltas (per OSGM15 guide)
+        // "If the difference between the first shift value and second shift value
+        // is more than 0.0001 metres"
+        if (new_e_shift - last_e_shift).abs() <= EPSILON
+            && (new_n_shift - last_n_shift).abs() <= EPSILON
         {
+            converged = true;
             break;
         }
 
         // Save current shifts for next iteration
         last_e_shift = new_e_shift;
         last_n_shift = new_n_shift;
+        iteration_count += 1;
+    }
+
+    if !converged {
+        return Err(());
     }
 
     // Round to millimeters for final result

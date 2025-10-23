@@ -25,8 +25,5 @@ fn bench_encode(c: &mut Criterion) {
     });
 }
 
-criterion_group!(
-    benches,
-    bench_encode,
-);
+criterion_group!(benches, bench_encode,);
 criterion_main!(benches);
