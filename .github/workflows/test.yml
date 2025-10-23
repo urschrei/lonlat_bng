@@ -1,4 +1,10 @@
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
 
 defaults:
   run:
@@ -12,7 +18,7 @@ name: Test and Build
 
 jobs:
   test:
-    if: github.event_name == 'push' && !contains(github.ref, 'refs/tags/')
+    if: (github.event_name == 'pull_request') || (github.event_name == 'push' && !contains(github.ref, 'refs/tags/'))
     name: Test on ${{ matrix.os }} (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -62,7 +68,7 @@ jobs:
           target: x86_64-unknown-linux-gnu
           use-cross: true
         - build: linux
-          os: ubuntu-latest
+          os: ubuntu-22.04-arm
           rust: stable
           target: aarch64-unknown-linux-gnu
           use-cross: true
