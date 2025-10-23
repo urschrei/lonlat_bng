@@ -43,7 +43,7 @@ jobs:
           target: x86_64-pc-windows-msvc
           use-cross: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -94,7 +94,7 @@ jobs:
         run: |
           xcodebuild -showsdks
           SDKROOT=$(xcrun -sdk macosx14.5 --show-sdk-path)
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -104,6 +104,7 @@ jobs:
       - name: Build with cargo
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deptarget }}
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: gcc
         run: cargo build --release --target=${{ matrix.target }} --features headers
       - name: Gather Assets
         run: |
