@@ -259,9 +259,9 @@ fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
         // Step 3: Check for convergence using shift deltas (per OSGM15 guide)
         // "If the difference between the first shift value and second shift value
         // is more than 0.0001 metres"
-        if (new_e_shift - last_e_shift).abs() <= EPSILON
-            && (new_n_shift - last_n_shift).abs() <= EPSILON
-        {
+        let e_delta = (new_e_shift - last_e_shift).abs();
+        let n_delta = (new_n_shift - last_n_shift).abs();
+        if e_delta <= EPSILON && n_delta <= EPSILON {
             converged = true;
             break;
         }
@@ -660,6 +660,19 @@ mod tests {
         let res = convert_osgb36_to_ll(515415.0, 202612.0).unwrap();
         assert_eq!(res.0, -0.33093489);
         assert_eq!(res.1, 51.71038497);
+    }
+
+    #[test]
+    // See https://github.com/urschrei/lonlat_bng/issues/37#issuecomment-3511393210
+    fn non_convergence() {
+        let inputs = vec![
+            [405110.00, 373787.00],
+            [425917.00, 241074.00],
+            [408884.00, 333642.00],
+        ];
+        for pair in inputs {
+            convert_osgb36_to_ll(pair[0], pair[1]).unwrap();
+        }
     }
 
     #[test]

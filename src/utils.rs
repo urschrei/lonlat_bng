@@ -101,7 +101,7 @@ pub fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
     // this isn't needed for this library, since it's a height offset
     let sg = f0 * s0.2 + f1 * s1.2 + f2 * s2.2 + f3 * s3.2;
 
-    Ok((se.round_to_mm(), sn.round_to_mm(), sg.round_to_mm()))
+    Ok((se, sn, sg))
 }
 
 #[cfg(test)]
@@ -132,8 +132,14 @@ mod tests {
         // these are the input values and corrections on p20-21
         let eastings = 651307.003;
         let northings = 313255.686;
+        // Expected values from guide (rounded to mm)
         let expected = (102.801, -78.236, 44.228);
-        assert_eq!(expected, ostn15_shifts(eastings, northings).unwrap());
+        let result = ostn15_shifts(eastings, northings).unwrap();
+
+        // Round calculated shifts to millimetre precision and compare with published guide values
+        assert_eq!(result.0.round_to_mm(), expected.0, "e_shift mismatch");
+        assert_eq!(result.1.round_to_mm(), expected.1, "n_shift mismatch");
+        assert_eq!(result.2.round_to_mm(), expected.2, "geoid_shift mismatch");
     }
 
     #[test]
