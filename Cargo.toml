@@ -1,14 +1,14 @@
 [package]
 name = "lonlat_bng"
 description = "Convert longitude and latitude coordinates to BNG coordinates, and vice versa"
-version = "0.7.15"
+version = "0.8.0"
 authors = ["Stephan Hügel <urschrei@gmail.com>"]
 license = "BlueOak-1.0.0"
 keywords = ["OSGB36", "BNG", "Geo", "ETRS89", "OSTN02", "OSTN15"]
 repository = "https://github.com/urschrei/lonlat_bng"
-documentation = "https://urschrei.github.io/lonlat_bng/"
 readme = "README.md"
 edition = "2024"
+categories = ["science::geo"]
 
 [dev-dependencies]
 criterion = "0.7.0"
@@ -19,7 +19,7 @@ cbindgen = "0.29.0"
 [dependencies]
 libc = "0.2.174"
 rand = "0.9.1"
-ostn15_phf = { git = "https://github.com/urschrei/ostn15_phf.git" }
+ostn15_phf = "1.3.0"
 rayon = "1.10.0"
 
 [features]
