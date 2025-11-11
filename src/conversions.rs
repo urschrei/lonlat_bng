@@ -48,6 +48,7 @@ use std::f64;
 use std::mem;
 
 use crate::utils::check;
+use crate::utils::kahan_sum;
 // use crate::utils::kahan_sum;
 use crate::utils::ToMm;
 use crate::utils::ostn15_shifts;
@@ -61,16 +62,12 @@ fn curvature(a: f64, f0: f64, e2: f64, lat: f64) -> f64 {
     a * f0 * (1. - e2) * (1. - e2 * lat.sin().powi(2)).powf(-1.5)
 }
 
-/// Perform Longitude, Latitude to ETRS89 conversion
+/// Internal helper: Perform Longitude, Latitude to ETRS89 conversion with full precision
 ///
-/// # Examples
-///
-/// ```
-/// use lonlat_bng::convert_etrs89
-/// assert_eq!((651307.003, 313255.686), convert_etrs89(&1.716073973, &52.658007833).unwrap());
+/// Returns **unrounded values** for use in subsequent transformations
+// See Annexe B (p23) of the "Transformations and OSGM15 user guide" for instructions
 #[allow(non_snake_case)]
-// See Annexe B (p23) of the transformation user guide for instructions
-pub fn convert_etrs89(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
+fn convert_etrs89_internal(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
     // Input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
     let lon_1: f64 = check(longitude, (MIN_LONGITUDE, MAX_LONGITUDE))?.to_radians();
@@ -106,6 +103,19 @@ pub fn convert_etrs89(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
     let l = lambda - LAM0;
     let north = I + II * l.powi(2) + III * l.powi(4) + IIIA * l.powi(6);
     let east = E0 + IV * l + V * l.powi(3) + VI * l.powi(5);
+    Ok((east, north))
+}
+
+/// Perform Longitude, Latitude to ETRS89 conversion
+///
+/// # Examples
+///
+/// ```
+/// use lonlat_bng::convert_etrs89
+/// assert_eq!((651307.003, 313255.686), convert_etrs89(&1.716073973, &52.658007833).unwrap());
+#[allow(non_snake_case)]
+pub fn convert_etrs89(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
+    let (east, north) = convert_etrs89_internal(longitude, latitude)?;
     Ok((east.round_to_mm(), north.round_to_mm()))
 }
 
@@ -138,10 +148,11 @@ pub fn convert_etrs89_to_osgb36(eastings: f64, northings: f64) -> Result<(f64, f
 /// assert_eq!((651409.792, 313177.448), convert_etrs89(&1.716073973, &52.658007833).unwrap());
 #[allow(non_snake_case)]
 pub fn convert_osgb36(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
-    // convert input to ETRS89
-    let (eastings, northings) = convert_etrs89(longitude, latitude)?;
+    // convert input to ETRS89 with full precision (not rounded)
+    let (eastings, northings) = convert_etrs89_internal(longitude, latitude)?;
     // obtain OSTN15 corrections, and incorporate
     let (e_shift, n_shift, _) = ostn15_shifts(eastings, northings)?;
+    // Only round once, at the final output
     Ok((
         (eastings + e_shift).round_to_mm(),
         (northings + n_shift).round_to_mm(),
@@ -158,11 +169,15 @@ fn compute_m(phi: f64, b: f64, n: f64) -> f64 {
     let p_plus = phi + PHI0;
     let p_minus = phi - PHI0;
 
+    // Precompute n powers using explicit multiplication (Grid InQuest style)
+    let n2 = n * n;
+    let n3 = n2 * n;
+
     b * F0
         * ((1. + n * (1. + 5. / 4. * n * (1. + n))) * p_minus
             - 3. * n * (1. + n * (1. + 7. / 8. * n)) * p_minus.sin() * p_plus.cos()
             + (15. / 8. * n * (n * (1. + n))) * (2. * p_minus).sin() * (2. * p_plus).cos()
-            - 35. / 24. * n.powi(3) * (3. * p_minus).sin() * (3. * p_plus).cos())
+            - 35. / 24. * n3 * (3. * p_minus).sin() * (3. * p_plus).cos())
 }
 
 // Easting and Northing to Lon, Lat conversion using a Helmert transform
@@ -184,11 +199,28 @@ pub(crate) fn convert_to_ll(
     let n = (a - b) / (a + b);
 
     let dN = northings - N0;
+
+    // Grid InQuest iteration pattern: recalculate from prior value instead of accumulating
+    // This avoids accumulated rounding errors in the phi variable itself
+    let mut prior_phi = PHI0;
+    let mut arc_length = 0.0;
     let mut phi = PHI0 + dN / (a * F0);
     let mut m = compute_m(phi, b, n);
-    while (dN - m) >= 0.00001 {
-        m = compute_m(phi, b, n);
-        phi += (dN - m) / (a * F0);
+
+    // Use absolute value for convergence check (Grid InQuest style)
+    while (dN - m).abs() >= 0.00001 {
+        // Recalculate latitude from prior value + correction (Grid InQuest pattern)
+        // This is different from accumulating into the same variable
+        phi = ((dN - arc_length) / (a * F0)) + prior_phi;
+        arc_length = compute_m(phi, b, n);
+        m = arc_length;
+
+        // Check convergence before updating prior
+        if (dN - arc_length).abs() < 0.000001 {
+            break;
+        }
+
+        prior_phi = phi;
     }
     let sp2 = phi.sin().powi(2);
     let nu = a * F0 * (1. - e2 * sp2).powf(-0.5);
@@ -196,29 +228,49 @@ pub(crate) fn convert_to_ll(
     let eta2 = nu / rho - 1.;
 
     let tp = phi.tan();
-    let tp2 = tp.powi(2);
-    let tp4 = tp.powi(4);
-
-    let VII = tp / (2. * rho * nu);
-    let VIII = tp / (24. * rho * nu.powi(3)) * (5. + 3. * tp2 + eta2 - 9. * tp2 * eta2);
-    let IX = tp / (720. * rho * nu.powi(5)) * (61. + 90. * tp2 + 45. * tp4);
-
-    let sp = 1.0 / phi.cos();
+    // Precompute powers using explicit multiplication (Grid InQuest style)
+    // to avoid potential precision loss from powi()
+    let tp2 = tp * tp;
+    let tp4 = tp2 * tp2;
     let tp6 = tp4 * tp2;
 
+    // Precompute nu powers
+    let nu2 = nu * nu;
+    let nu3 = nu2 * nu;
+    let nu5 = nu3 * nu2;
+    let nu7 = nu5 * nu2;
+
+    let VII = tp / (2. * rho * nu);
+    let VIII = tp / (24. * rho * nu3) * (5. + 3. * tp2 + eta2 - 9. * tp2 * eta2);
+    let IX = tp / (720. * rho * nu5) * (61. + 90. * tp2 + 45. * tp4);
+
+    let sp = 1.0 / phi.cos();
+
     let X = sp / nu;
-    let XI = sp / (6. * nu.powi(3)) * (nu / rho + 2. * tp2);
-    let XII = sp / (120. * nu.powi(5)) * (5. + 28. * tp2 + 24. * tp4);
-    let XIIA = sp / (5040. * nu.powi(7)) * (61. + 662. * tp2 + 1320. * tp4 + 720. * tp6);
+    let XI = sp / (6. * nu3) * (nu / rho + 2. * tp2);
+    let XII = sp / (120. * nu5) * (5. + 28. * tp2 + 24. * tp4);
+    let XIIA = sp / (5040. * nu7) * (61. + 662. * tp2 + 1320. * tp4 + 720. * tp6);
 
     let e = eastings - E0;
 
-    phi = phi - VII * e.powi(2) + VIII * e.powi(4) - IX * e.powi(6);
-    let mut lambda = LAM0 + X * e - XI * e.powi(3) + XII * e.powi(5) - XIIA * e.powi(7);
+    // Precompute e powers
+    let e2 = e * e;
+    let e3 = e2 * e;
+    let e4 = e3 * e;
+    let e5 = e4 * e;
+    let e6 = e5 * e;
+    let e7 = e6 * e;
+
+    // Use Kahan summation to reduce accumulated floating-point errors
+    // in the polynomial series expansion
+    phi = kahan_sum(&[phi, -(VII * e2), VIII * e4, -(IX * e6)]);
+    let mut lambda = kahan_sum(&[LAM0, X * e, -(XI * e3), XII * e5, -(XIIA * e7)]);
 
     phi = phi.to_degrees();
     lambda = lambda.to_degrees();
-    Ok(round_to_eight(lambda, phi))
+
+    let rounded = round_to_eight(lambda, phi);
+    Ok(rounded)
 }
 
 /// Convert ETRS89 coordinates to Lon, Lat
@@ -256,7 +308,7 @@ fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
         if iteration_count >= MAX_ITERATIONS {
             break;
         }
-
+        iteration_count += 1;
         // Step 2: Use the ETRS89 estimate to compute improved shift values
         let (new_e_shift, new_n_shift, _) = ostn15_shifts(etrs89_e, etrs89_n)?;
 
@@ -277,17 +329,13 @@ fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
         // Save current shifts for next iteration
         last_e_shift = new_e_shift;
         last_n_shift = new_n_shift;
-        iteration_count += 1;
     }
 
     if !converged {
         return Err(());
     }
 
-    // Round to millimeters for final result
-    let etrs89_e = etrs89_e.round_to_mm();
-    let etrs89_n = etrs89_n.round_to_mm();
-
+    // Note: Don't round ETRS89 coordinates here: they need full precision for lat/lon conversion
     Ok((etrs89_e, etrs89_n))
 }
 

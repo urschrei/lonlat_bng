@@ -38,6 +38,23 @@ impl ToMm for f64 {
     }
 }
 
+/// Kahan compensated summation algorithm
+/// Reduces accumulated floating-point rounding errors when summing a series of terms
+/// See: https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+pub fn kahan_sum(terms: &[f64]) -> f64 {
+    let mut sum = 0.0;
+    let mut c = 0.0; // Compensation for lost low-order bits
+
+    for &term in terms {
+        let y = term - c; // Subtract the compensation
+        let t = sum + y; // Add to running sum
+        c = (t - sum) - y; // Recover the low-order part that was lost
+        sum = t;
+    }
+
+    sum
+}
+
 /// Round a float to eight decimal places
 pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
     let new_x = (x * 100000000.).round() / 100000000.;
@@ -100,7 +117,6 @@ pub fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
     let sn = f0 * s0.1 + f1 * s1.1 + f2 * s2.1 + f3 * s3.1;
     // this isn't needed for this library, since it's a height offset
     let sg = f0 * s0.2 + f1 * s1.2 + f2 * s2.2 + f3 * s3.2;
-
     Ok((se, sn, sg))
 }
 
