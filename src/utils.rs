@@ -104,6 +104,96 @@ pub fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
     Ok((se, sn, sg))
 }
 
+/// Detailed shift information including corner shifts and interpolated values
+/// Used for testing and validation against OSTN15 reference data
+#[cfg(test)]
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct ShiftDetails {
+    // Corner shifts (SW, SE, NW, NE)
+    pub se0: f64,
+    pub sn0: f64,
+    pub sg0: f64,
+    pub se1: f64,
+    pub sn1: f64,
+    pub sg1: f64,
+    pub se2: f64,
+    pub sn2: f64,
+    pub sg2: f64,
+    pub se3: f64,
+    pub sn3: f64,
+    pub sg3: f64,
+    // Interpolated shifts
+    pub se: f64,
+    pub sn: f64,
+    pub sg: f64,
+}
+
+/// Calculate OSTN15 shifts with detailed corner and interpolation data
+/// Returns all intermediate values for validation against reference data
+#[cfg(test)]
+pub(crate) fn ostn15_shifts_detailed(x: f64, y: f64) -> Result<ShiftDetails, ()> {
+    let e_index = (x / 1000.) as i32;
+    let n_index = (y / 1000.) as i32;
+
+    // eastings and northings of the south-west corner of the cell
+    let x0 = e_index * 1000;
+    let y0 = n_index * 1000;
+
+    // The easting, northing and geoid shifts for the four corners of the cell
+    // any of these could be Err, so use try!
+
+    // intersections
+    // this is a 3 x 4 matrix (using column-major order)
+    // bottom-left grid intersection (SW corner)
+    let s0: (f64, f64, f64) = get_ostn_ref(e_index, n_index)?;
+    // bottom-right (SE corner)
+    let s1: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index)?;
+    // top-left (NW corner)
+    let s2: (f64, f64, f64) = get_ostn_ref(e_index, n_index + 1)?;
+    // top-right (NE corner)
+    let s3: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index + 1)?;
+
+    // offset within square
+    let dx = x - f64::from(x0);
+    let dy = y - f64::from(y0);
+
+    let t = dx / 1000.;
+    let u = dy / 1000.;
+
+    // Calculation of the weights for each intersection (W)
+    // this is a 4 x 1 matrix
+    let f0 = (1. - t) * (1. - u);
+    let f1 = t * (1. - u);
+    let f2 = (1. - t) * u;
+    let f3 = t * u;
+
+    // bilinear interpolation, to obtain the actual shifts
+    let se = f0 * s0.0 + f1 * s1.0 + f2 * s2.0 + f3 * s3.0;
+    let sn = f0 * s0.1 + f1 * s1.1 + f2 * s2.1 + f3 * s3.1;
+    let sg = f0 * s0.2 + f1 * s1.2 + f2 * s2.2 + f3 * s3.2;
+
+    Ok(ShiftDetails {
+        // Corner shifts
+        se0: s0.0,
+        sn0: s0.1,
+        sg0: s0.2,
+        se1: s1.0,
+        sn1: s1.1,
+        sg1: s1.2,
+        // Note: CSV uses different corner ordering - swap corners 2 and 3
+        se2: s3.0,
+        sn2: s3.1,
+        sg2: s3.2,
+        se3: s2.0,
+        sn3: s2.1,
+        sg3: s2.2,
+        // Interpolated shifts
+        se,
+        sn,
+        sg,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
