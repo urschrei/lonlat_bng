@@ -12,6 +12,21 @@ Python (etc.) is relatively slow; this type of conversion is usually carried out
 # Accuracy
 Conversions which solely use Helmert transforms are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying. Thus, we use the OSTN15 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN15 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
 
+# Tests
+The library is well covered by tests. A full "pipeline" test which checks intermediate conversions is provided, and currently allowed to fail:
+
+`test_osgb36_to_etrs89_iterations_detailed` can be run to verify the algorithm against the supplied OSTN15 test data:  
+
+> [!NOTE]
+> There are currently several differences in the intermediate shift calculations, and two final conversion results differ:
+
+TP31: Final Longitude mismatch: -8.5785445 != -8.57854456 (7th decimal place)
+TP31: Final Latitude mismatch: 57.81351835 != 57.81351838 (8th decimal place)
+
+TP32: Final Longitude mismatch: -7.59255559 != -7.59255561 (8th decimal place)
+TP32: Final Latitude mismatch: 58.21262246 != 58.21262247 (8th decimal place)
+
+
 # Library Use
 ## As a Rust Library
 Add the following to your `Cargo.toml` (the latest version is displayed on the fourth badge at the top of this screen)  

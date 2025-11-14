@@ -47,10 +47,13 @@ use libc::c_double;
 use std::f64;
 use std::mem;
 
-use crate::utils::ToMm;
 use crate::utils::check;
+// use crate::utils::kahan_sum;
+use crate::utils::ToMm;
 use crate::utils::ostn15_shifts;
 use crate::utils::round_to_eight;
+#[cfg(test)]
+use crate::utils::{ShiftDetails, ostn15_shifts_detailed};
 
 /// Calculate the meridional radius of curvature
 #[allow(non_snake_case)]
@@ -165,7 +168,12 @@ fn compute_m(phi: f64, b: f64, n: f64) -> f64 {
 // Easting and Northing to Lon, Lat conversion using a Helmert transform
 // Note that either GRS80 or Airy 1830 ellipsoids can be passed
 #[allow(non_snake_case)]
-fn convert_to_ll(eastings: f64, northings: f64, ell_a: f64, ell_b: f64) -> Result<(f64, f64), ()> {
+pub(crate) fn convert_to_ll(
+    eastings: f64,
+    northings: f64,
+    ell_a: f64,
+    ell_b: f64,
+) -> Result<(f64, f64), ()> {
     // ensure that we're within the boundaries
     check(eastings, (0.000, MAX_EASTING))?;
     check(northings, (0.000, MAX_NORTHING))?;
@@ -281,6 +289,77 @@ fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
     let etrs89_n = etrs89_n.round_to_mm();
 
     Ok((etrs89_e, etrs89_n))
+}
+
+/// Details of a single iteration in the OSGB36→ETRS89 conversion
+/// Used for testing and validation against OSTN15 reference data
+#[cfg(test)]
+#[derive(Debug, Clone)]
+pub(crate) struct IterationDetails {
+    /// Current ETRS89 easting estimate (metres)
+    pub etrs89_e: f64,
+    /// Current ETRS89 northing estimate (metres)
+    pub etrs89_n: f64,
+    /// Detailed shift information for this iteration
+    pub shifts: ShiftDetails,
+}
+
+/// Helper function to convert OSGB36 coordinates to ETRS89 with iteration tracking
+/// Returns the final ETRS89 coordinates and a vector of all iteration details
+#[cfg(test)]
+#[allow(non_snake_case)]
+pub(crate) fn osgb36_to_etrs89_iterative_detailed(
+    E: f64,
+    N: f64,
+) -> Result<(f64, f64, Vec<IterationDetails>), ()> {
+    // Apply reverse OSTN15 adjustments following the iterative approach described on p16
+    // of the OSGM15 Transformation and User Guide, v1.3
+
+    // Convergence threshold: 0.0001 metres = 0.1mm
+    const EPSILON: f64 = 0.0001;
+    // Maximum iterations with safety margin
+    const MAX_ITERATIONS: usize = 10;
+
+    let mut iterations = Vec::new();
+
+    // Initialize coordinates to OSGB36 input (matches Grid InQuest: GeodeticCoordinates := Coordinates)
+    let mut etrs89_e = E;
+    let mut etrs89_n = N;
+
+    // Initialize prior to zero for convergence check (matches Grid InQuest: PriorCoordinates := NullCoordinates)
+    let mut prior_etrs89_e = 0.0;
+    let mut prior_etrs89_n = 0.0;
+
+    // Iterative loop (matches Grid InQuest: For Iteration := 1 To IterationLimit)
+    for _ in 1..=MAX_ITERATIONS {
+        // Compute shifts at current position
+        let shifts = ostn15_shifts_detailed(etrs89_e, etrs89_n)?;
+
+        // Update coordinates: ETRS89 = OSGB36 - shifts (matches Grid InQuest line 254)
+        etrs89_e = E - shifts.se;
+        etrs89_n = N - shifts.sn;
+
+        // Store this iteration
+        iterations.push(IterationDetails {
+            etrs89_e,
+            etrs89_n,
+            shifts,
+        });
+
+        // Check for convergence (matches Grid InQuest lines 256-257)
+        let e_delta = (etrs89_e - prior_etrs89_e).abs();
+        let n_delta = (etrs89_n - prior_etrs89_n).abs();
+        if e_delta < EPSILON && n_delta < EPSILON {
+            // Converged
+            break;
+        }
+
+        // Save current as prior for next iteration (matches Grid InQuest line 265)
+        prior_etrs89_e = etrs89_e;
+        prior_etrs89_n = etrs89_n;
+    }
+
+    Ok((etrs89_e, etrs89_n, iterations))
 }
 
 /// Convert OSGB36 coordinates to Lon, Lat using OSTN15 data

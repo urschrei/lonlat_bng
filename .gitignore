@@ -3,3 +3,4 @@ Cargo.lock
 tmp*
 *.trace
 benches/output*
+!test_inputs/OSGB36_to_ETRS.csv
