@@ -13,18 +13,21 @@ Python (etc.) is relatively slow; this type of conversion is usually carried out
 Conversions which solely use Helmert transforms are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying. Thus, we use the OSTN15 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN15 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
 
 # Tests
-The library is well covered by tests. A full "pipeline" test which checks intermediate conversions is provided, and currently allowed to fail:
+The library is well covered by tests. A full "pipeline" test which checks intermediate conversions is provided (though not run as part of the standard test suite):
 
-`test_osgb36_to_etrs89_iterations_detailed` can be run to verify the algorithm against the supplied OSTN15 test data:  
+`test_osgb36_to_etrs89_iterations_detailed` verifies the algorithm against the supplied OSTN15 test data, validating round-trip conversion: OSGB36 → ETRS89 → Lon/Lat → OSGB36.
 
-> [!NOTE]
-> There are currently several differences in the intermediate shift calculations, and two final conversion results differ:
+## Round-Trip Conversion Accuracy
 
-TP31: Final Longitude mismatch: -8.5785445 != -8.57854456 (7th decimal place)
-TP31: Final Latitude mismatch: 57.81351835 != 57.81351838 (8th decimal place)
+Five of the 40 test points show differences in the round-trip conversion:
 
-TP32: Final Longitude mismatch: -7.59255559 != -7.59255561 (8th decimal place)
-TP32: Final Latitude mismatch: 58.21262246 != 58.21262247 (8th decimal place)
+| Test Point | Input OSGB36 E (m) | Input OSGB36 N (m) | Lon diff (°) | Lat diff (°) | E diff (m) | N diff (m) |
+|:-----------|-------------------:|-------------------:|-------------:|-------------:|-----------:|-----------:|
+| TP27       | 319188.434         | 670947.534         | —            | —            | —          | +0.001     |
+| TP31       | 9587.909           | 899448.996         | +6×10⁻⁸      | -3×10⁻⁸      | +0.003     | -0.004     |
+| TP32       | 71713.132          | 938516.404         | +2×10⁻⁸      | -1×10⁻⁸      | +0.001     | -0.002     |
+| TP37       | 180862.461         | 1029604.114        | —            | —            | —          | -0.001     |
+| TP38       | 421300.525         | 1072147.239        | —            | —            | —          | -0.001     |
 
 
 # Library Use
