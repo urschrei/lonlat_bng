@@ -2,16 +2,15 @@
 extern crate criterion;
 use criterion::Criterion;
 
-use rand::distributions::Distribution;
-use rand::distributions::Uniform;
-use rand::thread_rng;
+use rand::distr::{Distribution, Uniform};
+use rand::rng;
 
 #[allow(unused_must_use)]
 fn bench_encode(c: &mut Criterion) {
-    let mut rng = thread_rng();
+    let mut rng = rng();
     // These coordinates cover London, approximately
-    let between_lon = Uniform::from(-6.379880..1.768960);
-    let between_lat = Uniform::from(49.871159..55.811741);
+    let between_lon = Uniform::new(-6.379880, 1.768960).unwrap();
+    let between_lat = Uniform::new(49.871159, 55.811741).unwrap();
     let mut lon_vec: Vec<f64> = vec![];
     let mut lat_vec: Vec<f64> = vec![];
     (0..100000).for_each(|_| {
