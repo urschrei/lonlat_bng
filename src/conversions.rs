@@ -310,6 +310,10 @@ pub fn convert_osgb36_to_etrs89(E: f64, N: f64) -> Result<(f64, f64), ()> {
 /// assert_eq!((516276.000, 173141.000), convert_bng(&-0.32824866, &51.44533267).unwrap());
 #[allow(non_snake_case)]
 #[allow(dead_code)]
+#[deprecated(
+    since = "0.2.24",
+    note = "This function does not use the OSTN15 transform, and is deprecated. Use convert_osgb36 instead"
+)]
 pub fn convert_bng(longitude: f64, latitude: f64) -> Result<(c_double, c_double), ()> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
@@ -544,13 +548,10 @@ pub fn convert_epsg3857_to_wgs84(x: f64, y: f64) -> Result<(f64, f64), ()> {
 #[cfg(test)]
 mod tests {
 
-    use super::convert_bng;
     use super::convert_epsg3857_to_wgs84;
     use super::convert_etrs89;
     use super::convert_etrs89_to_ll;
     use super::convert_etrs89_to_osgb36;
-    #[allow(deprecated)]
-    use super::convert_lonlat;
     use super::convert_osgb36;
     use super::convert_osgb36_to_ll;
 
@@ -633,28 +634,6 @@ mod tests {
     }
 
     #[test]
-    fn test_bng_conversion() {
-        // verified to be correct at http://www.bgs.ac.uk/data/webservices/convertForm.cfm
-        assert_eq!(
-            (516275.973, 173141.092),
-            convert_bng(-0.32824866, 51.44533267).unwrap()
-        );
-    }
-
-    #[test]
-    #[allow(deprecated)]
-    fn test_lonlat_conversion() {
-        let res = convert_lonlat(516276.000, 173141.000).unwrap();
-        // We shouldn't really be using error margins, but it should be OK because
-        // neither number is zero, or very close to, and on opposite sides of zero
-        // epsilon is .000001 here, because BNG coords are 6 digits, so
-        // we should be fine if the error is in the 7th digit (i.e. < epsilon)
-        // http://floating-point-gui.de/errors/comparison/
-        assert!(((res.0 - -0.328248269313) / -0.328248269313).abs() < 0.000001);
-        assert!(((res.1 - 51.4453318435) / 51.4453318435).abs() < 0.000001);
-    }
-
-    #[test]
     // TrainTrick reported that this coordinate doesn't converge at an epsilon of 0.00001
     fn test_traintrick() {
         let res = convert_osgb36_to_ll(515415.0, 202612.0).unwrap();
@@ -673,23 +652,5 @@ mod tests {
         for pair in inputs {
             convert_osgb36_to_ll(pair[0], pair[1]).unwrap();
         }
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_bad_lon() {
-        assert_eq!(
-            (516276.000, 173141.000),
-            convert_bng(181., 51.44533267).unwrap()
-        );
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_bad_lat() {
-        assert_eq!(
-            (516276.000, 173141.000),
-            convert_bng(-0.32824866, -90.01).unwrap()
-        );
     }
 }
