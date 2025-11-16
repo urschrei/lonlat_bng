@@ -19,15 +19,14 @@ The library is well covered by tests. A full "pipeline" test which checks interm
 
 ## Round-Trip Conversion Accuracy
 
-Five of the 40 test points show differences in the round-trip conversion:
+Two of the 40 test points show differences from the test data following conversion:
 
-| Test Point | Input OSGB36 E (m) | Input OSGB36 N (m) | Lon diff (°) | Lat diff (°) | E diff (m) | N diff (m) |
-|:-----------|-------------------:|-------------------:|-------------:|-------------:|-----------:|-----------:|
-| TP27       | 319188.434         | 670947.534         | —            | —            | —          | +0.001     |
-| TP31       | 9587.909           | 899448.996         | +6×10⁻⁸      | -3×10⁻⁸      | +0.003     | -0.004     |
-| TP32       | 71713.132          | 938516.404         | +2×10⁻⁸      | -1×10⁻⁸      | +0.001     | -0.002     |
-| TP37       | 180862.461         | 1029604.114        | —            | —            | —          | -0.001     |
-| TP38       | 421300.525         | 1072147.239        | —            | —            | —          | -0.001     |
+| Test Point | Input OSGB36 E (m) | Input OSGB36 N (m) | E diff (m) | N diff (m) |
+|:-----------|-------------------:|-------------------:|-----------:|-----------:|
+| TP31       | 9587.909           | 899448.996         | +0.003     | -0.004     |
+| TP32       | 71713.132          | 938516.404         | +0.001     | -0.001     |
+
+Both points are located at the extreme north-western edge of the UK grid. The remaining 38 test points achieve conversion accuracy within floating-point precision limits.
 
 
 # Library Use
