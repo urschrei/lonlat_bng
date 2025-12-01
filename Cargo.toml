@@ -11,7 +11,7 @@ edition = "2024"
 categories = ["science::geo"]
 
 [dev-dependencies]
-criterion = "0.7.0"
+criterion = "0.8.0"
 
 [build-dependencies]
 cbindgen = "0.29.0"
