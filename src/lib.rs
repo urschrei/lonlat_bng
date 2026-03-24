@@ -38,7 +38,7 @@ use rayon::prelude::*;
 mod conversions;
 mod ffi;
 mod tests;
-pub mod utils;
+pub(crate) mod utils;
 
 pub use crate::ffi::*;
 

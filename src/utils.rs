@@ -3,7 +3,7 @@ use ostn15_phf::ostn15_lookup;
 use std::fmt;
 
 /// Bounds checking for input values
-pub fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
+pub(crate) fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
 where
     T: std::cmp::PartialOrd + fmt::Display + Copy,
 {
@@ -14,7 +14,7 @@ where
 }
 
 /// Round an Easting or Northing coordinate to the nearest millimetre
-pub trait ToMm {
+pub(crate) trait ToMm {
     fn round_to_mm(self) -> f64;
 }
 
@@ -27,7 +27,7 @@ impl ToMm for f64 {
 /// Kahan compensated summation algorithm
 /// Reduces accumulated floating-point rounding errors when summing a series of terms
 /// See: https://en.wikipedia.org/wiki/Kahan_summation_algorithm
-pub fn kahan_sum(terms: &[f64]) -> f64 {
+pub(crate) fn kahan_sum(terms: &[f64]) -> f64 {
     let mut sum = 0.0;
     let mut c = 0.0; // Compensation for lost low-order bits
 
@@ -42,14 +42,14 @@ pub fn kahan_sum(terms: &[f64]) -> f64 {
 }
 
 /// Round a float to eight decimal places
-pub fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
+pub(crate) fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
     let new_x = (x * 100000000.).round() / 100000000.;
     let new_y = (y * 100000000.).round() / 100000000.;
     (new_x, new_y)
 }
 
 /// Try to get OSTN15 shift parameters, and calculate offsets
-pub fn get_ostn_ref(x: i32, y: i32) -> Result<(f64, f64, f64), ()> {
+pub(crate) fn get_ostn_ref(x: i32, y: i32) -> Result<(f64, f64, f64), ()> {
     let key = x + (y * 701) + 1;
     // Some or None, so convert to Result, which we can try!
     let result = ostn15_lookup(&key).ok_or(())?;
@@ -60,7 +60,7 @@ pub fn get_ostn_ref(x: i32, y: i32) -> Result<(f64, f64, f64), ()> {
 // See p20 of the transformation user guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
 /// Calculate OSTN15 shifts for a given coordinate
-pub fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
+pub(crate) fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
     let e_index = (x / 1000.) as i32;
     let n_index = (y / 1000.) as i32;
 

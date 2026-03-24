@@ -3,35 +3,35 @@
 // Constants used for coordinate conversions
 //
 // Ellipsoids
-pub const AIRY_1830_SEMI_MAJOR: f64 = 6377563.396;
-pub const AIRY_1830_SEMI_MINOR: f64 = 6356256.909;
-pub const GRS80_SEMI_MAJOR: f64 = 6378137.000;
-pub const GRS80_SEMI_MINOR: f64 = 6356752.3141;
+pub(crate) const AIRY_1830_SEMI_MAJOR: f64 = 6377563.396;
+pub(crate) const AIRY_1830_SEMI_MINOR: f64 = 6356256.909;
+pub(crate) const GRS80_SEMI_MAJOR: f64 = 6378137.000;
+pub(crate) const GRS80_SEMI_MINOR: f64 = 6356752.3141;
 // Northing & easting of true origin (m)
-pub const TRUE_ORIGIN_NORTHING: f64 = -100000.;
-pub const TRUE_ORIGIN_EASTING: f64 = 400000.;
+pub(crate) const TRUE_ORIGIN_NORTHING: f64 = -100000.;
+pub(crate) const TRUE_ORIGIN_EASTING: f64 = 400000.;
 // For Helmert Transform to OSGB36, translations along the x, y, z axes
 // When transforming to WGS84, reverse the signs
-pub const TX: f64 = -446.448;
-pub const TY: f64 = 125.157;
-pub const TZ: f64 = -542.060;
+pub(crate) const TX: f64 = -446.448;
+pub(crate) const TY: f64 = 125.157;
+pub(crate) const TZ: f64 = -542.060;
 // Rotations along the x, y, z axes, in seconds
-pub const RXS: f64 = -0.1502;
-pub const RYS: f64 = -0.2470;
-pub const RZS: f64 = -0.8421;
+pub(crate) const RXS: f64 = -0.1502;
+pub(crate) const RYS: f64 = -0.2470;
+pub(crate) const RZS: f64 = -0.8421;
 
 // scale factor, referred to as "S" in OSTN15, but some C compilers do not like that
-pub const CS: f64 = 20.4894 * 0.000001;
+pub(crate) const CS: f64 = 20.4894 * 0.000001;
 // etc
-pub const PI: f64 = f64::consts::PI;
-pub const RAD: f64 = PI / 180.;
-pub const MAX_EASTING: f64 = 700000.000;
-pub const MAX_NORTHING: f64 = 1250000.000;
+pub(crate) const PI: f64 = f64::consts::PI;
+pub(crate) const RAD: f64 = PI / 180.;
+pub(crate) const MAX_EASTING: f64 = 700000.000;
+pub(crate) const MAX_NORTHING: f64 = 1250000.000;
 
-pub const MIN_LONGITUDE: f64 = -8.5790;
-pub const MAX_LONGITUDE: f64 = 1.7800;
-pub const MIN_LATITUDE: f64 = 49.922;
-pub const MAX_LATITUDE: f64 = 60.8400;
+pub(crate) const MIN_LONGITUDE: f64 = -8.5790;
+pub(crate) const MAX_LONGITUDE: f64 = 1.7800;
+pub(crate) const MIN_LATITUDE: f64 = 49.922;
+pub(crate) const MAX_LATITUDE: f64 = 60.8400;
 
 // lon and lat of true origin
 const LAM0: f64 = RAD * -2.0;
