@@ -6,9 +6,10 @@
 
 use std::collections::HashMap;
 
-use crate::conversions::{
-    GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR, convert_to_ll, osgb36_to_etrs89_iterative_detailed,
-};
+use crate::conversions::GRS80_SEMI_MAJOR;
+use crate::conversions::GRS80_SEMI_MINOR;
+use crate::conversions::convert_to_ll;
+use crate::conversions::osgb36_to_etrs89_iterative_detailed;
 
 use super::*;
 
