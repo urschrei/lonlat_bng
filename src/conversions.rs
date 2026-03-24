@@ -47,10 +47,9 @@ use libc::c_double;
 use std::f64;
 use std::mem;
 
+use crate::utils::ToMm;
 use crate::utils::check;
 use crate::utils::kahan_sum;
-// use crate::utils::kahan_sum;
-use crate::utils::ToMm;
 use crate::utils::ostn15_shifts;
 use crate::utils::round_to_eight;
 #[cfg(test)]
