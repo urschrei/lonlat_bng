@@ -31,6 +31,8 @@
 //!
 //! **An example FFI implementation using Python can be found at [Convertbng](https://github.com/urschrei/convertbng)**.
 //!
+use std::f64;
+
 use rayon::prelude::*;
 
 mod conversions;
@@ -48,7 +50,6 @@ pub use crate::conversions::convert_osgb36;
 pub use crate::conversions::convert_osgb36_to_etrs89;
 pub use crate::conversions::convert_osgb36_to_ll;
 
-use std::f64;
 pub const NAN: f64 = f64::NAN;
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36`](fn.convert_osgb36.html)

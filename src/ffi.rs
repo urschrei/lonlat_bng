@@ -2,6 +2,16 @@ use std::slice;
 
 use libc::c_void;
 
+use super::convert_epsg3857_to_wgs84_threaded_vec;
+use super::convert_etrs89_to_ll_threaded_vec;
+use super::convert_etrs89_to_osgb36_threaded_vec;
+use super::convert_osgb36_to_etrs89_threaded_vec;
+use super::convert_osgb36_to_ll_threaded_vec;
+use super::convert_to_bng_threaded_vec;
+use super::convert_to_etrs89_threaded_vec;
+use super::convert_to_lonlat_threaded_vec;
+use super::convert_to_osgb36_threaded_vec;
+
 #[repr(C)]
 pub struct Array {
     pub data: *const c_void,
@@ -14,16 +24,6 @@ pub struct ResultTuple {
     pub e: Array,
     pub n: Array,
 }
-
-use super::convert_epsg3857_to_wgs84_threaded_vec;
-use super::convert_etrs89_to_ll_threaded_vec;
-use super::convert_etrs89_to_osgb36_threaded_vec;
-use super::convert_osgb36_to_etrs89_threaded_vec;
-use super::convert_osgb36_to_ll_threaded_vec;
-use super::convert_to_bng_threaded_vec;
-use super::convert_to_etrs89_threaded_vec;
-use super::convert_to_lonlat_threaded_vec;
-use super::convert_to_osgb36_threaded_vec;
 
 /// Free memory which Rust has allocated across the FFI boundary (f64 values)
 ///
