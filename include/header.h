@@ -9,6 +9,46 @@
 
 
 
+#define AIRY_1830_SEMI_MAJOR 6377563.396
+
+#define AIRY_1830_SEMI_MINOR 6356256.909
+
+#define GRS80_SEMI_MAJOR 6378137.000
+
+#define GRS80_SEMI_MINOR 6356752.3141
+
+#define TRUE_ORIGIN_NORTHING -100000.
+
+#define TRUE_ORIGIN_EASTING 400000.
+
+#define TX -446.448
+
+#define TY 125.157
+
+#define TZ -542.060
+
+#define RXS -0.1502
+
+#define RYS -0.2470
+
+#define RZS -0.8421
+
+#define CS (20.4894 * 0.000001)
+
+#define RAD (PI / 180.)
+
+#define MAX_EASTING 700000.000
+
+#define MAX_NORTHING 1250000.000
+
+#define MIN_LONGITUDE -8.5790
+
+#define MAX_LONGITUDE 1.7800
+
+#define MIN_LATITUDE 49.922
+
+#define MAX_LATITUDE 60.8400
+
 typedef struct Array {
     const void *data;
     size_t len;

@@ -14,7 +14,7 @@ pub fn convert_to_bng_threaded_vec<'a>(
     longitudes: &'a mut [f64],
     latitudes: &'a mut [f64],
 ) -> (&'a mut [f64], &'a mut [f64]) {
-    convert_vec_direct(longitudes, latitudes, convert_osgb36)
+    convert_to_osgb36_threaded_vec(longitudes, latitudes)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_osgb36_to_ll`](fn.convert_osgb36_to_ll.html)
@@ -22,7 +22,7 @@ pub fn convert_to_lonlat_threaded_vec<'a>(
     eastings: &'a mut [f64],
     northings: &'a mut [f64],
 ) -> (&'a mut [f64], &'a mut [f64]) {
-    convert_vec_direct(eastings, northings, convert_osgb36_to_ll)
+    convert_osgb36_to_ll_threaded_vec(eastings, northings)
 }
 
 /// A threaded wrapper for [`lonlat_bng::convert_etrs89`](fn.convert_etrs89.html)
@@ -49,7 +49,7 @@ pub fn convert_etrs89_to_osgb36_threaded_vec<'a>(
     convert_vec_direct(eastings, northings, convert_etrs89_to_osgb36)
 }
 
-/// A threaded wrapper for [`lonlat_bng::convert_etrs89_to_ll`](fn.convert_etrs8989_to_ll.html)
+/// A threaded wrapper for [`lonlat_bng::convert_etrs89_to_ll`](fn.convert_etrs89_to_ll.html)
 pub fn convert_etrs89_to_ll_threaded_vec<'a>(
     eastings: &'a mut [f64],
     northings: &'a mut [f64],
@@ -81,9 +81,7 @@ pub fn convert_epsg3857_to_wgs84_threaded_vec<'a>(
     convert_vec_direct(x, y, convert_epsg3857_to_wgs84)
 }
 
-// Generic function which applies conversion functions to vector or slice chunks within threads
-// As opposed to the earlier convert_vec, we're directly modifying and returning the
-// inputs here, at the cost of having to use lifetime annotations
+// Generic function which applies conversion functions to paired slices within threads
 fn convert_vec_direct<'a>(
     ex: &'a mut [f64],
     ny: &'a mut [f64],
