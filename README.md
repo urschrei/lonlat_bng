@@ -35,11 +35,9 @@ Add the following to your `Cargo.toml` (the latest version is displayed on the f
 
     lonlat_bng = "x.x.x"
 
-Full library documentation is available [here](http://urschrei.github.io/lonlat_bng/)  
 
 **Note that `lon`, `lat` coordinates outside the [UK bounding box](http://spatialreference.org/ref/epsg/27700/) will be transformed to `(NAN, NAN)`, which cannot be mapped.**  
 
-The functions exposed by the library can be found [here](http://urschrei.github.io/lonlat_bng/lonlat_bng/index.html#functions)
 
 ## FFI
 The FFI C-compatible functions exposed by the library are:  
@@ -57,16 +55,16 @@ The FFI C-compatible functions exposed by the library are:
 `convert_epsg3857_to_wgs84_threaded(Array, Array) -> Array`  
 
 ### FFI and Memory Management
-The library does not allocate memory using new vectors or arrays; the longitude and latitude arrays you pass to it via FFI are converted into mutable [slices](https://doc.rust-lang.org/std/slice/) (an inherently [`unsafe`](https://doc.rust-lang.org/std/slice/fn.from_raw_parts_mut.html) operation), then mutated in-place before being passed back across the FFI boundary as C-compatible arrays. Thus, the calling code retains ownership of the allocated memory at all times – it is up to the calling program to ensure that the data passed to `lonlat_bng` live long enough, and are correctly freed (in practice, they will be freed automatically if using a dynamic language).
+The library does not allocate memory using new vectors or arrays; the longitude and latitude arrays you pass to it via FFI are converted into mutable [slices, then mutated in-place before being passed back across the FFI boundary as C-compatible arrays. Thus, the calling code retains ownership of the allocated memory at all times – it is up to the calling program to ensure that the data passed to `lonlat_bng` live long enough, and are correctly freed (in practice, they will be freed automatically if using a dynamic language).
 
 ### Building the Shared Library
-Running `cargo build --release` will build an artefact called `liblonlat_bng.dylib` on OSX, and `liblonlat_bng.a` on `*nix` systems. Note that you'll have to generate `liblonlat_bng.so` for `*nix` hosts using the following steps:
+Running `cargo build --release` will build an artefact called `liblonlat_bng.dylib` on macOS, and `liblonlat_bng.a` on `*nix` systems. Note that you'll have to generate `liblonlat_bng.so` for `*nix` hosts using the following steps:
 
 - `ar -x target/release/liblonlat_bng.a`
 - `gcc -shared *.o -o target/release/liblonlat_bng.so -lrt` 
 
 ## As a Python Package
-`convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI for OSX, Windows, and *nix:  
+`convert_bng` is [available](https://pypi.python.org/pypi/convertbng/) from PyPI for macOS, Windows, and *nix:  
 `pip install convertbng`  
 More information is available in its [repository](https://github.com/urschrei/convertbng)
 
