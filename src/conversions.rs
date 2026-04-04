@@ -91,17 +91,19 @@ fn convert_etrs89_internal(longitude: f64, latitude: f64) -> Result<(f64, f64), 
     let tp4 = tp.powi(4);
 
     let I = m + N0;
-    let II = nu / 2. * sp * cp;
-    let III = nu / 24. * sp * cp.powi(3) * (5. - tp2 + 9. * eta2);
-    let IIIA = nu / 720. * sp * cp.powi(5) * (61. - 58. * tp2 + tp4);
+    let II = (sp * 0.5) * (nu * cp);
+    let III = (sp / 24.) * nu * cp.powi(3) * eta2.mul_add(9.0, 5.0 - tp2);
+    let IIIA = (sp / 720.) * nu * cp.powi(5) * tp2.mul_add(-58.0, 61.0 + tp4);
 
     let IV = nu * cp;
     let V = nu / 6. * cp.powi(3) * (nu / rho - tp2);
-    let VI = nu / 120. * cp.powi(5) * (5. - 18. * tp2 + tp4 + 14. * eta2 - 58. * tp2 * eta2);
+    let VI = nu / 120.
+        * cp.powi(5)
+        * (tp2 * eta2).mul_add(-58.0, eta2.mul_add(14.0, tp2.mul_add(-18.0, 5.0 + tp4)));
 
     let l = lambda - LAM0;
     let north = I + II * l.powi(2) + III * l.powi(4) + IIIA * l.powi(6);
-    let east = E0 + IV * l + V * l.powi(3) + VI * l.powi(5);
+    let east = l.mul_add(IV, E0) + V * l.powi(3) + VI * l.powi(5);
     Ok((east, north))
 }
 
