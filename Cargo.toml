@@ -49,3 +49,7 @@ codegen-units = 1
 name = "benchmarks"
 harness = false
 
+[[bench]]
+name = "projection"
+harness = false
+
