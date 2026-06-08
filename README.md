@@ -3,7 +3,7 @@
 # Introduction
 <img alt="Map of the UK showing OS control points" style="float: left;" src="points.png">
 
-A Rust library with FFI bindings for fast conversion between WGS84 longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary. Conversions use a standard 7-element Helmert transform with the addition of OSTN15 corrections for [accuracy](#accuracy).
+A Rust library with FFI bindings for fast conversion between WGS84 longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary. Conversions use the Ordnance Survey OSTN15 transformation — a Transverse Mercator projection on the GRS80 ellipsoid followed by the OSTN15 grid-shift correction — for surveying-grade [accuracy](#accuracy). (A faster Helmert-transform path is also present but deprecated, as it is only accurate to ~5 m; see [Accuracy](#accuracy).)
 
 # Motivation
 Python (etc.) is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement using FFI saves both time and energy.  
@@ -12,6 +12,8 @@ Python (etc.) is relatively slow; this type of conversion is usually carried out
 # Accuracy
 Conversions which solely use Helmert transforms are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying. Thus, we use the OSTN15 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN15 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
 
+A detailed treatment of the numeric precision and the measured accuracy of each implementation, suitable for citation in technical reports, is in [`doc/accuracy.md`](doc/accuracy.md).
+
 # Tests
 The library is well covered by tests. A full "pipeline" test which checks intermediate conversions is provided (though not run as part of the standard test suite):
 
@@ -19,14 +21,22 @@ The library is well covered by tests. A full "pipeline" test which checks interm
 
 ## Round-Trip Conversion Accuracy
 
-Two of the 40 test points show differences from the test data following conversion:
+By default the projection step uses the truncated series specified by Ordnance Survey (the "Redfearn" series). Its truncation error grows with distance from the 2°W central meridian, so the largest round-trip residuals occur at the extreme western isles. Of the 40 developer-pack points, only the two furthest west exceed 1 mm in the `lon/lat → OSGB36 → lon/lat` round trip:
 
-| Test Point | Input OSGB36 E (m) | Input OSGB36 N (m) | E diff (m) | N diff (m) |
-|:-----------|-------------------:|-------------------:|-----------:|-----------:|
-| TP31       | 9587.909           | 899448.996         | +0.003     | -0.004     |
-| TP32       | 71713.132          | 938516.404         | +0.001     | -0.001     |
+| Test Point | Longitude | Round-trip error (default) | Round-trip error (`karney_tm`) |
+|:-----------|----------:|---------------------------:|-------------------------------:|
+| TP31 (St Kilda) | 8.58°W | 4.97 mm | 0.61 mm |
+| TP32       | 7.59°W | 1.31 mm | 0.29 mm |
 
-Both points are located at the extreme north-western edge of the UK grid. The remaining 38 test points achieve conversion accuracy within floating-point precision limits.
+The remaining 38 points are sub-millimetre with either implementation.
+
+### Optional higher-accuracy projection (`karney_tm`)
+
+Enabling the `karney_tm` Cargo feature replaces the truncated series with Karney's Krüger *n*-series Transverse Mercator, which is accurate to a few nanometres across the whole grid and keeps the round trip sub-millimetre everywhere, including the western isles:
+
+    lonlat_bng = { version = "x.x.x", features = ["karney_tm"] }
+
+The default build reproduces the OS-specified (truncated) method, agreeing with Grid InQuest II to floating-point precision; the `karney_tm` build is more accurate but deliberately diverges from that convention by a few millimetres at the far west. See [`doc/accuracy.md`](doc/accuracy.md) for the full analysis, measured figures, and the performance trade-off.
 
 
 # Library Use
