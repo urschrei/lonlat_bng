@@ -586,3 +586,68 @@ fn test_osgb36_to_etrs89_iterations_detailed() {
         failures.join("\n")
     );
 }
+
+/// Ground distance in millimetres between two lon/lat points (small-angle, on a
+/// sphere of the GRS80 semi-major radius). Adequate for sub-metre comparisons.
+#[cfg(test)]
+fn latlon_ground_mm(lon_a: f64, lat_a: f64, lon_b: f64, lat_b: f64) -> f64 {
+    const R: f64 = 6_378_137.0;
+    let dlat_mm = (lat_a - lat_b).to_radians() * R * 1000.0;
+    let dlon_mm = (lon_a - lon_b).to_radians() * R * lat_b.to_radians().cos() * 1000.0;
+    (dlat_mm * dlat_mm + dlon_mm * dlon_mm).sqrt()
+}
+
+#[cfg(feature = "karney_tm")]
+#[test]
+/// With the Karney projection the lon/lat -> OSGB36 -> lon/lat round trip is
+/// sub-millimetre across the whole grid, including the far-western isles where the
+/// truncated Redfearn series produces a ~5 mm discrepancy (St Kilda, TP31). This
+/// is the improvement the `karney_tm` feature exists to deliver. The residual is
+/// bounded by the millimetre rounding of the intermediate OSGB36 grid coordinate.
+fn dev_pack_karney_roundtrip_submm() {
+    let mut worst = (String::new(), 0.0_f64);
+    let mut failures = Vec::new();
+    for (id, lat, lon) in dev_pack_etrs_inputs() {
+        let (e, n) = convert_osgb36(lon, lat).unwrap();
+        let (lon_b, lat_b) = convert_osgb36_to_ll(e, n).unwrap();
+        let ground = latlon_ground_mm(lon_b, lat_b, lon, lat);
+        if ground > worst.1 {
+            worst = (id.clone(), ground);
+        }
+        if ground > 1.0 {
+            failures.push(format!("{id}: round-trip {ground:.4} mm exceeds 1 mm"));
+        }
+    }
+    assert!(
+        failures.is_empty(),
+        "Karney round-trip exceeded 1 mm:\n{}",
+        failures.join("\n")
+    );
+    // Worst case is sub-mm (measured ~0.61 mm at TP31); guards against regression.
+    assert!(
+        worst.1 < 1.0,
+        "worst round-trip {:.4} mm at {}",
+        worst.1,
+        worst.0
+    );
+}
+
+#[cfg(not(feature = "karney_tm"))]
+#[test]
+/// Default (Redfearn) round trip. The truncated OS series is sub-mm across the
+/// mainland but reaches ~5 mm at the extreme west (St Kilda, TP31), where the
+/// longitude offset from the -2 deg central meridian is largest. This test
+/// records that bound; enable the `karney_tm` feature for sub-mm round trips
+/// everywhere (see `dev_pack_karney_roundtrip_submm`).
+fn dev_pack_redfearn_roundtrip_bound() {
+    let mut failures = Vec::new();
+    for (id, lat, lon) in dev_pack_etrs_inputs() {
+        let (e, n) = convert_osgb36(lon, lat).unwrap();
+        let (lon_b, lat_b) = convert_osgb36_to_ll(e, n).unwrap();
+        let ground = latlon_ground_mm(lon_b, lat_b, lon, lat);
+        if ground > 5.0 {
+            failures.push(format!("{id}: round-trip {ground:.4} mm exceeds 5 mm"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
