@@ -34,6 +34,7 @@
 use std::f64;
 
 mod conversions;
+mod error;
 mod ffi;
 #[cfg(feature = "karney_tm")]
 mod karney;
@@ -41,6 +42,7 @@ mod tests;
 mod threaded;
 pub(crate) mod utils;
 
+pub use crate::error::{Axis, TransformError};
 pub use crate::ffi::*;
 
 pub use crate::conversions::convert_epsg3857_to_wgs84;

@@ -1,15 +1,22 @@
 //! This module provides utilities to the conversions module
 use ostn15_phf::ostn15_lookup;
-use std::fmt;
 
-/// Bounds checking for input values
-pub(crate) fn check<T>(to_check: T, bounds: (T, T)) -> Result<T, ()>
-where
-    T: std::cmp::PartialOrd + fmt::Display + Copy,
-{
-    match to_check {
-        to_check if bounds.0 <= to_check && to_check <= bounds.1 => Ok(to_check),
-        _ => Err(()),
+use crate::error::{Axis, TransformError};
+
+/// Bounds checking for an input coordinate on a given axis.
+///
+/// Returns the value unchanged if it lies within the inclusive `bounds`,
+/// otherwise a [`TransformError::OutOfBounds`] naming the axis and range.
+pub(crate) fn check(value: f64, bounds: (f64, f64), axis: Axis) -> Result<f64, TransformError> {
+    if bounds.0 <= value && value <= bounds.1 {
+        Ok(value)
+    } else {
+        Err(TransformError::OutOfBounds {
+            axis,
+            value,
+            min: bounds.0,
+            max: bounds.1,
+        })
     }
 }
 
@@ -50,19 +57,18 @@ pub(crate) fn round_to_eight(x: f64, y: f64) -> (f64, f64) {
     (new_x, new_y)
 }
 
-/// Try to get OSTN15 shift parameters, and calculate offsets
-pub(crate) fn get_ostn_ref(x: i32, y: i32) -> Result<(f64, f64, f64), ()> {
+/// Look up the OSTN15 shift parameters for a grid intersection, if present.
+pub(crate) fn get_ostn_ref(x: i32, y: i32) -> Option<(f64, f64, f64)> {
     let key = x + (y * 701) + 1;
-    // Some or None, so convert to Result, which we can try!
-    let result = ostn15_lookup(&key).ok_or(())?;
-    Ok((result.0, result.1, result.2))
+    let result = ostn15_lookup(&key)?;
+    Some((result.0, result.1, result.2))
 }
 
 // Input values must be valid ETRS89 grid references
 // See p20 of the transformation user guide at
 // https://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/formats-for-developers.html
 /// Calculate OSTN15 shifts for a given coordinate
-pub(crate) fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
+pub(crate) fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), TransformError> {
     let e_index = (x / 1000.) as i32;
     let n_index = (y / 1000.) as i32;
 
@@ -70,19 +76,23 @@ pub(crate) fn ostn15_shifts(x: f64, y: f64) -> Result<(f64, f64, f64), ()> {
     let x0 = e_index * 1000;
     let y0 = n_index * 1000;
 
-    // The easting, northing and geoid shifts for the four corners of the cell
-    // any of these could be Err, so use try!
+    // The shifts for the four corners of the cell. A missing intersection means
+    // the point lies outside the OSTN15 grid coverage.
+    let coverage_err = || TransformError::OutsideOstn15Coverage {
+        easting: x,
+        northing: y,
+    };
 
     // intersections
     // this is a 3 x 4 matrix (using column-major order)
     // bottom-left grid intersection
-    let s0: (f64, f64, f64) = get_ostn_ref(e_index, n_index)?;
+    let s0: (f64, f64, f64) = get_ostn_ref(e_index, n_index).ok_or_else(coverage_err)?;
     // bottom-right
-    let s1: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index)?;
+    let s1: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index).ok_or_else(coverage_err)?;
     // top-left
-    let s2: (f64, f64, f64) = get_ostn_ref(e_index, n_index + 1)?;
+    let s2: (f64, f64, f64) = get_ostn_ref(e_index, n_index + 1).ok_or_else(coverage_err)?;
     // top-right
-    let s3: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index + 1)?;
+    let s3: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index + 1).ok_or_else(coverage_err)?;
 
     // offset within square
     let dx = x - f64::from(x0);
@@ -135,7 +145,7 @@ pub(crate) struct ShiftDetails {
 /// Calculate OSTN15 shifts with detailed corner and interpolation data
 /// Returns all intermediate values for validation against reference data
 #[cfg(test)]
-pub(crate) fn ostn15_shifts_detailed(x: f64, y: f64) -> Result<ShiftDetails, ()> {
+pub(crate) fn ostn15_shifts_detailed(x: f64, y: f64) -> Result<ShiftDetails, TransformError> {
     let e_index = (x / 1000.) as i32;
     let n_index = (y / 1000.) as i32;
 
@@ -143,19 +153,23 @@ pub(crate) fn ostn15_shifts_detailed(x: f64, y: f64) -> Result<ShiftDetails, ()>
     let x0 = e_index * 1000;
     let y0 = n_index * 1000;
 
-    // The easting, northing and geoid shifts for the four corners of the cell
-    // any of these could be Err, so use try!
+    // The shifts for the four corners of the cell. A missing intersection means
+    // the point lies outside the OSTN15 grid coverage.
+    let coverage_err = || TransformError::OutsideOstn15Coverage {
+        easting: x,
+        northing: y,
+    };
 
     // intersections
     // this is a 3 x 4 matrix (using column-major order)
     // bottom-left grid intersection (SW corner)
-    let s0: (f64, f64, f64) = get_ostn_ref(e_index, n_index)?;
+    let s0: (f64, f64, f64) = get_ostn_ref(e_index, n_index).ok_or_else(coverage_err)?;
     // bottom-right (SE corner)
-    let s1: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index)?;
+    let s1: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index).ok_or_else(coverage_err)?;
     // top-left (NW corner)
-    let s2: (f64, f64, f64) = get_ostn_ref(e_index, n_index + 1)?;
+    let s2: (f64, f64, f64) = get_ostn_ref(e_index, n_index + 1).ok_or_else(coverage_err)?;
     // top-right (NE corner)
-    let s3: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index + 1)?;
+    let s3: (f64, f64, f64) = get_ostn_ref(e_index + 1, n_index + 1).ok_or_else(coverage_err)?;
 
     // offset within square
     let dx = x - f64::from(x0);
@@ -242,7 +256,7 @@ mod tests {
         let max_lon = 1.768960;
         let min_lon = -6.379880;
         // below min_lon
-        check(&-6.379881, (&min_lon, &max_lon)).unwrap();
+        check(-6.379881, (min_lon, max_lon), Axis::Longitude).unwrap();
     }
 
     #[test]
@@ -251,7 +265,7 @@ mod tests {
         let max_lat = 55.811741;
         let min_lat = 49.871159;
         // below min lat
-        check(&49.871158, (&min_lat, &max_lat)).unwrap();
+        check(49.871158, (min_lat, max_lat), Axis::Latitude).unwrap();
     }
 
     #[test]
@@ -260,7 +274,7 @@ mod tests {
         let max_lon = 1.768960;
         let min_lon = -6.379880;
         // above max lon
-        check(&1.768961, (&min_lon, &max_lon)).unwrap();
+        check(1.768961, (min_lon, max_lon), Axis::Longitude).unwrap();
     }
 
     #[test]
@@ -269,6 +283,21 @@ mod tests {
         let max_lat = 55.811741;
         let min_lat = 49.871159;
         // above max lat
-        check(&55.811742, (&min_lat, &max_lat)).unwrap();
+        check(55.811742, (min_lat, max_lat), Axis::Latitude).unwrap();
+    }
+
+    #[test]
+    fn test_out_of_bounds_error_detail() {
+        // The error names the axis and the violated range.
+        let err = check(2.0, (-8.5790, 1.7800), Axis::Longitude).unwrap_err();
+        assert_eq!(
+            err,
+            TransformError::OutOfBounds {
+                axis: Axis::Longitude,
+                value: 2.0,
+                min: -8.5790,
+                max: 1.7800,
+            }
+        );
     }
 }

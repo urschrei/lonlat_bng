@@ -1,6 +1,7 @@
 use rayon::prelude::*;
 
 use super::NAN;
+use super::TransformError;
 use super::convert_epsg3857_to_wgs84;
 use super::convert_etrs89;
 use super::convert_etrs89_to_ll;
@@ -85,7 +86,7 @@ pub fn convert_epsg3857_to_wgs84_threaded_vec<'a>(
 fn convert_vec_direct<'a>(
     ex: &'a mut [f64],
     ny: &'a mut [f64],
-    func: impl Fn(f64, f64) -> Result<(f64, f64), ()> + Sync,
+    func: impl Fn(f64, f64) -> Result<(f64, f64), TransformError> + Sync,
 ) -> (&'a mut [f64], &'a mut [f64]) {
     ex.par_iter_mut().zip(ny.par_iter_mut()).for_each(|p| {
         match func(*p.0, *p.1) {

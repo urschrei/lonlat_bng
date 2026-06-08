@@ -47,6 +47,7 @@ use libc::c_double;
 use std::f64;
 use std::mem;
 
+use crate::error::{Axis, TransformError};
 use crate::utils::ToMm;
 use crate::utils::check;
 #[cfg(not(feature = "karney_tm"))]
@@ -86,11 +87,12 @@ fn curvature(a: f64, f0: f64, e2: f64, lat: f64) -> f64 {
 /// Returns **unrounded values** for use in subsequent transformations
 // See Annexe B (p23) of the "Transformations and OSGM15 user guide" for instructions
 #[allow(non_snake_case)]
-fn convert_etrs89_internal(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
+fn convert_etrs89_internal(longitude: f64, latitude: f64) -> Result<(f64, f64), TransformError> {
     // Input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = check(longitude, (MIN_LONGITUDE, MAX_LONGITUDE))?.to_radians();
-    let lat_1: f64 = check(latitude, (MIN_LATITUDE, MAX_LATITUDE))?.to_radians();
+    let lon_1: f64 =
+        check(longitude, (MIN_LONGITUDE, MAX_LONGITUDE), Axis::Longitude)?.to_radians();
+    let lat_1: f64 = check(latitude, (MIN_LATITUDE, MAX_LATITUDE), Axis::Latitude)?.to_radians();
 
     // Karney exact Transverse Mercator path (Krüger n-series). Returns unrounded values.
     #[cfg(feature = "karney_tm")]
@@ -146,7 +148,7 @@ fn convert_etrs89_internal(longitude: f64, latitude: f64) -> Result<(f64, f64), 
 /// use lonlat_bng::convert_etrs89
 /// assert_eq!((651307.003, 313255.686), convert_etrs89(&1.716073973, &52.658007833).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_etrs89(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
+pub fn convert_etrs89(longitude: f64, latitude: f64) -> Result<(f64, f64), TransformError> {
     let (east, north) = convert_etrs89_internal(longitude, latitude)?;
     Ok((east.round_to_mm(), north.round_to_mm()))
 }
@@ -159,10 +161,13 @@ pub fn convert_etrs89(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
 /// use lonlat_bng::convert_ETRS89_to_OSGB36
 /// assert_eq!((651409.792, 313177.448), convert_ETRS89_to_OSGB36(&651307.003, &313255.686).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_etrs89_to_osgb36(eastings: f64, northings: f64) -> Result<(f64, f64), ()> {
+pub fn convert_etrs89_to_osgb36(
+    eastings: f64,
+    northings: f64,
+) -> Result<(f64, f64), TransformError> {
     // ensure that we're within the boundaries
-    check(eastings, (0.000, MAX_EASTING))?;
-    check(northings, (0.000, MAX_NORTHING))?;
+    check(eastings, (0.000, MAX_EASTING), Axis::Easting)?;
+    check(northings, (0.000, MAX_NORTHING), Axis::Northing)?;
     // obtain OSTN15 corrections, and incorporate
     let (e_shift, n_shift, _) = ostn15_shifts(eastings, northings)?;
     Ok((
@@ -179,7 +184,7 @@ pub fn convert_etrs89_to_osgb36(eastings: f64, northings: f64) -> Result<(f64, f
 /// use lonlat_bng::convert_osgb36
 /// assert_eq!((651409.792, 313177.448), convert_etrs89(&1.716073973, &52.658007833).unwrap());
 #[allow(non_snake_case)]
-pub fn convert_osgb36(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
+pub fn convert_osgb36(longitude: f64, latitude: f64) -> Result<(f64, f64), TransformError> {
     // convert input to ETRS89 with full precision (not rounded)
     let (eastings, northings) = convert_etrs89_internal(longitude, latitude)?;
     // obtain OSTN15 corrections, and incorporate
@@ -227,10 +232,10 @@ pub(crate) fn convert_to_ll(
     northings: f64,
     ell_a: f64,
     ell_b: f64,
-) -> Result<(f64, f64), ()> {
+) -> Result<(f64, f64), TransformError> {
     // ensure that we're within the boundaries
-    check(eastings, (0.000, MAX_EASTING))?;
-    check(northings, (0.000, MAX_NORTHING))?;
+    check(eastings, (0.000, MAX_EASTING), Axis::Easting)?;
+    check(northings, (0.000, MAX_NORTHING), Axis::Northing)?;
 
     // Karney exact Transverse Mercator path (Krüger n-series).
     #[cfg(feature = "karney_tm")]
@@ -332,14 +337,14 @@ pub(crate) fn convert_to_ll(
 
 /// Convert ETRS89 coordinates to Lon, Lat
 #[allow(non_snake_case)]
-pub fn convert_etrs89_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
+pub fn convert_etrs89_to_ll(E: f64, N: f64) -> Result<(f64, f64), TransformError> {
     // ETRS89 uses the WGS84 / GRS80 ellipsoid constants
     convert_to_ll(E, N, GRS80_SEMI_MAJOR, GRS80_SEMI_MINOR)
 }
 
 /// Helper function to convert OSGB36 coordinates to ETRS89 using iterative approach
 #[allow(non_snake_case)]
-fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
+fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), TransformError> {
     // Apply reverse OSTN15 adjustments following the iterative approach described on p16
     // of the OSGM15 Transformation and User Guide, v1.3
 
@@ -389,7 +394,10 @@ fn osgb36_to_etrs89_iterative(E: f64, N: f64) -> Result<(f64, f64), ()> {
     }
 
     if !converged {
-        return Err(());
+        return Err(TransformError::NonConvergent {
+            easting: E,
+            northing: N,
+        });
     }
 
     // Note: Don't round ETRS89 coordinates here: they need full precision for lat/lon conversion
@@ -416,7 +424,7 @@ pub(crate) struct IterationDetails {
 pub(crate) fn osgb36_to_etrs89_iterative_detailed(
     E: f64,
     N: f64,
-) -> Result<(f64, f64, Vec<IterationDetails>), ()> {
+) -> Result<(f64, f64, Vec<IterationDetails>), TransformError> {
     // Apply reverse OSTN15 adjustments following the iterative approach described on p16
     // of the OSGM15 Transformation and User Guide, v1.3
 
@@ -469,7 +477,7 @@ pub(crate) fn osgb36_to_etrs89_iterative_detailed(
 
 /// Convert OSGB36 coordinates to Lon, Lat using OSTN15 data
 #[allow(non_snake_case)]
-pub fn convert_osgb36_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
+pub fn convert_osgb36_to_ll(E: f64, N: f64) -> Result<(f64, f64), TransformError> {
     // First convert OSGB36 to ETRS89
     let (etrs89_e, etrs89_n) = osgb36_to_etrs89_iterative(E, N)?;
 
@@ -479,7 +487,7 @@ pub fn convert_osgb36_to_ll(E: f64, N: f64) -> Result<(f64, f64), ()> {
 
 /// Convert OSGB36 coordinates to ETRS89 using OSTN15 data
 #[allow(non_snake_case)]
-pub fn convert_osgb36_to_etrs89(E: f64, N: f64) -> Result<(f64, f64), ()> {
+pub fn convert_osgb36_to_etrs89(E: f64, N: f64) -> Result<(f64, f64), TransformError> {
     osgb36_to_etrs89_iterative(E, N)
 }
 
@@ -498,11 +506,12 @@ pub fn convert_osgb36_to_etrs89(E: f64, N: f64) -> Result<(f64, f64), ()> {
     since = "0.2.24",
     note = "This function does not use the OSTN15 transform, and is deprecated. Use convert_osgb36 instead"
 )]
-pub fn convert_bng(longitude: f64, latitude: f64) -> Result<(c_double, c_double), ()> {
+pub fn convert_bng(longitude: f64, latitude: f64) -> Result<(c_double, c_double), TransformError> {
     // input is restricted to the UK bounding box
     // Convert bounds-checked input to degrees, or return an Err
-    let lon_1: f64 = check(longitude, (MIN_LONGITUDE, MAX_LONGITUDE))?.to_radians();
-    let lat_1: f64 = check(latitude, (MIN_LATITUDE, MAX_LATITUDE))?.to_radians();
+    let lon_1: f64 =
+        check(longitude, (MIN_LONGITUDE, MAX_LONGITUDE), Axis::Longitude)?.to_radians();
+    let lat_1: f64 = check(latitude, (MIN_LATITUDE, MAX_LATITUDE), Axis::Latitude)?.to_radians();
     // The GRS80 semi-major and semi-minor axes used for WGS84 (m)
     let a_1 = GRS80_SEMI_MAJOR;
     let b_1 = GRS80_SEMI_MINOR;
@@ -614,7 +623,7 @@ pub fn convert_bng(longitude: f64, latitude: f64) -> Result<(c_double, c_double)
     since = "0.2.24",
     note = "This function is deprecated and buggy. Use convert_osgb36_to_ll instead"
 )]
-pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), ()> {
+pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), TransformError> {
     // The Airy 1830 semi-major and semi-minor axes used for OSGB36 (m)
     let a = AIRY_1830_SEMI_MAJOR;
     let b = AIRY_1830_SEMI_MINOR;
@@ -722,7 +731,7 @@ pub fn convert_lonlat(easting: f64, northing: f64) -> Result<(f64, f64), ()> {
 
 /// Convert Web Mercator (from Google Maps or Bing Maps) to WGS84
 // from https://alastaira.wordpress.com/2011/01/23/the-google-maps-bing-maps-spherical-mercator-projection/
-pub fn convert_epsg3857_to_wgs84(x: f64, y: f64) -> Result<(f64, f64), ()> {
+pub fn convert_epsg3857_to_wgs84(x: f64, y: f64) -> Result<(f64, f64), TransformError> {
     let lon = (x / 20037508.34) * 180.;
     let mut lat = (y / 20037508.34) * 180.;
     lat = 180. / PI * (2. * (lat * PI / 180.).exp().atan() - PI / 2.);

@@ -3,11 +3,11 @@
 # Introduction
 <img alt="Map of the UK showing OS control points" style="float: left;" src="points.png">
 
-A Rust library with FFI bindings for fast conversion between WGS84 longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary. Conversions use the Ordnance Survey OSTN15 transformation — a Transverse Mercator projection on the GRS80 ellipsoid followed by the OSTN15 grid-shift correction — for surveying-grade [accuracy](#accuracy). (A faster Helmert-transform path is also present but deprecated, as it is only accurate to ~5 m; see [Accuracy](#accuracy).)
+A Rust library with FFI bindings for fast conversion between WGS84 longitude and latitude and British National Grid ([epsg:27700](http://spatialreference.org/ref/epsg/osgb-1936-british-national-grid/)) coordinates, using a Rust binary. Conversions use the Ordnance Survey OSTN15 transformation – a Transverse Mercator projection on the GRS80 ellipsoid followed by the OSTN15 grid-shift correction – for survey-quality [accuracy](#accuracy).
 
 # Motivation
 Python (etc.) is relatively slow; this type of conversion is usually carried out in bulk, so an order-of-magnitude improvement using FFI saves both time and energy.  
-[Convertbng](https://github.com/urschrei/convertbng) is an example Python Wheel which uses this binary via `ctypes` and `cython`.
+The [Convertbng](https://github.com/urschrei/convertbng) Python wheel which uses this binary via `ctypes` and `cython`.
 
 # Accuracy
 Conversions which solely use Helmert transforms are accurate to within around 5 metres, and are **not suitable** for calculations or conversions used in e.g. surveying. Thus, we use the OSTN15 transform, which adjusts for local variation within the Terrestrial Reference Frame by incorporating OSTN15 data. [See here](http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/surveying.html) for more information.  
@@ -47,6 +47,15 @@ Add the following to your `Cargo.toml` (the latest version is displayed on the f
 
 
 **Note that `lon`, `lat` coordinates outside the [UK bounding box](http://spatialreference.org/ref/epsg/27700/) will be transformed to `(NAN, NAN)`, which cannot be mapped.**  
+
+### Error handling
+The scalar conversion functions (e.g. `convert_osgb36`, `convert_osgb36_to_ll`) return `Result<(f64, f64), TransformError>`. [`TransformError`](src/error.rs) names the cause and carries the offending coordinate(s):
+
+- `OutOfBounds { axis, value, min, max }` — an input is outside the valid range for the conversion;
+- `OutsideOstn15Coverage { easting, northing }` — the point has no OSTN15 grid coverage (e.g. offshore);
+- `NonConvergent { easting, northing }` — the iterative OSGB36 → ETRS89 step did not converge.
+
+The bulk/threaded and FFI functions cannot return a Rust error across their boundary, so they continue to write `(NAN, NAN)` for any coordinate that fails to convert.
 
 
 ## FFI
