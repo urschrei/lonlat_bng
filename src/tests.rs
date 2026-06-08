@@ -169,6 +169,80 @@ pub(crate) fn load_ostn15_test_data() -> Vec<Osgb36ToEtrs89TestRow> {
     rows
 }
 
+/// Strip a leading UTF-8 BOM and surrounding whitespace from a CSV field.
+fn clean(field: &str) -> &str {
+    field.trim().trim_start_matches('\u{feff}')
+}
+
+/// OSTN15 developer-pack ETRS89 -> OSGB36 inputs: (PointID, latitude, longitude).
+fn dev_pack_etrs_inputs() -> Vec<(String, f64, f64)> {
+    let csv = include_str!("../test_inputs/OSTN15_OSGM15_TestInput_ETRStoOSGB.csv");
+    csv.lines()
+        .skip(1)
+        .filter_map(|line| {
+            let f: Vec<&str> = line.split(',').collect();
+            if f.len() < 3 {
+                return None;
+            }
+            Some((
+                clean(f[0]).to_string(),
+                clean(f[1]).parse().unwrap(),
+                clean(f[2]).parse().unwrap(),
+            ))
+        })
+        .collect()
+}
+
+/// OSTN15 developer-pack OSGB36 eastings/northings keyed by PointID.
+///
+/// Both the ETRS->OSGB *output* file and the OSGB->ETRS *input* file share the
+/// first three columns (PointID, easting, northing), so this reads either.
+fn dev_pack_osgb_en(csv: &str) -> HashMap<String, (f64, f64)> {
+    csv.lines()
+        .skip(1)
+        .filter_map(|line| {
+            let f: Vec<&str> = line.split(',').collect();
+            if f.len() < 3 {
+                return None;
+            }
+            Some((
+                clean(f[0]).to_string(),
+                (clean(f[1]).parse().unwrap(), clean(f[2]).parse().unwrap()),
+            ))
+        })
+        .collect()
+}
+
+#[test]
+/// Forward ETRS89 lon/lat -> OSGB36 against the developer-pack reference output.
+///
+/// The published values are the OS exact-method results rounded to the millimetre.
+/// Both the Redfearn and Karney projections agree to last-digit precision; the
+/// residual is bounded by the millimetre rounding of the published coordinates.
+fn dev_pack_forward_etrs_to_osgb() {
+    let expected = dev_pack_osgb_en(include_str!(
+        "../test_inputs/OSTN15_OSGM15_TestOutput_ETRStoOSGB.csv"
+    ));
+    // 1 mm rounding tolerance per axis, with a little slack for fp subtraction.
+    const TOL: f64 = 0.0015;
+    let mut failures = Vec::new();
+    for (id, lat, lon) in dev_pack_etrs_inputs() {
+        let (e, n) = convert_osgb36(lon, lat).unwrap();
+        let (ee, en) = expected[&id];
+        if (e - ee).abs() > TOL || (n - en).abs() > TOL {
+            failures.push(format!(
+                "{id}: got ({e:.3}, {n:.3}) expected ({ee:.3}, {en:.3})"
+            ));
+        }
+    }
+    assert!(
+        failures.is_empty(),
+        "{} forward mismatches:\n{}",
+        failures.len(),
+        failures.join("\n")
+    );
+}
+
 #[test]
 fn test_load_ostn15_test_data() {
     let data = load_ostn15_test_data();
