@@ -3,4 +3,9 @@ Cargo.lock
 tmp*
 *.trace
 benches/output*
+# OSTN15/OSGM15 developer-pack test data used by the test suite. A global
+# ignore of *.csv would otherwise keep these out of the repo (and out of CI).
 !test_inputs/OSGB36_to_ETRS.csv
+!test_inputs/OSTN15_OSGM15_TestInput_ETRStoOSGB.csv
+!test_inputs/OSTN15_OSGM15_TestOutput_ETRStoOSGB.csv
+!test_inputs/OSTN15_OSGM15_TestInput_OSGBtoETRS.csv
