@@ -27,6 +27,8 @@ impl ToMm for f64 {
 /// Kahan compensated summation algorithm
 /// Reduces accumulated floating-point rounding errors when summing a series of terms
 /// See: https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+// Only used by the Redfearn inverse series; the Karney path sums differently.
+#[cfg_attr(feature = "karney_tm", allow(dead_code))]
 pub(crate) fn kahan_sum(terms: &[f64]) -> f64 {
     let mut sum = 0.0;
     let mut c = 0.0; // Compensation for lost low-order bits

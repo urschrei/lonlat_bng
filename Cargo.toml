@@ -24,6 +24,10 @@ rayon = "1.10.0"
 
 [features]
 headers = []
+# Prototype: use Karney's exact (Krüger n-series, order n^6) Transverse Mercator
+# for the ETRS89/GRS80 projection legs instead of the truncated OS Redfearn series.
+# Eliminates the series-truncation error at the far west of the grid (e.g. St Kilda).
+karney_tm = []
 
 [lib]
 name = "lonlat_bng"

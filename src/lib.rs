@@ -35,6 +35,8 @@ use std::f64;
 
 mod conversions;
 mod ffi;
+#[cfg(feature = "karney_tm")]
+mod karney;
 mod tests;
 mod threaded;
 pub(crate) mod utils;

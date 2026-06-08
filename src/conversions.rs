@@ -49,9 +49,29 @@ use std::mem;
 
 use crate::utils::ToMm;
 use crate::utils::check;
+#[cfg(not(feature = "karney_tm"))]
 use crate::utils::kahan_sum;
 use crate::utils::ostn15_shifts;
 use crate::utils::round_to_eight;
+
+/// Cached GRS80 British National Grid projection, evaluated with Karney's exact
+/// Krüger n-series Transverse Mercator (see the `karney` module).
+#[cfg(feature = "karney_tm")]
+fn bng_grs80_proj() -> &'static crate::karney::TransverseMercator {
+    use std::sync::OnceLock;
+    static PROJ: OnceLock<crate::karney::TransverseMercator> = OnceLock::new();
+    PROJ.get_or_init(|| {
+        crate::karney::TransverseMercator::new(
+            GRS80_SEMI_MAJOR,
+            GRS80_SEMI_MINOR,
+            F0,
+            PHI0,
+            LAM0,
+            E0,
+            N0,
+        )
+    })
+}
 #[cfg(test)]
 use crate::utils::{ShiftDetails, ostn15_shifts_detailed};
 
@@ -71,40 +91,51 @@ fn convert_etrs89_internal(longitude: f64, latitude: f64) -> Result<(f64, f64), 
     // Convert bounds-checked input to degrees, or return an Err
     let lon_1: f64 = check(longitude, (MIN_LONGITUDE, MAX_LONGITUDE))?.to_radians();
     let lat_1: f64 = check(latitude, (MIN_LATITUDE, MAX_LATITUDE))?.to_radians();
-    // ellipsoid squared eccentricity constant
-    let e2 = (GRS80_SEMI_MAJOR.powi(2) - GRS80_SEMI_MINOR.powi(2)) / GRS80_SEMI_MAJOR.powi(2);
-    let n = (GRS80_SEMI_MAJOR - GRS80_SEMI_MINOR) / (GRS80_SEMI_MAJOR + GRS80_SEMI_MINOR);
-    let phi = lat_1;
-    let lambda = lon_1;
 
-    let sp2 = phi.sin().powi(2);
-    let nu = GRS80_SEMI_MAJOR * F0 * (1. - e2 * sp2).powf(-0.5); // v
-    let rho = GRS80_SEMI_MAJOR * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
-    let eta2 = nu / rho - 1.;
+    // Karney exact Transverse Mercator path (Krüger n-series). Returns unrounded values.
+    #[cfg(feature = "karney_tm")]
+    {
+        Ok(bng_grs80_proj().forward(lon_1, lat_1))
+    }
 
-    let m = compute_m(phi, GRS80_SEMI_MINOR, n);
+    // Truncated OS Redfearn series path.
+    #[cfg(not(feature = "karney_tm"))]
+    {
+        // ellipsoid squared eccentricity constant
+        let e2 = (GRS80_SEMI_MAJOR.powi(2) - GRS80_SEMI_MINOR.powi(2)) / GRS80_SEMI_MAJOR.powi(2);
+        let n = (GRS80_SEMI_MAJOR - GRS80_SEMI_MINOR) / (GRS80_SEMI_MAJOR + GRS80_SEMI_MINOR);
+        let phi = lat_1;
+        let lambda = lon_1;
 
-    let cp = phi.cos();
-    let sp = phi.sin();
-    let tp = phi.tan();
-    let tp2 = tp.powi(2);
-    let tp4 = tp.powi(4);
+        let sp2 = phi.sin().powi(2);
+        let nu = GRS80_SEMI_MAJOR * F0 * (1. - e2 * sp2).powf(-0.5); // v
+        let rho = GRS80_SEMI_MAJOR * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
+        let eta2 = nu / rho - 1.;
 
-    let I = m + N0;
-    let II = (sp * 0.5) * (nu * cp);
-    let III = (sp / 24.) * nu * cp.powi(3) * eta2.mul_add(9.0, 5.0 - tp2);
-    let IIIA = (sp / 720.) * nu * cp.powi(5) * tp2.mul_add(-58.0, 61.0 + tp4);
+        let m = compute_m(phi, GRS80_SEMI_MINOR, n);
 
-    let IV = nu * cp;
-    let V = nu / 6. * cp.powi(3) * (nu / rho - tp2);
-    let VI = nu / 120.
-        * cp.powi(5)
-        * (tp2 * eta2).mul_add(-58.0, eta2.mul_add(14.0, tp2.mul_add(-18.0, 5.0 + tp4)));
+        let cp = phi.cos();
+        let sp = phi.sin();
+        let tp = phi.tan();
+        let tp2 = tp.powi(2);
+        let tp4 = tp.powi(4);
 
-    let l = lambda - LAM0;
-    let north = I + II * l.powi(2) + III * l.powi(4) + IIIA * l.powi(6);
-    let east = l.mul_add(IV, E0) + V * l.powi(3) + VI * l.powi(5);
-    Ok((east, north))
+        let I = m + N0;
+        let II = (sp * 0.5) * (nu * cp);
+        let III = (sp / 24.) * nu * cp.powi(3) * eta2.mul_add(9.0, 5.0 - tp2);
+        let IIIA = (sp / 720.) * nu * cp.powi(5) * tp2.mul_add(-58.0, 61.0 + tp4);
+
+        let IV = nu * cp;
+        let V = nu / 6. * cp.powi(3) * (nu / rho - tp2);
+        let VI = nu / 120.
+            * cp.powi(5)
+            * (tp2 * eta2).mul_add(-58.0, eta2.mul_add(14.0, tp2.mul_add(-18.0, 5.0 + tp4)));
+
+        let l = lambda - LAM0;
+        let north = I + II * l.powi(2) + III * l.powi(4) + IIIA * l.powi(6);
+        let east = l.mul_add(IV, E0) + V * l.powi(3) + VI * l.powi(5);
+        Ok((east, north))
+    }
 }
 
 /// Perform Longitude, Latitude to ETRS89 conversion
@@ -166,6 +197,7 @@ pub fn convert_osgb36(longitude: f64, latitude: f64) -> Result<(f64, f64), ()> {
 // Sources:
 // equation C3 on p49 of https://www.ordnancesurvey.co.uk/documents/resources/guide-coordinate-systems-great-britain.pdf
 // equation B6 in OSGM15 Transformation and user guide (they're the same equation)
+#[cfg_attr(feature = "karney_tm", allow(dead_code))]
 fn compute_m(phi: f64, b: f64, n: f64) -> f64 {
     let p_plus = phi + PHI0;
     let p_minus = phi - PHI0;
@@ -199,86 +231,103 @@ pub(crate) fn convert_to_ll(
     // ensure that we're within the boundaries
     check(eastings, (0.000, MAX_EASTING))?;
     check(northings, (0.000, MAX_NORTHING))?;
-    // ellipsoid squared eccentricity constant
-    let a = ell_a;
-    let b = ell_b;
-    let e2 = (a.powi(2) - b.powi(2)) / a.powi(2);
-    let n = (a - b) / (a + b);
 
-    let dN = northings - N0;
-
-    // Grid InQuest iteration pattern: recalculate from prior value instead of accumulating
-    // This avoids accumulated rounding errors in the phi variable itself
-    let mut prior_phi = PHI0;
-    let mut arc_length = 0.0;
-    let mut phi = PHI0 + dN / (a * F0);
-    let mut m = compute_m(phi, b, n);
-
-    // Use absolute value for convergence check (Grid InQuest style)
-    while (dN - m).abs() >= 0.00001 {
-        // Recalculate latitude from prior value + correction (Grid InQuest pattern)
-        // This is different from accumulating into the same variable
-        phi = ((dN - arc_length) / (a * F0)) + prior_phi;
-        arc_length = compute_m(phi, b, n);
-        m = arc_length;
-
-        // Check convergence before updating prior
-        if (dN - arc_length).abs() < 0.000001 {
-            break;
-        }
-
-        prior_phi = phi;
+    // Karney exact Transverse Mercator path (Krüger n-series).
+    #[cfg(feature = "karney_tm")]
+    {
+        let (lon, lat) = if ell_a == GRS80_SEMI_MAJOR && ell_b == GRS80_SEMI_MINOR {
+            bng_grs80_proj().inverse(eastings, northings)
+        } else {
+            crate::karney::TransverseMercator::new(ell_a, ell_b, F0, PHI0, LAM0, E0, N0)
+                .inverse(eastings, northings)
+        };
+        Ok((lon.to_degrees(), lat.to_degrees()))
     }
-    let sp2 = phi.sin().powi(2);
-    let nu = a * F0 * (1. - e2 * sp2).powf(-0.5);
-    let rho = a * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
-    let eta2 = nu / rho - 1.;
 
-    let tp = phi.tan();
-    // Precompute powers using explicit multiplication (Grid InQuest style)
-    // to avoid potential precision loss from powi()
-    let tp2 = tp * tp;
-    let tp4 = tp2 * tp2;
-    let tp6 = tp4 * tp2;
+    // Truncated OS Redfearn series path.
+    #[cfg(not(feature = "karney_tm"))]
+    {
+        // ellipsoid squared eccentricity constant
+        let a = ell_a;
+        let b = ell_b;
+        let e2 = (a.powi(2) - b.powi(2)) / a.powi(2);
+        let n = (a - b) / (a + b);
 
-    // Precompute nu powers
-    let nu2 = nu * nu;
-    let nu3 = nu2 * nu;
-    let nu5 = nu3 * nu2;
-    let nu7 = nu5 * nu2;
+        let dN = northings - N0;
 
-    let VII = tp / (2. * rho * nu);
-    let VIII = tp / (24. * rho * nu3) * (5. + 3. * tp2 + eta2 - 9. * tp2 * eta2);
-    let IX = tp / (720. * rho * nu5) * (61. + 90. * tp2 + 45. * tp4);
+        // Grid InQuest iteration pattern: recalculate from prior value instead of accumulating
+        // This avoids accumulated rounding errors in the phi variable itself
+        let mut prior_phi = PHI0;
+        let mut arc_length = 0.0;
+        let mut phi = PHI0 + dN / (a * F0);
+        let mut m = compute_m(phi, b, n);
 
-    let sp = 1.0 / phi.cos();
+        // Use absolute value for convergence check (Grid InQuest style)
+        while (dN - m).abs() >= 0.00001 {
+            // Recalculate latitude from prior value + correction (Grid InQuest pattern)
+            // This is different from accumulating into the same variable
+            phi = ((dN - arc_length) / (a * F0)) + prior_phi;
+            arc_length = compute_m(phi, b, n);
+            m = arc_length;
 
-    let X = sp / nu;
-    let XI = sp / (6. * nu3) * (nu / rho + 2. * tp2);
-    let XII = sp / (120. * nu5) * (5. + 28. * tp2 + 24. * tp4);
-    let XIIA = sp / (5040. * nu7) * (61. + 662. * tp2 + 1320. * tp4 + 720. * tp6);
+            // Check convergence before updating prior
+            if (dN - arc_length).abs() < 0.000001 {
+                break;
+            }
 
-    let e = eastings - E0;
+            prior_phi = phi;
+        }
+        let sp2 = phi.sin().powi(2);
+        let nu = a * F0 * (1. - e2 * sp2).powf(-0.5);
+        let rho = a * F0 * (1. - e2) * (1. - e2 * sp2).powf(-1.5);
+        let eta2 = nu / rho - 1.;
 
-    // Precompute e powers
-    let e2 = e * e;
-    let e3 = e2 * e;
-    let e4 = e3 * e;
-    let e5 = e4 * e;
-    let e6 = e5 * e;
-    let e7 = e6 * e;
+        let tp = phi.tan();
+        // Precompute powers using explicit multiplication (Grid InQuest style)
+        // to avoid potential precision loss from powi()
+        let tp2 = tp * tp;
+        let tp4 = tp2 * tp2;
+        let tp6 = tp4 * tp2;
 
-    // Use Kahan summation to reduce accumulated floating-point errors
-    // in the polynomial series expansion
-    phi = kahan_sum(&[phi, -(VII * e2), VIII * e4, -(IX * e6)]);
-    let mut lambda = kahan_sum(&[LAM0, X * e, -(XI * e3), XII * e5, -(XIIA * e7)]);
+        // Precompute nu powers
+        let nu2 = nu * nu;
+        let nu3 = nu2 * nu;
+        let nu5 = nu3 * nu2;
+        let nu7 = nu5 * nu2;
 
-    phi = phi.to_degrees();
-    lambda = lambda.to_degrees();
+        let VII = tp / (2. * rho * nu);
+        let VIII = tp / (24. * rho * nu3) * (5. + 3. * tp2 + eta2 - 9. * tp2 * eta2);
+        let IX = tp / (720. * rho * nu5) * (61. + 90. * tp2 + 45. * tp4);
 
-    // Return full f64 precision instead of rounding to 8 decimals
-    // This preserves precision for round-trip conversions
-    Ok((lambda, phi))
+        let sp = 1.0 / phi.cos();
+
+        let X = sp / nu;
+        let XI = sp / (6. * nu3) * (nu / rho + 2. * tp2);
+        let XII = sp / (120. * nu5) * (5. + 28. * tp2 + 24. * tp4);
+        let XIIA = sp / (5040. * nu7) * (61. + 662. * tp2 + 1320. * tp4 + 720. * tp6);
+
+        let e = eastings - E0;
+
+        // Precompute e powers
+        let e2 = e * e;
+        let e3 = e2 * e;
+        let e4 = e3 * e;
+        let e5 = e4 * e;
+        let e6 = e5 * e;
+        let e7 = e6 * e;
+
+        // Use Kahan summation to reduce accumulated floating-point errors
+        // in the polynomial series expansion
+        phi = kahan_sum(&[phi, -(VII * e2), VIII * e4, -(IX * e6)]);
+        let mut lambda = kahan_sum(&[LAM0, X * e, -(XI * e3), XII * e5, -(XIIA * e7)]);
+
+        phi = phi.to_degrees();
+        lambda = lambda.to_degrees();
+
+        // Return full f64 precision instead of rounding to 8 decimals
+        // This preserves precision for round-trip conversions
+        Ok((lambda, phi))
+    }
 }
 
 /// Convert ETRS89 coordinates to Lon, Lat
