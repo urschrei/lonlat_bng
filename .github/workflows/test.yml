@@ -32,7 +32,7 @@ jobs:
           target: x86_64-unknown-linux-gnu
           use-cross: false
         - build: macos
-          os: macos-14
+          os: macos-latest
           rust: stable
           target: x86_64-apple-darwin
           use-cross: false
@@ -75,12 +75,12 @@ jobs:
           target: aarch64-unknown-linux-gnu
           container: quay.io/pypa/manylinux_2_28_aarch64
         - build: macos
-          os: macos-14
+          os: macos-latest
           rust: stable
           target: x86_64-apple-darwin
           deptarget: 10.12
         - build: macos
-          os: macos-14
+          os: macos-latest
           rust: stable
           target: aarch64-apple-darwin
           deptarget: 11.0
@@ -89,11 +89,6 @@ jobs:
           rust: stable
           target: x86_64-pc-windows-msvc
     steps:
-      - name: Switch to macOS 14.x SDK
-        if: matrix.target == 'aarch64-apple-darwin'
-        run: |
-          xcodebuild -showsdks
-          SDKROOT=$(xcrun -sdk macosx14.5 --show-sdk-path)
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
         with:
