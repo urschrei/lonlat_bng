@@ -36,7 +36,7 @@ jobs:
           rust: stable
           target: x86_64-apple-darwin
           use-cross: false
-          deptarget: 10.12
+          deptarget: 10.15
         - build: windows
           os: windows-latest
           rust: stable
@@ -78,7 +78,7 @@ jobs:
           os: macos-latest
           rust: stable
           target: x86_64-apple-darwin
-          deptarget: 10.12
+          deptarget: 10.15
         - build: macos
           os: macos-latest
           rust: stable
