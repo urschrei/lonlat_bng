@@ -11,14 +11,14 @@ edition = "2024"
 categories = ["science::geo"]
 
 [dev-dependencies]
-criterion = "0.7.0"
+criterion = "0.8.2"
 
 [build-dependencies]
 cbindgen = "0.29.0"
 
 [dependencies]
 libc = "0.2.174"
-rand = "0.9.1"
+rand = "0.10.3"
 ostn15_phf = "1.3.0"
 rayon = "1.10.0"
 
